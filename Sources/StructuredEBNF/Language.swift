@@ -36,6 +36,22 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     Self.union(languages)
   }
 
+  public mutating func concatenate(_ other: some ConvertibleToLanguage) {
+    self = self.concatenated(other)
+  }
+
+  public func concatenated(_ other: some ConvertibleToLanguage) -> Self {
+    Self.concatenate([self, other.language])
+  }
+
+  public mutating func formUnion(_ other: some ConvertibleToLanguage) {
+    self = self.unioned(other)
+  }
+
+  public func unioned(_ other: some ConvertibleToLanguage) -> Self {
+    Self.union([self, other.language])
+  }
+
   public func grammar(startingIdentifier: Identifier = .root) -> Grammar {
     var resolver = Resolver()
     let resolved = resolver.resolve(self)
