@@ -5,6 +5,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     case concatenate([Language])
     case union([Language])
     case kleeneStar(Language)
+    case reverse(Language)
   }
 
   private let operation: Operation
@@ -39,6 +40,10 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
 
   public static func kleeneStar(_ language: some ConvertibleToLanguage) -> Self {
     Self(operation: .kleeneStar(language.language))
+  }
+
+  public static func reverse(_ language: some ConvertibleToLanguage) -> Self {
+    Self(operation: .reverse(language.language))
   }
 
   public mutating func concatenate(_ other: some ConvertibleToLanguage) {
@@ -162,6 +167,18 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
           entryIdentifier: synthesizedIdentifier,
           synthesizedEntry: true
         )
+
+      case let .reverse(language):
+        let resolved = self.resolve(language)
+        guard let entryIdentifier = resolved.entryIdentifier else {
+          return ResolvedLanguage(grammar: Grammar(), entryIdentifier: nil, synthesizedEntry: false)
+        }
+        let grammar = self.reversed(grammar: resolved.grammar, startingIdentifier: entryIdentifier)
+        return ResolvedLanguage(
+          grammar: grammar,
+          entryIdentifier: entryIdentifier,
+          synthesizedEntry: true
+        )
       }
     }
 
@@ -169,6 +186,66 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
       let namespace = self.nextLanguageNamespace
       self.nextLanguageNamespace += 1
       return Identifier(rawValue: "l\(namespace)__start")!
+    }
+
+    private func reversed(grammar: Grammar, startingIdentifier: Identifier) -> Grammar {
+      let reachableIdentifiers = self.reachableIdentifiers(in: grammar, startingIdentifier: startingIdentifier)
+      let productions = grammar.productions.compactMap { (production: Production) -> Production? in
+        guard reachableIdentifiers.contains(production.identifier) else { return nil }
+        return Production(production.identifier, self.reversed(expression: production.expression))
+      }
+      return Grammar(startingIdentifier: startingIdentifier, productions)
+    }
+
+    private func reachableIdentifiers(in grammar: Grammar, startingIdentifier: Identifier) -> Set<Identifier> {
+      var visited = Set<Identifier>()
+      var stack = [startingIdentifier]
+
+      while let identifier = stack.popLast() {
+        guard visited.insert(identifier).inserted else { continue }
+        guard let production = grammar[identifier] else { continue }
+        stack.append(contentsOf: self.referencedIdentifiers(in: production.expression))
+      }
+
+      return visited
+    }
+
+    private func referencedIdentifiers(in expression: Expression) -> [Identifier] {
+      switch expression {
+      case .empty:
+        []
+      case let .concat(expressions), let .choice(expressions):
+        expressions.flatMap { self.referencedIdentifiers(in: $0) }
+      case let .optional(expression), let .zeroOrMore(expression), let .group(expression):
+        self.referencedIdentifiers(in: expression)
+      case let .ref(identifier):
+        [identifier]
+      case .special, .terminal:
+        []
+      }
+    }
+
+    private func reversed(expression: Expression) -> Expression {
+      switch expression {
+      case .empty:
+        .empty
+      case let .concat(expressions):
+        .concat(expressions.reversed().map { self.reversed(expression: $0) })
+      case let .choice(expressions):
+        .choice(expressions.map { self.reversed(expression: $0) })
+      case let .optional(expression):
+        .optional(self.reversed(expression: expression))
+      case let .zeroOrMore(expression):
+        .zeroOrMore(self.reversed(expression: expression))
+      case let .group(expression):
+        .group(self.reversed(expression: expression))
+      case let .ref(identifier):
+        .ref(identifier)
+      case let .special(special):
+        .special(special)
+      case let .terminal(terminal):
+        .terminal(terminal)
+      }
     }
 
   }
