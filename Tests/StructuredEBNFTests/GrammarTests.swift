@@ -302,6 +302,52 @@ struct `Grammar tests` {
   }
 
   @Test
+  func `Merge Overwrites Existing Productions And Appends New Ones`() {
+    var grammar = Grammar {
+      Production("expression") { "first" }
+      Production("term") { "value" }
+    }
+    let other = Grammar {
+      Production("factor") { Ref("term") }
+      Production("expression") { "second" }
+    }
+
+    grammar.merge(other)
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "second" },
+        Production("term") { "value" },
+        Production("factor") { Ref("term") }
+      ]
+    )
+  }
+
+  @Test
+  func `Merge Preserves Original Slot Of Overwritten Production`() {
+    var grammar = Grammar {
+      Production("expression") { "first" }
+      Production("term") { "value" }
+      Production("factor") { Ref("term") }
+    }
+    let other = Grammar {
+      Production("term") { Ref("expression") }
+    }
+
+    grammar.merge(other)
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "first" },
+        Production("term") { Ref("expression") },
+        Production("factor") { Ref("term") }
+      ]
+    )
+  }
+
+  @Test
   func `Formats Non Trivial Grammar Exactly`() {
     let grammar = Grammar {
       Production("sign") {
