@@ -168,4 +168,151 @@ struct `Language tests` {
       }
     )
   }
+
+  @Test
+  func `KleeneStarred Returns New Language Without Mutating Original`() {
+    let base = Language {
+      Grammar(Production("expression") { "value" })
+    }
+
+    let starred = base.kleeneStarred()
+
+    expectNoDifference(
+      base.grammar(),
+      Grammar(Production("expression") { "value" })
+    )
+    expectNoDifference(
+      starred.grammar(),
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { Ref("l0__start") }
+        Production("expression") { "value" }
+        Production("l0__start") {
+          ZeroOrMore {
+            Ref("expression")
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Mutating KleeneStar Updates Language`() {
+    var language = Language {
+      Grammar(Production("expression") { "value" })
+    }
+
+    language.formKleeneStar()
+
+    expectNoDifference(
+      language.grammar(),
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { Ref("l0__start") }
+        Production("expression") { "value" }
+        Production("l0__start") {
+          ZeroOrMore {
+            Ref("expression")
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Reversed Returns New Language Without Mutating Original`() {
+    let base = Language {
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          ConcatanateExpressions {
+            "a"
+            Ref("term")
+          }
+        }
+        Production("term") {
+          ConcatanateExpressions {
+            "b"
+            "c"
+          }
+        }
+      }
+    }
+
+    let reversed = base.reversed()
+
+    expectNoDifference(
+      base.grammar(),
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          ConcatanateExpressions {
+            "a"
+            Ref("term")
+          }
+        }
+        Production("term") {
+          ConcatanateExpressions {
+            "b"
+            "c"
+          }
+        }
+      }
+    )
+    expectNoDifference(
+      reversed.grammar(),
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") {
+          ConcatanateExpressions {
+            Ref("term")
+            "a"
+          }
+        }
+        Production("term") {
+          ConcatanateExpressions {
+            "c"
+            "b"
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Mutating Reverse Updates Language`() {
+    var language = Language {
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          ConcatanateExpressions {
+            "a"
+            Ref("term")
+          }
+        }
+        Production("term") {
+          ConcatanateExpressions {
+            "b"
+            "c"
+          }
+        }
+      }
+    }
+
+    language.reverse()
+
+    expectNoDifference(
+      language.grammar(),
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") {
+          ConcatanateExpressions {
+            Ref("term")
+            "a"
+          }
+        }
+        Production("term") {
+          ConcatanateExpressions {
+            "c"
+            "b"
+          }
+        }
+      }
+    )
+  }
 }

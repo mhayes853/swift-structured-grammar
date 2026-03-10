@@ -62,6 +62,22 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     Self.union([self, other.language])
   }
 
+  public mutating func formKleeneStar() {
+    self = self.kleeneStarred()
+  }
+
+  public func kleeneStarred() -> Self {
+    Self.kleeneStar(self)
+  }
+
+  public mutating func reverse() {
+    self = self.reversed()
+  }
+
+  public func reversed() -> Self {
+    Self.reverse(self)
+  }
+
   public func grammar(startingIdentifier: Identifier = .root) -> Grammar {
     var resolver = Resolver()
     let resolved = resolver.resolve(self)
