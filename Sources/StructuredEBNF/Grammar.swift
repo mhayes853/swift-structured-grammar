@@ -1,32 +1,14 @@
+// MARK: - Grammar
+
 public struct Grammar: Hashable, Sendable {
-  public struct Productions: RandomAccessCollection, Sendable {
-    public typealias Element = Production
-    public typealias Index = Int
-
-    private let productions: [Production]
-
-    init(productions: [Production]) {
-      self.productions = productions
-    }
-
-    public var startIndex: Int {
-      self.productions.startIndex
-    }
-
-    public var endIndex: Int {
-      self.productions.endIndex
-    }
-
-    public subscript(position: Int) -> Production {
-      self.productions[position]
-    }
-  }
-
   private var orderedIdentifiers: [Identifier]
   private var productionsByIdentifier: [Identifier: Production]
 
   public var productions: Productions {
-    Productions(productions: self.orderedIdentifiers.compactMap { self.productionsByIdentifier[$0] })
+    Productions(
+      orderedIdentifiers: self.orderedIdentifiers,
+      productionsByIdentifier: self.productionsByIdentifier
+    )
   }
 
   public init() {
@@ -100,5 +82,38 @@ public struct Grammar: Hashable, Sendable {
   private mutating func appendIdentifierIfNeeded(_ identifier: Identifier) {
     guard !self.orderedIdentifiers.contains(identifier) else { return }
     self.orderedIdentifiers.append(identifier)
+  }
+}
+
+// MARK: - Productions
+
+extension Grammar {
+  public struct Productions: RandomAccessCollection, Sendable {
+    public typealias Element = Production
+    public typealias Index = Int
+
+    private let orderedIdentifiers: [Identifier]
+    private let productionsByIdentifier: [Identifier: Production]
+
+    init(orderedIdentifiers: [Identifier], productionsByIdentifier: [Identifier: Production]) {
+      self.orderedIdentifiers = orderedIdentifiers
+      self.productionsByIdentifier = productionsByIdentifier
+    }
+
+    public var startIndex: Int {
+      self.orderedIdentifiers.startIndex
+    }
+
+    public var endIndex: Int {
+      self.orderedIdentifiers.endIndex
+    }
+
+    public subscript(position: Int) -> Production {
+      self.productionsByIdentifier[self.orderedIdentifiers[position]]!
+    }
+
+    public subscript(identifier: Identifier) -> Production? {
+      self.productionsByIdentifier[identifier]
+    }
   }
 }
