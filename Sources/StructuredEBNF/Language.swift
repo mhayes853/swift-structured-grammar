@@ -4,6 +4,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     case grammar(Grammar)
     case concatenate([Language])
     case union([Language])
+    case kleeneStar(Language)
   }
 
   private let operation: Operation
@@ -34,6 +35,10 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
 
   public static func union(_ languages: any ConvertibleToLanguage...) -> Self {
     Self.union(languages)
+  }
+
+  public static func kleeneStar(_ language: some ConvertibleToLanguage) -> Self {
+    Self(operation: .kleeneStar(language.language))
   }
 
   public mutating func concatenate(_ other: some ConvertibleToLanguage) {
@@ -139,6 +144,24 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
           grammar.append(Production(entryIdentifier, Expression.choice(entryIdentifiers.map(Expression.ref))))
         }
         return ResolvedLanguage(grammar: grammar, entryIdentifier: entryIdentifier, synthesizedEntry: true)
+
+      case let .kleeneStar(language):
+        let resolved = self.resolve(language)
+        guard let entryIdentifier = resolved.entryIdentifier else {
+          return ResolvedLanguage(grammar: Grammar(), entryIdentifier: nil, synthesizedEntry: false)
+        }
+        var grammar = resolved.grammar
+        let synthesizedIdentifier = self.nextLanguageIdentifier()
+        grammar.append(Production(synthesizedIdentifier) {
+          ZeroOrMore {
+            Ref(entryIdentifier)
+          }
+        })
+        return ResolvedLanguage(
+          grammar: grammar,
+          entryIdentifier: synthesizedIdentifier,
+          synthesizedEntry: true
+        )
       }
     }
 
