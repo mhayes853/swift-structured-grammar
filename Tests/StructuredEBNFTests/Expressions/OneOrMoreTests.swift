@@ -9,4 +9,17 @@ struct `OneOrMore tests` {
     let expression = OneOrMore { "value" }.expression
     expectNoDifference(expression, .concat([.terminal("value"), .zeroOrMore(.terminal("value"))]))
   }
+
+  @Test
+  func `Formats As Canonical Concatenation And Repetition`() {
+    let grammar = Grammar {
+      Production("start") {
+        OneOrMore {
+          "value"
+        }
+      }
+    }
+
+    expectNoDifference(grammar.formatted(), "start = \"value\", {\"value\"} ;")
+  }
 }

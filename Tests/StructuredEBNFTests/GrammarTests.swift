@@ -300,4 +300,55 @@ struct `Grammar tests` {
       ]
     )
   }
+
+  @Test
+  func `Formats Non Trivial Grammar Exactly`() {
+    let grammar = Grammar {
+      Production("sign") {
+        OptionalExpression {
+          Choice {
+            "+"
+            "-"
+          }
+        }
+      }
+
+      Production("term") {
+        Choice {
+          Ref("number")
+          Group {
+            "("
+            Ref("expression")
+            ")"
+          }
+          Special("identifier")
+        }
+      }
+
+      Production("expression") {
+        Ref("sign")
+        Ref("term")
+        ZeroOrMore {
+          Concat {
+            Group {
+              Choice {
+                "+"
+                "-"
+              }
+            }
+            Ref("term")
+          }
+        }
+      }
+    }
+
+    expectNoDifference(
+      grammar.formatted(),
+      """
+      sign = ["+" | "-"] ;
+      term = number | ("(", expression, ")") | ? identifier ? ;
+      expression = sign, term, {("+" | "-"), term} ;
+      """
+    )
+  }
 }

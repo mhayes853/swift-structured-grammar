@@ -180,13 +180,72 @@ public struct Grammar: Hashable, Sendable {
     self
   }
 
-  public func formatted() -> String {
-    ""
-  }
-
   private mutating func appendIdentifierIfNeeded(_ identifier: Identifier) {
     guard !self.orderedIdentifiers.contains(identifier) else { return }
     self.orderedIdentifiers.append(identifier)
+  }
+}
+
+// MARK: - Formatting
+
+extension Grammar {
+  public func formatted() -> String {
+    self.productions
+      .map { production in
+        let formattedExpression = self.format(expression: production.expression)
+        if formattedExpression.isEmpty {
+          return "\(production.identifier.rawValue) = ;"
+        } else {
+          return "\(production.identifier.rawValue) = \(formattedExpression) ;"
+        }
+      }
+      .joined(separator: "\n")
+  }
+
+  private func format(expression: Expression) -> String {
+    switch expression {
+    case .empty:
+      ""
+    case let .concat(expressions):
+      expressions
+        .map { expression in
+          if case .choice = expression {
+            "(\(self.format(expression: expression)))"
+          } else {
+            self.format(expression: expression)
+          }
+        }
+        .joined(separator: ", ")
+    case let .choice(expressions):
+      expressions.map { self.format(expression: $0) }.joined(separator: " | ")
+    case let .optional(expression):
+      "[\(self.format(expression: expression))]"
+    case let .zeroOrMore(expression):
+      "{\(self.format(expression: expression))}"
+    case let .group(expression):
+      "(\(self.format(expression: expression)))"
+    case let .ref(identifier):
+      identifier.rawValue
+    case let .special(special):
+      "? \(special.value) ?"
+    case let .terminal(terminal):
+      self.format(terminal: terminal)
+    }
+  }
+
+  private func format(terminal: Terminal) -> String {
+    let escaped = terminal.value.reduce(into: "") { result, character in
+      switch character {
+      case "\\":
+        result += "\\\\"
+      case #"""#:
+        result += #"\""#
+      default:
+        result.append(character)
+      }
+    }
+
+    return "\"" + escaped + "\""
   }
 }
 
