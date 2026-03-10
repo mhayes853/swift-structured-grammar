@@ -28,4 +28,63 @@ struct `Grammar tests` {
     expectNoDifference(grammar.productions["term"], Production("term", Ref("expression")))
     expectNoDifference(grammar.productions["factor"], nil)
   }
+
+  @Test
+  func `Replacing Production Overwrites Existing Production Without Mutating Original`() {
+    let grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    let replaced = grammar.replacingProduction(
+      named: "expression",
+      with: "updated"
+    )
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "value" },
+        Production("term", Ref("expression"))
+      ]
+    )
+    expectNoDifference(
+      Array(replaced.productions),
+      [
+        Production("expression") { "updated" },
+        Production("term", Ref("expression"))
+      ]
+    )
+  }
+
+  @Test
+  func `Replacing Production Inserts Missing Production At End`() {
+    let grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    let replaced = grammar.replacingProduction(named: "factor") {
+      Ref("term")
+    }
+
+    expectNoDifference(
+      Array(replaced.productions),
+      [
+        Production("expression") { "value" },
+        Production("term") { Ref("expression") },
+        Production("factor") { Ref("term") }
+      ]
+    )
+  }
+
+  @Test
+  func `Replacing Production Uses Named Identifier For Inserted Production`() {
+    let grammar = Grammar()
+
+    let replaced = grammar.replacingProduction(named: "factor", with: "value")
+
+    expectNoDifference(replaced["factor"]?.identifier, "factor")
+    expectNoDifference(Array(replaced.productions), [Production("factor") { "value" }])
+  }
 }

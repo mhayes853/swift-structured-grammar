@@ -36,17 +36,59 @@ public struct Grammar: Hashable, Sendable {
     self.productionsByIdentifier[identifier]
   }
 
-  public mutating func replaceProduction(named identifier: Identifier, with production: Production) {
+  public mutating func replaceProduction(
+    named identifier: Identifier,
+    with expression: some ConvertibleToExpression
+  ) {
+    self.replaceProduction(named: identifier, with: Production(identifier, expression))
+  }
+
+  public mutating func replaceProduction(
+    named identifier: Identifier,
+    with string: String
+  ) {
+    self.replaceProduction(named: identifier, with: Terminal(string))
+  }
+
+  public mutating func replaceProduction(
+    named identifier: Identifier,
+    @ExpressionBuilder _ expression: () -> Expression
+  ) {
+    self.replaceProduction(named: identifier, with: expression())
+  }
+
+  public func replacingProduction(
+    named identifier: Identifier,
+    with expression: some ConvertibleToExpression
+  ) -> Self {
+    var grammar = self
+    grammar.replaceProduction(named: identifier, with: expression)
+    return grammar
+  }
+
+  public func replacingProduction(
+    named identifier: Identifier,
+    with string: String
+  ) -> Self {
+    var grammar = self
+    grammar.replaceProduction(named: identifier, with: string)
+    return grammar
+  }
+
+  public func replacingProduction(
+    named identifier: Identifier,
+    @ExpressionBuilder _ expression: () -> Expression
+  ) -> Self {
+    var grammar = self
+    grammar.replaceProduction(named: identifier, with: expression())
+    return grammar
+  }
+
+  private mutating func replaceProduction(named identifier: Identifier, with production: Production) {
     if self.productionsByIdentifier[identifier] == nil {
       self.appendIdentifierIfNeeded(identifier)
     }
     self.productionsByIdentifier[identifier] = production
-  }
-
-  public func replacingProduction(named identifier: Identifier, with production: Production) -> Self {
-    var grammar = self
-    grammar.replaceProduction(named: identifier, with: production)
-    return grammar
   }
 
   public mutating func merge(_ grammar: Grammar) {

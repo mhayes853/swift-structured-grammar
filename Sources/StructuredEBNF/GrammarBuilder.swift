@@ -1,7 +1,9 @@
 @resultBuilder
 public enum GrammarBuilder {
   public static func buildExpression(_ production: Production) -> Grammar {
-    Grammar().replacingProduction(named: production.identifier, with: production)
+    var grammar = Grammar()
+    grammar.replaceProduction(named: production.identifier, with: production.expression)
+    return grammar
   }
 
   public static func buildExpression(_ grammar: Grammar) -> Grammar {
