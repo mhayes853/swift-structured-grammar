@@ -34,7 +34,7 @@ let grammar = Grammar {
 }
 
 let extended = Language {
-    Concatenate {
+    ConcatenateLanguages {
         grammar
         grammar
         KleeneStar {

@@ -3,12 +3,12 @@ import Testing
 import StructuredEBNF
 
 @Suite
-struct `Concat tests` {
+struct `ConcatanateExpressions tests` {
   @Test
   func `Formats As Concatenation`() {
     let grammar = Grammar {
       Production("start") {
-        Concat {
+        ConcatanateExpressions {
           "a"
           Ref("target")
         }

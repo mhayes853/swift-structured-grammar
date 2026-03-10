@@ -5,20 +5,20 @@ import StructuredEBNF
 @Suite
 struct `ExpressionBuilder tests` {
   @Test
-  func `Concat Builder Uses Empty Expression For Empty Body`() {
-    let expression = Concat {}.expression
+  func `ConcatanateExpressions Builder Uses Empty Expression For Empty Body`() {
+    let expression = ConcatanateExpressions {}.expression
     expectNoDifference(expression, .empty)
   }
 
   @Test
-  func `Concat Builder Returns Single Child Directly`() {
-    let expression = Concat { "value" }.expression
+  func `ConcatanateExpressions Builder Returns Single Child Directly`() {
+    let expression = ConcatanateExpressions { "value" }.expression
     expectNoDifference(expression, .terminal("value"))
   }
 
   @Test
-  func `Concat Builder Concatenates Multiple Children`() {
-    let expression = Concat {
+  func `ConcatanateExpressions Builder Concatenates Multiple Children`() {
+    let expression = ConcatanateExpressions {
       "value"
       Ref("identifier")
     }.expression
@@ -26,9 +26,9 @@ struct `ExpressionBuilder tests` {
   }
 
   @Test
-  func `Concat Builder Supports Optional Child`() {
+  func `ConcatanateExpressions Builder Supports Optional Child`() {
     let includeValue = false
-    let expression = Concat {
+    let expression = ConcatanateExpressions {
       if includeValue {
         "value"
       }
@@ -38,9 +38,9 @@ struct `ExpressionBuilder tests` {
   }
 
   @Test
-  func `Concat Builder Supports Conditional Branches`() {
+  func `ConcatanateExpressions Builder Supports Conditional Branches`() {
     let includeReference = true
-    let expression = Concat {
+    let expression = ConcatanateExpressions {
       if includeReference {
         Ref("identifier")
       } else {

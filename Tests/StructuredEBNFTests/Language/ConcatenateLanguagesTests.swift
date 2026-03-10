@@ -3,10 +3,10 @@ import Testing
 import StructuredEBNF
 
 @Suite
-struct `Concatenate tests` {
+struct `ConcatenateLanguages tests` {
   @Test
-  func `Concatenate Merges Grammars In Encounter Order`() {
-    let language = Concatenate {
+  func `ConcatenateLanguages Merges Grammars In Encounter Order`() {
+    let language = ConcatenateLanguages {
       Grammar {
         Production("expression") { "first" }
         Production("term") { "value" }
@@ -33,9 +33,9 @@ struct `Concatenate tests` {
   }
 
   @Test
-  func `Concatenate Builder Supports Optional Languages`() {
+  func `ConcatenateLanguages Builder Supports Optional Languages`() {
     let includeExtra = false
-    let language = Concatenate {
+    let language = ConcatenateLanguages {
       Grammar {
         Production("expression") { "value" }
       }

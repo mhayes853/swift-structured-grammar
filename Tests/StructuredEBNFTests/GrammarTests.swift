@@ -454,13 +454,13 @@ struct `Grammar tests` {
   }
 
   @Test
-  func `Homomorph Map Handles Empty Concat Ref Special And Terminal Cases`() {
+  func `Homomorph Map Handles Empty ConcatanateExpressions Ref Special And Terminal Cases`() {
     let grammar = Grammar {
       Production("epsilon") {
         EmptyExpression()
       }
       Production("expression") {
-        Concat {
+        ConcatanateExpressions {
           Special("identifier")
           Ref("epsilon")
           "a"
@@ -483,7 +483,7 @@ struct `Grammar tests` {
           EmptyExpression()
         }
         Production("expression") {
-          Concat {
+          ConcatanateExpressions {
             Special("identifier")
             Ref("epsilon")
             "b"
@@ -521,7 +521,7 @@ struct `Grammar tests` {
         Ref("sign")
         Ref("term")
         ZeroOrMore {
-          Concat {
+          ConcatanateExpressions {
             Group {
               Choice {
                 "+"
