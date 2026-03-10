@@ -1,4 +1,4 @@
-public struct Special: Hashable, Sendable, ExpressibleByStringLiteral {
+public struct Special: Hashable, Sendable, ExpressibleByStringLiteral, ConvertibleToExpression {
   public let value: String
 
   public init(_ value: String) {
@@ -7,5 +7,9 @@ public struct Special: Hashable, Sendable, ExpressibleByStringLiteral {
 
   public init(stringLiteral value: String) {
     self.init(value)
+  }
+
+  public var expression: Expression {
+    .special(self)
   }
 }
