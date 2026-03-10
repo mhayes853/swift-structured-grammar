@@ -315,4 +315,145 @@ struct `Language tests` {
       }
     )
   }
+
+  @Test
+  func `Homomorphed Returns New Language Without Mutating Original`() {
+    let base = Language {
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          "+"
+          Ref("term")
+        }
+        Production("term") {
+          "+"
+        }
+      }
+    }
+
+    let homomorphed = base.homomorphed("+", to: "-")
+
+    expectNoDifference(
+      base.grammar(),
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          "+"
+          Ref("term")
+        }
+        Production("term") {
+          "+"
+        }
+      }
+    )
+    expectNoDifference(
+      homomorphed.grammar(),
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          "-"
+          Ref("term")
+        }
+        Production("term") {
+          "-"
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Mutating Homomorph Updates Language`() {
+    var language = Language {
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          "+"
+          Ref("term")
+        }
+        Production("term") {
+          "+"
+        }
+      }
+    }
+
+    language.homomorph("+", to: "-")
+
+    expectNoDifference(
+      language.grammar(),
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") {
+          "-"
+          Ref("term")
+        }
+        Production("term") {
+          "-"
+        }
+      }
+    )
+  }
+
+  @Test
+  func `HomomorphMapped Returns New Language Without Mutating Original`() {
+    let base = Language {
+      Grammar(Production("expression") {
+        Choice {
+          "+"
+          "*"
+        }
+      })
+    }
+
+    let homomorphed = base.homomorphMapped { terminal -> Terminal? in
+      if terminal == "+" {
+        return "-"
+      } else {
+        return nil
+      }
+    }
+
+    expectNoDifference(
+      base.grammar(),
+      Grammar(Production("expression") {
+        Choice {
+          "+"
+          "*"
+        }
+      })
+    )
+    expectNoDifference(
+      homomorphed.grammar(),
+      Grammar(Production("expression") {
+        Choice {
+          "-"
+          "*"
+        }
+      })
+    )
+  }
+
+  @Test
+  func `Mutating HomomorphMap Updates Language`() {
+    var language = Language {
+      Grammar(Production("expression") {
+        Choice {
+          "+"
+          "*"
+        }
+      })
+    }
+
+    language.homomorphMap { terminal -> Terminal? in
+      if terminal == "+" {
+        return "-"
+      } else {
+        return nil
+      }
+    }
+
+    expectNoDifference(
+      language.grammar(),
+      Grammar(Production("expression") {
+        Choice {
+          "-"
+          "*"
+        }
+      })
+    )
+  }
 }

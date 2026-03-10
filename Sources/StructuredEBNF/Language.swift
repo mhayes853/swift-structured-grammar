@@ -78,6 +78,22 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     Self.reverse(self)
   }
 
+  public mutating func homomorph(_ terminal: Terminal, to replacement: Terminal) {
+    self = self.homomorphed(terminal, to: replacement)
+  }
+
+  public func homomorphed(_ terminal: Terminal, to replacement: Terminal) -> Self {
+    self.grammar().homomorphed(terminal, to: replacement).language
+  }
+
+  public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
+    self = self.homomorphMapped(transform)
+  }
+
+  public func homomorphMapped(_ transform: (Terminal) -> Terminal?) -> Self {
+    self.grammar().homomorphMapped(transform).language
+  }
+
   public func grammar(startingIdentifier: Identifier = .root) -> Grammar {
     var resolver = Resolver()
     let resolved = resolver.resolve(self)
