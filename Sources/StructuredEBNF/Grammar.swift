@@ -59,9 +59,21 @@ public struct Grammar: Hashable, Sendable {
     self.replaceProduction(named: production.identifier, with: production)
   }
 
+  public mutating func append(contentsOf productions: some Sequence<Production>) {
+    for production in productions {
+      self.append(production)
+    }
+  }
+
   public func appending(_ production: Production) -> Self {
     var grammar = self
     grammar.append(production)
+    return grammar
+  }
+
+  public func appending(contentsOf productions: some Sequence<Production>) -> Self {
+    var grammar = self
+    grammar.append(contentsOf: productions)
     return grammar
   }
 

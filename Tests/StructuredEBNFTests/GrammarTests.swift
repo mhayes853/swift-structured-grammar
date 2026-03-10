@@ -251,4 +251,53 @@ struct `Grammar tests` {
       ]
     )
   }
+
+  @Test
+  func `Appending Contents Of Returns New Grammar Without Mutating Original`() {
+    let grammar = Grammar {
+      Production("expression") { "value" }
+    }
+
+    let appended = grammar.appending(contentsOf: [
+      Production("term") { Ref("expression") },
+      Production("factor") { Ref("term") }
+    ])
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "value" }
+      ]
+    )
+    expectNoDifference(
+      Array(appended.productions),
+      [
+        Production("expression") { "value" },
+        Production("term") { Ref("expression") },
+        Production("factor") { Ref("term") }
+      ]
+    )
+  }
+
+  @Test
+  func `Append Contents Of Applies Last Wins Semantics In Sequence Order`() {
+    var grammar = Grammar {
+      Production("expression") { "first" }
+      Production("term") { "value" }
+    }
+
+    grammar.append(contentsOf: [
+      Production("factor") { Ref("term") },
+      Production("expression") { "second" }
+    ])
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "second" },
+        Production("term") { "value" },
+        Production("factor") { Ref("term") }
+      ]
+    )
+  }
 }
