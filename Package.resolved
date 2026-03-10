@@ -1,13 +1,13 @@
 {
-  "originHash" : "0651be5a2c35f04e18294a87ac8b59d5b965d843ea4044f0677606789d022f63",
+  "originHash" : "aeac7bc25b1b85b67c740db2f0fdddf6a10329ca4d1b825ad1f1445749edaf9a",
   "pins" : [
     {
       "identity" : "swift-custom-dump",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "2a2a938798236b8fa0bc57c453ee9de9f9ec3ab0",
-        "version" : "1.4.1"
+        "revision" : "06c57924455064182d6b217f06ebc05d00cb2990",
+        "version" : "1.5.0"
       }
     },
     {
@@ -44,6 +44,15 @@
       "state" : {
         "revision" : "4799286537280063c85a32f09884cfbca301b1a1",
         "version" : "602.0.0"
+      }
+    },
+    {
+      "identity" : "swift-xgrammar",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattt/swift-xgrammar",
+      "state" : {
+        "revision" : "e0f2de361aa4891dbca5113629bc90ab8e5c3888",
+        "version" : "0.1.0"
       }
     },
     {
