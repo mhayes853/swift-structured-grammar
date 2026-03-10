@@ -64,6 +64,78 @@ struct `Grammar tests` {
   }
 
   @Test
+  func `Remove Production Identifier Removes Matching Production`() {
+    var grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+      Production("factor") { Ref("term") }
+    }
+
+    grammar.removeProduction(identifier: "term")
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "value" },
+        Production("factor") { Ref("term") }
+      ]
+    )
+    expectNoDifference(grammar.containsProduction(identifier: "term"), false)
+  }
+
+  @Test
+  func `Remove Production Identifier Is No Op For Missing Identifier`() {
+    var grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    grammar.removeProduction(identifier: "factor")
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "value" },
+        Production("term") { Ref("expression") }
+      ]
+    )
+  }
+
+  @Test
+  func `Remove All Clears Grammar`() {
+    var grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    grammar.removeAll()
+
+    expectNoDifference(Array(grammar.productions), [Production]())
+    expectNoDifference(grammar.containsProduction(identifier: "expression"), false)
+    expectNoDifference(grammar.containsProduction(identifier: "term"), false)
+  }
+
+  @Test
+  func `Remove All Where Removes Matching Productions And Preserves Remaining Order`() {
+    var grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+      Production("factor") { Ref("term") }
+    }
+
+    grammar.removeAll { production in
+      production.identifier == "expression" || production.identifier == "factor"
+    }
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("term") { Ref("expression") }
+      ]
+    )
+  }
+
+  @Test
   func `Replacing Production Overwrites Existing Production Without Mutating Original`() {
     let grammar = Grammar {
       Production("expression") { "value" }

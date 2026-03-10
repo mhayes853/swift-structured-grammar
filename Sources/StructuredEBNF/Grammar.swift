@@ -65,6 +65,28 @@ public struct Grammar: Hashable, Sendable {
     return grammar
   }
 
+  public mutating func removeProduction(identifier: Identifier) {
+    self.orderedIdentifiers.removeAll { $0 == identifier }
+    self.productionsByIdentifier[identifier] = nil
+  }
+
+  public mutating func removeAll() {
+    self.orderedIdentifiers.removeAll()
+    self.productionsByIdentifier.removeAll()
+  }
+
+  public mutating func removeAll(where shouldBeRemoved: (Production) -> Bool) {
+    let removedIdentifiers = Set<Identifier>(
+      self.orderedIdentifiers.compactMap { identifier in
+        guard let production = self.productionsByIdentifier[identifier] else { return nil }
+        return shouldBeRemoved(production) ? identifier : nil
+      }
+    )
+
+    self.orderedIdentifiers.removeAll { removedIdentifiers.contains($0) }
+    self.productionsByIdentifier = self.productionsByIdentifier.filter { !removedIdentifiers.contains($0.key) }
+  }
+
   public mutating func replaceProduction(
     named identifier: Identifier,
     with expression: some ConvertibleToExpression
