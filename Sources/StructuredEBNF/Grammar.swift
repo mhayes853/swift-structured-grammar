@@ -36,6 +36,16 @@ public struct Grammar: Hashable, Sendable {
     self.productionsByIdentifier[identifier]
   }
 
+  public mutating func append(_ production: Production) {
+    self.replaceProduction(named: production.identifier, with: production)
+  }
+
+  public func appending(_ production: Production) -> Self {
+    var grammar = self
+    grammar.append(production)
+    return grammar
+  }
+
   public mutating func replaceProduction(
     named identifier: Identifier,
     with expression: some ConvertibleToExpression
