@@ -17,7 +17,12 @@ struct `Language tests` {
       Production("expression") { "value" }
     }
 
-    expectNoDifference(grammar.language.grammar, grammar)
+    expectNoDifference(
+      grammar.language.grammar,
+      Grammar {
+        Production("g0__expression") { "value" }
+      }
+    )
   }
 
   @Test
@@ -26,6 +31,6 @@ struct `Language tests` {
       Production("expression") { "value" }
     }.language
 
-    expectNoDifference(language.format(), "expression = \"value\" ;")
+    expectNoDifference(language.format(), "g0__expression = \"value\" ;")
   }
 }

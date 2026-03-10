@@ -23,7 +23,7 @@ struct `LanguageBuilder tests` {
     expectNoDifference(
       language.grammar,
       Grammar {
-        Production("expression") { "value" }
+        Production("g0__expression") { "value" }
       }
     )
   }
@@ -60,7 +60,7 @@ struct `LanguageBuilder tests` {
     expectNoDifference(
       language.grammar,
       Grammar {
-        Production("expression") { "value" }
+        Production("g0__expression") { "value" }
       }
     )
   }
