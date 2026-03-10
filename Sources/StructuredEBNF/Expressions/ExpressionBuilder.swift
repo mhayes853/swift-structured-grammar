@@ -21,7 +21,7 @@ public enum ExpressionBuilder {
   }
 
   public static func buildOptional(_ component: Expression?) -> Expression {
-    component ?? .empty
+    component.expression
   }
 
   public static func buildEither(first component: Expression) -> Expression {

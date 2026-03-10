@@ -11,13 +11,13 @@ struct `ChoiceBuilder tests` {
       Ref("identifier")
     }.expression
 
-    expectNoDifference(expression, .choice([.terminal("value"), .ref("identifier")]))
+    expectNoDifference(expression, Expression.choice([.terminal("value"), .ref("identifier")]))
   }
 
   @Test
   func `Choice Builder Accepts Single Alternative`() {
     let expression = Choice { "value" }.expression
-    expectNoDifference(expression, .choice([.terminal("value")]))
+    expectNoDifference(expression, Expression.choice([.terminal("value")]))
   }
 
   @Test
@@ -30,7 +30,7 @@ struct `ChoiceBuilder tests` {
       }
     }.expression
 
-    expectNoDifference(expression, .choice([.terminal("value")]))
+    expectNoDifference(expression, Expression.choice([.terminal("value")]))
   }
 
   @Test
@@ -44,6 +44,6 @@ struct `ChoiceBuilder tests` {
       }
     }.expression
 
-    expectNoDifference(expression, .choice([.ref("identifier")]))
+    expectNoDifference(expression, Expression.choice([.ref("identifier")]))
   }
 }

@@ -7,7 +7,7 @@ Type-Safe EBNF grammar creation.
 ```swift
 let grammar = Grammar {
     Production("num") {
-        Optional {
+        OptionalExpression {
             Choice {
                 "-"
                 "+"

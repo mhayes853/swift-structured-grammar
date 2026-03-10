@@ -1,4 +1,4 @@
-public struct Optional: Hashable, Sendable, ConvertibleToExpression {
+public struct OptionalExpression: Hashable, Sendable, ConvertibleToExpression {
   public let expression: Expression
 
   public init(_ expression: some ConvertibleToExpression) {

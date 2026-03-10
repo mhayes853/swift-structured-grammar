@@ -16,15 +16,15 @@ public enum ChoiceBuilder {
     component ?? [Expression]()
   }
 
+  public static func buildArray(_ components: [[Expression]]) -> [Expression] {
+    components.flatMap { $0 }
+  }
+
   public static func buildEither(first component: [Expression]) -> [Expression] {
     component
   }
 
   public static func buildEither(second component: [Expression]) -> [Expression] {
     component
-  }
-
-  public static func buildArray(_ components: [[Expression]]) -> [Expression] {
-    components.flatMap { $0 }
   }
 }
