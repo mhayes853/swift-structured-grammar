@@ -18,6 +18,23 @@ struct `Grammar tests` {
   }
 
   @Test
+  func `Sequence Initializer Builds Grammar With Last Wins Semantics`() {
+    let grammar = Grammar([
+      Production("expression") { "first" },
+      Production("term") { "value" },
+      Production("expression") { "second" }
+    ])
+
+    expectNoDifference(
+      Array(grammar.productions),
+      [
+        Production("expression") { "second" },
+        Production("term") { "value" }
+      ]
+    )
+  }
+
+  @Test
   func `Productions Supports Identifier Subscript Reads`() {
     let grammar = Grammar {
       Production("expression") { "value" }

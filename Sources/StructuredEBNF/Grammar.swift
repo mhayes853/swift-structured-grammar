@@ -16,6 +16,17 @@ public struct Grammar: Hashable, Sendable {
     self.productionsByIdentifier = [Identifier: Production]()
   }
 
+  public init(_ production: Production) {
+    self.init(CollectionOfOne(production))
+  }
+
+  public init(_ productions: some Sequence<Production>) {
+    self.init()
+    for production in productions {
+      self.append(production)
+    }
+  }
+
   public init(@GrammarBuilder _ content: () -> Grammar) {
     self = content()
   }
