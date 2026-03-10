@@ -13,21 +13,22 @@ struct `ConcatenateLanguages tests` {
       }
       Grammar {
         Production("factor") { Ref("term") }
-        Production("expression") { "second" }
+        Production("statement") { "second" }
       }
     }
 
     expectNoDifference(
-      language.language.grammar,
+      language.language.grammar(),
       Grammar {
-        Production("g0__expression") { "first" }
-        Production("g0__term") { "value" }
-        Production("g1__factor") { Ref("g1__term") }
-        Production("g1__expression") { "second" }
+        Production("expression") { "first" }
+        Production("term") { "value" }
+        Production("factor") { Ref("term") }
+        Production("statement") { "second" }
         Production("l0__start") {
-          Ref("g0__expression")
-          Ref("g1__factor")
+          Ref("expression")
+          Ref("factor")
         }
+        Production(.root) { Ref("l0__start") }
       }
     )
   }
@@ -47,10 +48,11 @@ struct `ConcatenateLanguages tests` {
     }
 
     expectNoDifference(
-      language.language.grammar,
+      language.language.grammar(),
       Grammar {
-        Production("g0__expression") { "value" }
-        Production("l0__start") { Ref("g0__expression") }
+        Production("expression") { "value" }
+        Production("l0__start") { Ref("expression") }
+        Production(.root) { Ref("l0__start") }
       }
     )
   }

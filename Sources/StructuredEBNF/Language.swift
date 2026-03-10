@@ -36,13 +36,24 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     Self.union(languages)
   }
 
-  public var grammar: Grammar {
+  public func grammar(startingIdentifier: Identifier = .root) -> Grammar {
     var resolver = Resolver()
-    return resolver.resolve(self).grammar
+    let resolved = resolver.resolve(self)
+    guard
+      resolved.synthesizedEntry,
+      let entryIdentifier = resolved.entryIdentifier,
+      entryIdentifier != startingIdentifier
+    else {
+      return resolved.grammar
+    }
+
+    var grammar = resolved.grammar
+    grammar.append(Production(startingIdentifier) { Ref(entryIdentifier) })
+    return grammar
   }
 
   public func format() -> String {
-    self.grammar.formatted()
+    self.grammar().formatted()
   }
 
   init(grammar: Grammar) {
@@ -56,21 +67,23 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
   private struct ResolvedLanguage {
     let grammar: Grammar
     let entryIdentifier: Identifier?
+    let synthesizedEntry: Bool
   }
 
   private struct Resolver {
-    var nextGrammarNamespace = 0
     var nextLanguageNamespace = 0
 
     mutating func resolve(_ language: Language) -> ResolvedLanguage {
       switch language.operation {
       case .empty:
-        return ResolvedLanguage(grammar: Grammar(), entryIdentifier: nil)
+        return ResolvedLanguage(grammar: Grammar(), entryIdentifier: nil, synthesizedEntry: false)
 
       case let .grammar(grammar):
-        let namespace = self.nextGrammarNamespace
-        self.nextGrammarNamespace += 1
-        return self.namespace(grammar: grammar, namespace: "g\(namespace)")
+        return ResolvedLanguage(
+          grammar: grammar,
+          entryIdentifier: grammar.productions.first?.identifier,
+          synthesizedEntry: false
+        )
 
       case let .concatenate(languages):
         let resolved = languages.map { self.resolve($0) }
@@ -80,7 +93,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         }
         let entryIdentifiers = resolved.compactMap(\.entryIdentifier)
         guard !entryIdentifiers.isEmpty else {
-          return ResolvedLanguage(grammar: grammar, entryIdentifier: nil)
+          return ResolvedLanguage(grammar: grammar, entryIdentifier: nil, synthesizedEntry: false)
         }
         let entryIdentifier = self.nextLanguageIdentifier()
         grammar.append(Production(entryIdentifier) {
@@ -88,7 +101,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
             Ref(identifier)
           }
         })
-        return ResolvedLanguage(grammar: grammar, entryIdentifier: entryIdentifier)
+        return ResolvedLanguage(grammar: grammar, entryIdentifier: entryIdentifier, synthesizedEntry: true)
 
       case let .union(languages):
         let resolved = languages.map { self.resolve($0) }
@@ -98,7 +111,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         }
         let entryIdentifiers = resolved.compactMap(\.entryIdentifier)
         guard !entryIdentifiers.isEmpty else {
-          return ResolvedLanguage(grammar: grammar, entryIdentifier: nil)
+          return ResolvedLanguage(grammar: grammar, entryIdentifier: nil, synthesizedEntry: false)
         }
         let entryIdentifier = self.nextLanguageIdentifier()
         if entryIdentifiers.count == 1 {
@@ -106,7 +119,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         } else {
           grammar.append(Production(entryIdentifier, Expression.choice(entryIdentifiers.map(Expression.ref))))
         }
-        return ResolvedLanguage(grammar: grammar, entryIdentifier: entryIdentifier)
+        return ResolvedLanguage(grammar: grammar, entryIdentifier: entryIdentifier, synthesizedEntry: true)
       }
     }
 
@@ -116,43 +129,5 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
       return Identifier(rawValue: "l\(namespace)__start")!
     }
 
-    private mutating func namespace(grammar: Grammar, namespace: String) -> ResolvedLanguage {
-      let namespacedProductions = grammar.productions.map { production in
-        let identifier = self.qualify(production.identifier, namespace: namespace)
-        return Production(identifier, self.namespace(expression: production.expression, namespace: namespace))
-      }
-      let namespacedGrammar = Grammar(namespacedProductions)
-      return ResolvedLanguage(
-        grammar: namespacedGrammar,
-        entryIdentifier: namespacedProductions.first?.identifier
-      )
-    }
-
-    private func namespace(expression: Expression, namespace: String) -> Expression {
-      switch expression {
-      case .empty:
-        .empty
-      case let .concat(expressions):
-        .concat(expressions.map { self.namespace(expression: $0, namespace: namespace) })
-      case let .choice(expressions):
-        .choice(expressions.map { self.namespace(expression: $0, namespace: namespace) })
-      case let .optional(expression):
-        .optional(self.namespace(expression: expression, namespace: namespace))
-      case let .zeroOrMore(expression):
-        .zeroOrMore(self.namespace(expression: expression, namespace: namespace))
-      case let .group(expression):
-        .group(self.namespace(expression: expression, namespace: namespace))
-      case let .ref(identifier):
-        .ref(self.qualify(identifier, namespace: namespace))
-      case let .special(special):
-        .special(special)
-      case let .terminal(terminal):
-        .terminal(terminal)
-      }
-    }
-
-    private func qualify(_ identifier: Identifier, namespace: String) -> Identifier {
-      Identifier(rawValue: "\(namespace)__\(identifier.rawValue)")!
-    }
   }
 }

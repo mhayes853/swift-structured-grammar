@@ -8,7 +8,7 @@ struct `Language tests` {
   func `Empty Initialization Resolves To Empty Grammar`() {
     let language = Language()
 
-    expectNoDifference(language.grammar, Grammar())
+    expectNoDifference(language.grammar(), Grammar())
   }
 
   @Test
@@ -17,12 +17,7 @@ struct `Language tests` {
       Production("expression") { "value" }
     }
 
-    expectNoDifference(
-      grammar.language.grammar,
-      Grammar {
-        Production("g0__expression") { "value" }
-      }
-    )
+    expectNoDifference(grammar.language.grammar(), grammar)
   }
 
   @Test
@@ -31,6 +26,58 @@ struct `Language tests` {
       Production("expression") { "value" }
     }.language
 
-    expectNoDifference(language.format(), "g0__expression = \"value\" ;")
+    expectNoDifference(language.format(), "expression = \"value\" ;")
+  }
+
+  @Test
+  func `Grammar Uses Default Root Identifier When Language Synthesizes Start Production`() {
+    let language = ConcatenateLanguages {
+      Grammar {
+        Production("expression") { "value" }
+      }
+      Grammar {
+        Production("statement") { "other" }
+      }
+    }.language
+
+    expectNoDifference(
+      language.grammar(),
+      Grammar {
+        Production("expression") { "value" }
+        Production("statement") { "other" }
+        Production("l0__start") {
+          Ref("expression")
+          Ref("statement")
+        }
+        Production(.root) { Ref("l0__start") }
+      }
+    )
+  }
+
+  @Test
+  func `Grammar Supports Custom Starting Identifier`() {
+    let language = Union {
+      Grammar {
+        Production("expression") { "value" }
+      }
+      Grammar {
+        Production("statement") { "other" }
+      }
+    }.language
+
+    expectNoDifference(
+      language.grammar(startingIdentifier: "entry"),
+      Grammar {
+        Production("expression") { "value" }
+        Production("statement") { "other" }
+        Production("l0__start") {
+          Choice {
+            Ref("expression")
+            Ref("statement")
+          }
+        }
+        Production("entry") { Ref("l0__start") }
+      }
+    )
   }
 }

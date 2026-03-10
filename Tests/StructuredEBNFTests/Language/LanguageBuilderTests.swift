@@ -9,7 +9,7 @@ struct `LanguageBuilder tests` {
     let language = Language {
     }
 
-    expectNoDifference(language.grammar, Grammar())
+    expectNoDifference(language.grammar(), Grammar())
   }
 
   @Test
@@ -21,9 +21,9 @@ struct `LanguageBuilder tests` {
     }
 
     expectNoDifference(
-      language.grammar,
+      language.grammar(),
       Grammar {
-        Production("g0__expression") { "value" }
+        Production("expression") { "value" }
       }
     )
   }
@@ -39,7 +39,7 @@ struct `LanguageBuilder tests` {
       }
     }
 
-    expectNoDifference(language.grammar, Grammar())
+    expectNoDifference(language.grammar(), Grammar())
   }
 
   @Test
@@ -58,9 +58,9 @@ struct `LanguageBuilder tests` {
     }
 
     expectNoDifference(
-      language.grammar,
+      language.grammar(),
       Grammar {
-        Production("g0__expression") { "value" }
+        Production("expression") { "value" }
       }
     )
   }

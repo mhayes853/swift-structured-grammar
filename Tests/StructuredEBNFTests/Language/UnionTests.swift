@@ -5,29 +5,32 @@ import StructuredEBNF
 @Suite
 struct `Union tests` {
   @Test
-  func `Union Combines Duplicate Productions With Choice`() {
+  func `Union Builds Choice Over Distinct Grammar Entry Productions`() {
     let language = Union {
       Grammar {
         Production("expression") { "first" }
         Production("term") { "value" }
       }
       Grammar {
-        Production("expression") { "second" }
+        Production("statement") { "second" }
         Production("factor") { Ref("term") }
       }
     }
 
     expectNoDifference(
-      language.language.grammar,
+      language.language.grammar(),
       Grammar {
-        Production("g0__expression") { "first" }
-        Production("g0__term") { "value" }
-        Production("g1__expression") { "second" }
-        Production("g1__factor") { Ref("g1__term") }
-        Production("l0__start", Expression.choice([
-          .ref("g0__expression"),
-          .ref("g1__expression")
-        ]))
+        Production("expression") { "first" }
+        Production("term") { "value" }
+        Production("statement") { "second" }
+        Production("factor") { Ref("term") }
+        Production("l0__start") {
+          Choice {
+            Ref("expression")
+            Ref("statement")
+          }
+        }
+        Production(.root) { Ref("l0__start") }
       }
     )
   }
@@ -48,10 +51,11 @@ struct `Union tests` {
     }
 
     expectNoDifference(
-      language.language.grammar,
+      language.language.grammar(),
       Grammar {
-        Production("g0__expression") { "value" }
-        Production("l0__start") { Ref("g0__expression") }
+        Production("expression") { "value" }
+        Production("l0__start") { Ref("expression") }
+        Production(.root) { Ref("l0__start") }
       }
     )
   }
