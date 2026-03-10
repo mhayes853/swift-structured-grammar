@@ -1,4 +1,6 @@
 public struct Identifier: Hashable, Sendable, RawRepresentable, ExpressibleByStringLiteral {
+  public static let root = Identifier(rawValue: "root")!
+
   public struct InvalidIdentifierError: Error, Equatable, Sendable {
     public let rawValue: String
   }
