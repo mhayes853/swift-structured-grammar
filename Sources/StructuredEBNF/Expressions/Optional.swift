@@ -4,4 +4,8 @@ public struct Optional: Hashable, Sendable, ConvertibleToExpression {
   public init(_ expression: some ConvertibleToExpression) {
     self.expression = .optional(expression.expression)
   }
+
+  public init(@ExpressionBuilder _ content: () -> Expression) {
+    self.expression = .optional(content())
+  }
 }

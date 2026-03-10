@@ -4,4 +4,8 @@ public struct Concat: Hashable, Sendable, ConvertibleToExpression {
   public init(_ expression: some ConvertibleToExpression) {
     self.expression = .concat([expression.expression])
   }
+
+  public init(@ExpressionBuilder _ content: () -> Expression) {
+    self.expression = content()
+  }
 }

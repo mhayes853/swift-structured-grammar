@@ -6,10 +6,7 @@ import StructuredEBNF
 struct `OneOrMore tests` {
   @Test
   func `Direct Initialization Lowers To Canonical Concat And Zero Or More`() {
-    let expression = OneOrMore(Terminal("value")).expression
-    expectNoDifference(
-      expression,
-      .concat([.terminal("value"), .zeroOrMore(.terminal("value"))])
-    )
+    let expression = OneOrMore { "value" }.expression
+    expectNoDifference(expression, .concat([.terminal("value"), .zeroOrMore(.terminal("value"))]))
   }
 }
