@@ -6,7 +6,7 @@ import StructuredEBNF
 struct `Grammar tests` {
   @Test
   func `Productions Preserves Order And Supports Indexing`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
@@ -21,7 +21,7 @@ struct `Grammar tests` {
 
   @Test
   func `Sequence Initializer Builds Grammar With Last Wins Semantics`() {
-    let grammar = Grammar([
+    let grammar = Grammar(startingIdentifier: "expression", [
       Production("expression") { "first" },
       Production("term") { "value" },
       Production("expression") { "second" }
@@ -29,7 +29,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "second" }
         Production("term") { "value" }
       }
@@ -38,7 +38,7 @@ struct `Grammar tests` {
 
   @Test
   func `Productions Supports Identifier Subscript Reads`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
@@ -53,7 +53,7 @@ struct `Grammar tests` {
 
   @Test
   func `Contains Production Reports Presence By Identifier`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
@@ -64,8 +64,47 @@ struct `Grammar tests` {
   }
 
   @Test
+  func `Mutating Starting Identifier To Existing Production Reorders Start`() {
+    var grammar = Grammar(startingIdentifier: "expression") {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    grammar.startingIdentifier = "term"
+
+    expectNoDifference(grammar.startingIdentifier, "term")
+    expectNoDifference(
+      grammar,
+      Grammar(startingIdentifier: "term") {
+        Production("expression") { "value" }
+        Production("term") { Ref("expression") }
+      }
+    )
+  }
+
+  @Test
+  func `Mutating Starting Identifier To Missing Production Inserts Empty Production`() {
+    var grammar = Grammar(startingIdentifier: "expression") {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    grammar.startingIdentifier = "factor"
+
+    expectNoDifference(grammar.startingIdentifier, "factor")
+    expectNoDifference(
+      grammar,
+      Grammar(startingIdentifier: "factor") {
+        Production("expression") { "value" }
+        Production("term") { Ref("expression") }
+      }
+    )
+    expectNoDifference(grammar["factor"], Production("factor") { EmptyExpression() })
+  }
+
+  @Test
   func `Remove Production Identifier Removes Matching Production`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
       Production("factor") { Ref("term") }
@@ -75,7 +114,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("factor") { Ref("term") }
       }
@@ -85,7 +124,7 @@ struct `Grammar tests` {
 
   @Test
   func `Remove Production Identifier Is No Op For Missing Identifier`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
@@ -94,7 +133,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("term") { Ref("expression") }
       }
@@ -103,21 +142,21 @@ struct `Grammar tests` {
 
   @Test
   func `Remove All Clears Grammar`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
 
     grammar.removeAll()
 
-    expectNoDifference(grammar, Grammar())
-    expectNoDifference(grammar.containsProduction(identifier: "expression"), false)
+    expectNoDifference(grammar, Grammar(startingIdentifier: "expression", [Production("expression") { EmptyExpression() }]))
+    expectNoDifference(grammar.containsProduction(identifier: "expression"), true)
     expectNoDifference(grammar.containsProduction(identifier: "term"), false)
   }
 
   @Test
   func `Remove All Where Removes Matching Productions And Preserves Remaining Order`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
       Production("factor") { Ref("term") }
@@ -129,7 +168,8 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
+        Production("expression") { EmptyExpression() }
         Production("term") { Ref("expression") }
       }
     )
@@ -137,7 +177,7 @@ struct `Grammar tests` {
 
   @Test
   func `Replacing Production Overwrites Existing Production Without Mutating Original`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
@@ -149,14 +189,14 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("term", Ref("expression"))
       }
     )
     expectNoDifference(
       replaced,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "updated" }
         Production("term", Ref("expression"))
       }
@@ -165,7 +205,7 @@ struct `Grammar tests` {
 
   @Test
   func `Replacing Production Inserts Missing Production At End`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
@@ -176,7 +216,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       replaced,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("term") { Ref("expression") }
         Production("factor") { Ref("term") }
@@ -191,26 +231,28 @@ struct `Grammar tests` {
     let replaced = grammar.replacingProduction(named: "factor", with: "value")
 
     expectNoDifference(replaced["factor"]?.identifier, "factor")
-    expectNoDifference(replaced, Grammar { Production("factor") { "value" } })
+    expectNoDifference(
+      replaced,
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { EmptyExpression() }
+        Production("factor") { "value" }
+      }
+    )
   }
 
   @Test
   func `Appending Production Returns New Grammar Without Mutating Original`() {
-    let grammar = Grammar {
-      Production("expression") { "value" }
-    }
+    let grammar = Grammar(Production("expression") { "value" })
 
     let appended = grammar.appending(Production("term") { Ref("expression") })
 
     expectNoDifference(
       grammar,
-      Grammar {
-        Production("expression") { "value" }
-      }
+      Grammar(Production("expression") { "value" })
     )
     expectNoDifference(
       appended,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("term") { Ref("expression") }
       }
@@ -219,15 +261,13 @@ struct `Grammar tests` {
 
   @Test
   func `Append Inserts Missing Production At End`() {
-    var grammar = Grammar {
-      Production("expression") { "value" }
-    }
+    var grammar = Grammar(Production("expression") { "value" })
 
     grammar.append(Production("term") { Ref("expression") })
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("term") { Ref("expression") }
       }
@@ -236,7 +276,7 @@ struct `Grammar tests` {
 
   @Test
   func `Append Overwrites Existing Production Using Production Identifier`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "first" }
       Production("term") { "value" }
     }
@@ -245,7 +285,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "second" }
         Production("term") { "value" }
       }
@@ -254,9 +294,7 @@ struct `Grammar tests` {
 
   @Test
   func `Appending Contents Of Returns New Grammar Without Mutating Original`() {
-    let grammar = Grammar {
-      Production("expression") { "value" }
-    }
+    let grammar = Grammar(Production("expression") { "value" })
 
     let appended = grammar.appending(contentsOf: [
       Production("term") { Ref("expression") },
@@ -265,13 +303,11 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
-        Production("expression") { "value" }
-      }
+      Grammar(Production("expression") { "value" })
     )
     expectNoDifference(
       appended,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "value" }
         Production("term") { Ref("expression") }
         Production("factor") { Ref("term") }
@@ -281,7 +317,7 @@ struct `Grammar tests` {
 
   @Test
   func `Append Contents Of Applies Last Wins Semantics In Sequence Order`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "first" }
       Production("term") { "value" }
     }
@@ -293,7 +329,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "second" }
         Production("term") { "value" }
         Production("factor") { Ref("term") }
@@ -303,11 +339,11 @@ struct `Grammar tests` {
 
   @Test
   func `Merge Overwrites Existing Productions And Appends New Ones`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "first" }
       Production("term") { "value" }
     }
-    let other = Grammar {
+    let other = Grammar(startingIdentifier: "factor") {
       Production("factor") { Ref("term") }
       Production("expression") { "second" }
     }
@@ -316,7 +352,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "second" }
         Production("term") { "value" }
         Production("factor") { Ref("term") }
@@ -326,20 +362,18 @@ struct `Grammar tests` {
 
   @Test
   func `Merge Preserves Original Slot Of Overwritten Production`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "first" }
       Production("term") { "value" }
       Production("factor") { Ref("term") }
     }
-    let other = Grammar {
-      Production("term") { Ref("expression") }
-    }
+    let other = Grammar(Production("term") { Ref("expression") })
 
     grammar.merge(other)
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "first" }
         Production("term") { Ref("expression") }
         Production("factor") { Ref("term") }
@@ -349,7 +383,7 @@ struct `Grammar tests` {
 
   @Test
   func `Homomorph Replaces Matching Terminal Across Grammar`() {
-    var grammar = Grammar {
+    var grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") {
         "+"
         Ref("term")
@@ -363,7 +397,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       grammar,
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") {
           "-"
           Ref("term")
@@ -377,85 +411,75 @@ struct `Grammar tests` {
 
   @Test
   func `Homomorph Map Leaves Unmatched Terminals Unchanged`() {
-    let grammar = Grammar {
-      Production("expression") {
-        Choice {
-          "+"
-          "*"
-        }
+    let production = Production("expression") {
+      Choice {
+        "+"
+        "*"
       }
     }
+    let grammar = Grammar(production)
 
     let homomorphed = grammar.homomorphMapped { terminal in
       if terminal == "+" {
-        "-"
+        return "-"
       } else {
-        nil
+        return nil
       }
     }
+    let expected = Grammar(Production("expression") {
+      Choice {
+        "-"
+        "*"
+      }
+    })
 
-    expectNoDifference(
-      homomorphed,
-      Grammar {
-        Production("expression") {
+    expectNoDifference(homomorphed, expected)
+  }
+
+  @Test
+  func `Homomorph Map Rewrites Nested Expressions`() {
+    let production = Production("expression") {
+      OptionalExpression {
+        "+"
+      }
+      ZeroOrMore {
+        Group {
+          Choice {
+            "+"
+            "*"
+          }
+        }
+      }
+    }
+    let grammar = Grammar(production)
+
+    let homomorphed = grammar.homomorphMapped { terminal in
+      if terminal == "+" {
+        return "-"
+      } else {
+        return nil
+      }
+    }
+    let expected = Grammar(Production("expression") {
+      OptionalExpression {
+        "-"
+      }
+      ZeroOrMore {
+        Group {
           Choice {
             "-"
             "*"
           }
         }
       }
-    )
-  }
+    })
 
-  @Test
-  func `Homomorph Map Rewrites Nested Expressions`() {
-    let grammar = Grammar {
-      Production("expression") {
-        OptionalExpression {
-          "+"
-        }
-        ZeroOrMore {
-          Group {
-            Choice {
-              "+"
-              "*"
-            }
-          }
-        }
-      }
-    }
-
-    let homomorphed = grammar.homomorphMapped { terminal in
-      if terminal == "+" {
-        "-"
-      } else {
-        nil
-      }
-    }
-
-    expectNoDifference(
-      homomorphed,
-      Grammar {
-        Production("expression") {
-          OptionalExpression {
-            "-"
-          }
-          ZeroOrMore {
-            Group {
-              Choice {
-                "-"
-                "*"
-              }
-            }
-          }
-        }
-      }
-    )
+    expectNoDifference(homomorphed, expected)
   }
 
   @Test
   func `Homomorph Map Handles Empty ConcatanateExpressions Ref Special And Terminal Cases`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "epsilon") {
       Production("epsilon") {
         EmptyExpression()
       }
@@ -478,7 +502,7 @@ struct `Grammar tests` {
 
     expectNoDifference(
       homomorphed,
-      Grammar {
+      Grammar(startingIdentifier: "epsilon") {
         Production("epsilon") {
           EmptyExpression()
         }
@@ -487,15 +511,15 @@ struct `Grammar tests` {
             Special("identifier")
             Ref("epsilon")
             "b"
-          }
         }
+      }
       }
     )
   }
 
   @Test
   func `Formats Non Trivial Grammar Exactly`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "sign") {
       Production("sign") {
         OptionalExpression {
           Choice {

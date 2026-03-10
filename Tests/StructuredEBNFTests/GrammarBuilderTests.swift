@@ -6,60 +6,51 @@ import StructuredEBNF
 struct `GrammarBuilder tests` {
   @Test
   func `Builds Empty Grammar`() {
-    let grammar = Grammar {}
-    expectNoDifference(Array(grammar.productions), [Production]())
+    let grammar = Grammar()
+    expectNoDifference(grammar.startingIdentifier, .root)
+    expectNoDifference(grammar, Grammar(Production(.root) { EmptyExpression() }))
   }
 
   @Test
   func `Builds Grammar From Productions`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "value" }
       Production("term") { Ref("expression") }
     }
 
-    expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "value" },
-        Production("term", Ref("expression"))
-      ]
-    )
+    expectNoDifference(grammar.startingIdentifier, "expression")
+    expectNoDifference(grammar, Grammar(startingIdentifier: "expression") {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    })
   }
 
   @Test
   func `Builds Grammar From Nested Grammar Fragments`() {
-    let fragment = Grammar {
-      Production("expression") { "value" }
-    }
+    let fragment = Grammar(Production("expression") { "value" })
 
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       fragment
       Production("term") { Ref("expression") }
     }
 
-    expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "value" },
-        Production("term", Ref("expression"))
-      ]
-    )
+    expectNoDifference(grammar, Grammar(startingIdentifier: "expression") {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    })
   }
 
   @Test
   func `Duplicate Identifiers Use Last Wins Semantics`() {
-    let grammar = Grammar {
+    let grammar = Grammar(startingIdentifier: "expression") {
       Production("expression") { "first" }
       Production("term") { "value" }
       Production("expression") { "second" }
     }
 
-    expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "second" },
-        Production("term") { "value" }
-      ]
-    )
+    expectNoDifference(grammar, Grammar(startingIdentifier: "expression") {
+      Production("expression") { "second" }
+      Production("term") { "value" }
+    })
   }
 }

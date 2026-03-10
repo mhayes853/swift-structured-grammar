@@ -7,11 +7,11 @@ struct `ConcatenateLanguages tests` {
   @Test
   func `ConcatenateLanguages Merges Grammars In Encounter Order`() {
     let language = ConcatenateLanguages {
-      Grammar {
+      Grammar(startingIdentifier: "expression") {
         Production("expression") { "first" }
         Production("term") { "value" }
       }
-      Grammar {
+      Grammar(startingIdentifier: "factor") {
         Production("factor") { Ref("term") }
         Production("statement") { "second" }
       }
@@ -19,7 +19,8 @@ struct `ConcatenateLanguages tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar {
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { Ref("l0__start") }
         Production("expression") { "first" }
         Production("term") { "value" }
         Production("factor") { Ref("term") }
@@ -28,7 +29,6 @@ struct `ConcatenateLanguages tests` {
           Ref("expression")
           Ref("factor")
         }
-        Production(.root) { Ref("l0__start") }
       }
     )
   }
@@ -37,22 +37,18 @@ struct `ConcatenateLanguages tests` {
   func `ConcatenateLanguages Builder Supports Optional Languages`() {
     let includeExtra = false
     let language = ConcatenateLanguages {
-      Grammar {
-        Production("expression") { "value" }
-      }
+      Grammar(Production("expression") { "value" })
       if includeExtra {
-        Grammar {
-          Production("term") { "other" }
-        }
+        Grammar(Production("term") { "other" })
       }
     }
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar {
+      Grammar(startingIdentifier: .root) {
+        Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("l0__start") { Ref("expression") }
-        Production(.root) { Ref("l0__start") }
       }
     )
   }

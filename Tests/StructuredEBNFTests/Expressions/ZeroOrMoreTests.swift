@@ -6,13 +6,12 @@ import StructuredEBNF
 struct `ZeroOrMore tests` {
   @Test
   func `Formats As Repetition`() {
-    let grammar = Grammar {
-      Production("start") {
-        ZeroOrMore {
-          "a"
-        }
+    let production = Production("start") {
+      ZeroOrMore {
+        "a"
       }
     }
+    let grammar = Grammar(production)
 
     expectNoDifference(grammar.formatted(), "start = {\"a\"} ;")
   }

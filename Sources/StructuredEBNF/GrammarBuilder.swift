@@ -1,34 +1,30 @@
 @resultBuilder
 public enum GrammarBuilder {
-  public static func buildExpression(_ production: Production) -> Grammar {
-    Grammar(production)
+  public static func buildExpression(_ production: Production) -> [Production] {
+    [production]
   }
 
-  public static func buildExpression(_ grammar: Grammar) -> Grammar {
-    grammar
+  public static func buildExpression(_ grammar: Grammar) -> [Production] {
+    Array(grammar.productions)
   }
 
-  public static func buildBlock(_ components: Grammar...) -> Grammar {
-    components.reduce(into: Grammar()) { partialResult, grammar in
-      partialResult.merge(grammar)
-    }
+  public static func buildBlock(_ components: [Production]...) -> [Production] {
+    components.flatMap { $0 }
   }
 
-  public static func buildOptional(_ component: Grammar?) -> Grammar {
-    component ?? Grammar()
+  public static func buildOptional(_ component: [Production]?) -> [Production] {
+    component ?? [Production]()
   }
 
-  public static func buildEither(first component: Grammar) -> Grammar {
+  public static func buildEither(first component: [Production]) -> [Production] {
     component
   }
 
-  public static func buildEither(second component: Grammar) -> Grammar {
+  public static func buildEither(second component: [Production]) -> [Production] {
     component
   }
 
-  public static func buildArray(_ components: [Grammar]) -> Grammar {
-    components.reduce(into: Grammar()) { partialResult, grammar in
-      partialResult.merge(grammar)
-    }
+  public static func buildArray(_ components: [[Production]]) -> [Production] {
+    components.flatMap { $0 }
   }
 }

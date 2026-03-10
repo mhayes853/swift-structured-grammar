@@ -6,14 +6,13 @@ import StructuredEBNF
 struct `Group tests` {
   @Test
   func `Formats As Parenthesized Expression`() {
-    let grammar = Grammar {
-      Production("start") {
-        Group {
-          "a"
-          Ref("target")
-        }
+    let production = Production("start") {
+      Group {
+        "a"
+        Ref("target")
       }
     }
+    let grammar = Grammar(production)
 
     expectNoDifference(grammar.formatted(), "start = (\"a\", target) ;")
   }

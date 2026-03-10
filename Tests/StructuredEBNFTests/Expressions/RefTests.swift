@@ -6,11 +6,8 @@ import StructuredEBNF
 struct `Ref tests` {
   @Test
   func `Formats As Referenced Identifier`() {
-    let grammar = Grammar {
-      Production("start") {
-        Ref("target")
-      }
-    }
+    let production = Production("start") { Ref("target") }
+    let grammar = Grammar(production)
 
     expectNoDifference(grammar.formatted(), "start = target ;")
   }

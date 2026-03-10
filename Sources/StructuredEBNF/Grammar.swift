@@ -1,6 +1,11 @@
 // MARK: - Grammar
 
 public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
+  public var startingIdentifier: Identifier {
+    didSet {
+      self.updateStartingIdentifier(from: oldValue)
+    }
+  }
   private var orderedIdentifiers: [Identifier]
   private var productionsByIdentifier: [Identifier: Production]
 
@@ -16,29 +21,34 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   }
 
   public init() {
-    self.orderedIdentifiers = [Identifier]()
-    self.productionsByIdentifier = [Identifier: Production]()
+    self.init(Production(.root) { EmptyExpression() })
   }
 
   public init(_ production: Production) {
-    self.init(CollectionOfOne(production))
+    self.init(startingIdentifier: production.identifier, CollectionOfOne(production))
   }
 
-  public init(_ productions: some Sequence<Production>) {
-    self.init()
+  public init(startingIdentifier: Identifier, _ productions: some Sequence<Production>) {
+    self.startingIdentifier = startingIdentifier
+    self.orderedIdentifiers = [startingIdentifier]
+    self.productionsByIdentifier = [
+      startingIdentifier: Production(startingIdentifier) { EmptyExpression() }
+    ]
     for production in productions {
       self.append(production)
     }
   }
 
-  public init(@GrammarBuilder _ content: () -> Grammar) {
-    self = content()
+  public init(startingIdentifier: Identifier, @GrammarBuilder _ content: () -> [Production]) {
+    self.init(startingIdentifier: startingIdentifier, content())
   }
 
   private init(
+    startingIdentifier: Identifier,
     orderedIdentifiers: [Identifier],
     productionsByIdentifier: [Identifier: Production]
   ) {
+    self.startingIdentifier = startingIdentifier
     self.orderedIdentifiers = orderedIdentifiers
     self.productionsByIdentifier = productionsByIdentifier
   }
@@ -82,13 +92,19 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   }
 
   public mutating func removeProduction(identifier: Identifier) {
+    if identifier == self.startingIdentifier {
+      self.productionsByIdentifier[identifier] = Production(identifier) { EmptyExpression() }
+      return
+    }
     self.orderedIdentifiers.removeAll { $0 == identifier }
     self.productionsByIdentifier[identifier] = nil
   }
 
   public mutating func removeAll() {
-    self.orderedIdentifiers.removeAll()
-    self.productionsByIdentifier.removeAll()
+    self.orderedIdentifiers = [self.startingIdentifier]
+    self.productionsByIdentifier = [
+      self.startingIdentifier: Production(self.startingIdentifier) { EmptyExpression() }
+    ]
   }
 
   public mutating func removeAll(where shouldBeRemoved: (Production) -> Bool) {
@@ -101,6 +117,14 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
 
     self.orderedIdentifiers.removeAll { removedIdentifiers.contains($0) }
     self.productionsByIdentifier = self.productionsByIdentifier.filter { !removedIdentifiers.contains($0.key) }
+    if removedIdentifiers.contains(self.startingIdentifier) {
+      self.productionsByIdentifier[self.startingIdentifier] = Production(self.startingIdentifier) {
+        EmptyExpression()
+      }
+      if !self.orderedIdentifiers.contains(self.startingIdentifier) {
+        self.orderedIdentifiers.insert(self.startingIdentifier, at: 0)
+      }
+    }
   }
 
   public mutating func replaceProduction(
@@ -172,7 +196,22 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
 
   private mutating func appendIdentifierIfNeeded(_ identifier: Identifier) {
     guard !self.orderedIdentifiers.contains(identifier) else { return }
-    self.orderedIdentifiers.append(identifier)
+    if identifier == self.startingIdentifier {
+      self.orderedIdentifiers.insert(identifier, at: 0)
+    } else {
+      self.orderedIdentifiers.append(identifier)
+    }
+  }
+
+  private mutating func updateStartingIdentifier(from oldValue: Identifier) {
+    guard self.startingIdentifier != oldValue else { return }
+    if self.productionsByIdentifier[self.startingIdentifier] == nil {
+      self.productionsByIdentifier[self.startingIdentifier] = Production(self.startingIdentifier) {
+        EmptyExpression()
+      }
+    }
+    self.orderedIdentifiers.removeAll { $0 == self.startingIdentifier }
+    self.orderedIdentifiers.insert(self.startingIdentifier, at: 0)
   }
 }
 

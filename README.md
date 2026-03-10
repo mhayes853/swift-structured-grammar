@@ -5,7 +5,7 @@ Type-Safe EBNF grammar creation.
 ## Overview
 
 ```swift
-let grammar = Grammar {
+let grammar = Grammar(startingIdentifier: "num") {
     Production("num") {
         OptionalExpression {
             Choice {

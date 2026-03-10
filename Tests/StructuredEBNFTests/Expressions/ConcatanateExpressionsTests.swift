@@ -6,14 +6,13 @@ import StructuredEBNF
 struct `ConcatanateExpressions tests` {
   @Test
   func `Formats As Concatenation`() {
-    let grammar = Grammar {
-      Production("start") {
-        ConcatanateExpressions {
-          "a"
-          Ref("target")
-        }
+    let production = Production("start") {
+      ConcatanateExpressions {
+        "a"
+        Ref("target")
       }
     }
+    let grammar = Grammar(production)
 
     expectNoDifference(grammar.formatted(), "start = \"a\", target ;")
   }

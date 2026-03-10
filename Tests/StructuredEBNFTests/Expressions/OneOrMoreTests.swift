@@ -12,13 +12,12 @@ struct `OneOrMore tests` {
 
   @Test
   func `Formats As Canonical Concatenation And Repetition`() {
-    let grammar = Grammar {
-      Production("start") {
-        OneOrMore {
-          "value"
-        }
+    let production = Production("start") {
+      OneOrMore {
+        "value"
       }
     }
+    let grammar = Grammar(production)
 
     expectNoDifference(grammar.formatted(), "start = \"value\", {\"value\"} ;")
   }

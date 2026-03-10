@@ -47,9 +47,10 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
       return resolved.grammar
     }
 
-    var grammar = resolved.grammar
-    grammar.append(Production(startingIdentifier) { Ref(entryIdentifier) })
-    return grammar
+    return Grammar(
+      startingIdentifier: startingIdentifier,
+      resolved.grammar.productions + [Production(startingIdentifier) { Ref(entryIdentifier) }]
+    )
   }
 
   public func format() -> String {
@@ -87,13 +88,14 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
 
       case let .concatenate(languages):
         let resolved = languages.map { self.resolve($0) }
-        var grammar = Grammar()
-        for language in resolved {
-          grammar.merge(language.grammar)
-        }
         let entryIdentifiers = resolved.compactMap(\.entryIdentifier)
         guard !entryIdentifiers.isEmpty else {
-          return ResolvedLanguage(grammar: grammar, entryIdentifier: nil, synthesizedEntry: false)
+          return ResolvedLanguage(grammar: Grammar(), entryIdentifier: nil, synthesizedEntry: false)
+        }
+        var iterator = resolved.makeIterator()
+        var grammar = iterator.next()!.grammar
+        while let language = iterator.next() {
+          grammar.merge(language.grammar)
         }
         let entryIdentifier = self.nextLanguageIdentifier()
         grammar.append(Production(entryIdentifier) {
@@ -105,13 +107,14 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
 
       case let .union(languages):
         let resolved = languages.map { self.resolve($0) }
-        var grammar = Grammar()
-        for language in resolved {
-          grammar.merge(language.grammar)
-        }
         let entryIdentifiers = resolved.compactMap(\.entryIdentifier)
         guard !entryIdentifiers.isEmpty else {
-          return ResolvedLanguage(grammar: grammar, entryIdentifier: nil, synthesizedEntry: false)
+          return ResolvedLanguage(grammar: Grammar(), entryIdentifier: nil, synthesizedEntry: false)
+        }
+        var iterator = resolved.makeIterator()
+        var grammar = iterator.next()!.grammar
+        while let language = iterator.next() {
+          grammar.merge(language.grammar)
         }
         let entryIdentifier = self.nextLanguageIdentifier()
         if entryIdentifiers.count == 1 {

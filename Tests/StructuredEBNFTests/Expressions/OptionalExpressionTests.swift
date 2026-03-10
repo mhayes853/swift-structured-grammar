@@ -6,13 +6,12 @@ import StructuredEBNF
 struct `OptionalExpression tests` {
   @Test
   func `Formats As Optional Expression`() {
-    let grammar = Grammar {
-      Production("start") {
-        OptionalExpression {
-          "a"
-        }
+    let production = Production("start") {
+      OptionalExpression {
+        "a"
       }
     }
+    let grammar = Grammar(production)
 
     expectNoDifference(grammar.formatted(), "start = [\"a\"] ;")
   }
