@@ -28,11 +28,11 @@ struct `Grammar tests` {
     ])
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "second" },
+      grammar,
+      Grammar {
+        Production("expression") { "second" }
         Production("term") { "value" }
-      ]
+      }
     )
   }
 
@@ -74,11 +74,11 @@ struct `Grammar tests` {
     grammar.removeProduction(identifier: "term")
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "value" },
+      grammar,
+      Grammar {
+        Production("expression") { "value" }
         Production("factor") { Ref("term") }
-      ]
+      }
     )
     expectNoDifference(grammar.containsProduction(identifier: "term"), false)
   }
@@ -93,11 +93,11 @@ struct `Grammar tests` {
     grammar.removeProduction(identifier: "factor")
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "value" },
+      grammar,
+      Grammar {
+        Production("expression") { "value" }
         Production("term") { Ref("expression") }
-      ]
+      }
     )
   }
 
@@ -110,7 +110,7 @@ struct `Grammar tests` {
 
     grammar.removeAll()
 
-    expectNoDifference(Array(grammar.productions), [Production]())
+    expectNoDifference(grammar, Grammar())
     expectNoDifference(grammar.containsProduction(identifier: "expression"), false)
     expectNoDifference(grammar.containsProduction(identifier: "term"), false)
   }
@@ -128,10 +128,10 @@ struct `Grammar tests` {
     }
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
+      grammar,
+      Grammar {
         Production("term") { Ref("expression") }
-      ]
+      }
     )
   }
 
@@ -148,18 +148,18 @@ struct `Grammar tests` {
     )
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "value" },
+      grammar,
+      Grammar {
+        Production("expression") { "value" }
         Production("term", Ref("expression"))
-      ]
+      }
     )
     expectNoDifference(
-      Array(replaced.productions),
-      [
-        Production("expression") { "updated" },
+      replaced,
+      Grammar {
+        Production("expression") { "updated" }
         Production("term", Ref("expression"))
-      ]
+      }
     )
   }
 
@@ -175,12 +175,12 @@ struct `Grammar tests` {
     }
 
     expectNoDifference(
-      Array(replaced.productions),
-      [
-        Production("expression") { "value" },
-        Production("term") { Ref("expression") },
+      replaced,
+      Grammar {
+        Production("expression") { "value" }
+        Production("term") { Ref("expression") }
         Production("factor") { Ref("term") }
-      ]
+      }
     )
   }
 
@@ -191,7 +191,7 @@ struct `Grammar tests` {
     let replaced = grammar.replacingProduction(named: "factor", with: "value")
 
     expectNoDifference(replaced["factor"]?.identifier, "factor")
-    expectNoDifference(Array(replaced.productions), [Production("factor") { "value" }])
+    expectNoDifference(replaced, Grammar { Production("factor") { "value" } })
   }
 
   @Test
@@ -203,17 +203,17 @@ struct `Grammar tests` {
     let appended = grammar.appending(Production("term") { Ref("expression") })
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
+      grammar,
+      Grammar {
         Production("expression") { "value" }
-      ]
+      }
     )
     expectNoDifference(
-      Array(appended.productions),
-      [
-        Production("expression") { "value" },
+      appended,
+      Grammar {
+        Production("expression") { "value" }
         Production("term") { Ref("expression") }
-      ]
+      }
     )
   }
 
@@ -226,11 +226,11 @@ struct `Grammar tests` {
     grammar.append(Production("term") { Ref("expression") })
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "value" },
+      grammar,
+      Grammar {
+        Production("expression") { "value" }
         Production("term") { Ref("expression") }
-      ]
+      }
     )
   }
 
@@ -244,11 +244,11 @@ struct `Grammar tests` {
     grammar.append(Production("expression") { "second" })
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "second" },
+      grammar,
+      Grammar {
+        Production("expression") { "second" }
         Production("term") { "value" }
-      ]
+      }
     )
   }
 
@@ -264,18 +264,18 @@ struct `Grammar tests` {
     ])
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
+      grammar,
+      Grammar {
         Production("expression") { "value" }
-      ]
+      }
     )
     expectNoDifference(
-      Array(appended.productions),
-      [
-        Production("expression") { "value" },
-        Production("term") { Ref("expression") },
+      appended,
+      Grammar {
+        Production("expression") { "value" }
+        Production("term") { Ref("expression") }
         Production("factor") { Ref("term") }
-      ]
+      }
     )
   }
 
@@ -292,12 +292,12 @@ struct `Grammar tests` {
     ])
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "second" },
-        Production("term") { "value" },
+      grammar,
+      Grammar {
+        Production("expression") { "second" }
+        Production("term") { "value" }
         Production("factor") { Ref("term") }
-      ]
+      }
     )
   }
 
@@ -315,12 +315,12 @@ struct `Grammar tests` {
     grammar.merge(other)
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "second" },
-        Production("term") { "value" },
+      grammar,
+      Grammar {
+        Production("expression") { "second" }
+        Production("term") { "value" }
         Production("factor") { Ref("term") }
-      ]
+      }
     )
   }
 
@@ -338,12 +338,158 @@ struct `Grammar tests` {
     grammar.merge(other)
 
     expectNoDifference(
-      Array(grammar.productions),
-      [
-        Production("expression") { "first" },
-        Production("term") { Ref("expression") },
+      grammar,
+      Grammar {
+        Production("expression") { "first" }
+        Production("term") { Ref("expression") }
         Production("factor") { Ref("term") }
-      ]
+      }
+    )
+  }
+
+  @Test
+  func `Homomorph Replaces Matching Terminal Across Grammar`() {
+    var grammar = Grammar {
+      Production("expression") {
+        "+"
+        Ref("term")
+      }
+      Production("term") {
+        "+"
+      }
+    }
+
+    grammar.homomorph("+", to: "-")
+
+    expectNoDifference(
+      grammar,
+      Grammar {
+        Production("expression") {
+          "-"
+          Ref("term")
+        }
+        Production("term") {
+          "-"
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Homomorph Map Leaves Unmatched Terminals Unchanged`() {
+    let grammar = Grammar {
+      Production("expression") {
+        Choice {
+          "+"
+          "*"
+        }
+      }
+    }
+
+    let homomorphed = grammar.homomorphMapped { terminal in
+      if terminal == "+" {
+        "-"
+      } else {
+        nil
+      }
+    }
+
+    expectNoDifference(
+      homomorphed,
+      Grammar {
+        Production("expression") {
+          Choice {
+            "-"
+            "*"
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Homomorph Map Rewrites Nested Expressions`() {
+    let grammar = Grammar {
+      Production("expression") {
+        OptionalExpression {
+          "+"
+        }
+        ZeroOrMore {
+          Group {
+            Choice {
+              "+"
+              "*"
+            }
+          }
+        }
+      }
+    }
+
+    let homomorphed = grammar.homomorphMapped { terminal in
+      if terminal == "+" {
+        "-"
+      } else {
+        nil
+      }
+    }
+
+    expectNoDifference(
+      homomorphed,
+      Grammar {
+        Production("expression") {
+          OptionalExpression {
+            "-"
+          }
+          ZeroOrMore {
+            Group {
+              Choice {
+                "-"
+                "*"
+              }
+            }
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Homomorph Map Handles Empty Concat Ref Special And Terminal Cases`() {
+    let grammar = Grammar {
+      Production("epsilon") {
+        EmptyExpression()
+      }
+      Production("expression") {
+        Concat {
+          Special("identifier")
+          Ref("epsilon")
+          "a"
+        }
+      }
+    }
+
+    let homomorphed = grammar.homomorphMapped { terminal in
+      if terminal == "a" {
+        "b"
+      } else {
+        nil
+      }
+    }
+
+    expectNoDifference(
+      homomorphed,
+      Grammar {
+        Production("epsilon") {
+          EmptyExpression()
+        }
+        Production("expression") {
+          Concat {
+            Special("identifier")
+            Ref("epsilon")
+            "b"
+          }
+        }
+      }
     )
   }
 

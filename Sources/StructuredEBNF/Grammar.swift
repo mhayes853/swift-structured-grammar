@@ -166,23 +166,60 @@ public struct Grammar: Hashable, Sendable {
     return merged
   }
 
-  public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
-  }
-
-  public func homomorphMapped(_ transform: (Terminal) -> Terminal?) -> Self {
-    self
-  }
-
-  public mutating func homomorph(_ terminal: Terminal, to replacement: Terminal) {
-  }
-
-  public func homomorphed(_ terminal: Terminal, to replacement: Terminal) -> Self {
-    self
-  }
-
   private mutating func appendIdentifierIfNeeded(_ identifier: Identifier) {
     guard !self.orderedIdentifiers.contains(identifier) else { return }
     self.orderedIdentifiers.append(identifier)
+  }
+}
+
+// MARK: - Homomorphism
+
+extension Grammar {
+  public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
+    self.productionsByIdentifier = self.productionsByIdentifier.mapValues { production in
+      Production(production.identifier, self.homomorphed(expression: production.expression, transform: transform))
+    }
+  }
+
+  public func homomorphMapped(_ transform: (Terminal) -> Terminal?) -> Self {
+    var grammar = self
+    grammar.homomorphMap(transform)
+    return grammar
+  }
+
+  public mutating func homomorph(_ terminal: Terminal, to replacement: Terminal) {
+    self.homomorphMap { candidate in
+      candidate == terminal ? replacement : nil
+    }
+  }
+
+  public func homomorphed(_ terminal: Terminal, to replacement: Terminal) -> Self {
+    self.homomorphMapped { candidate in
+      candidate == terminal ? replacement : nil
+    }
+  }
+
+  private func homomorphed(expression: Expression, transform: (Terminal) -> Terminal?) -> Expression {
+    switch expression {
+    case .empty:
+      .empty
+    case let .concat(expressions):
+      .concat(expressions.map { self.homomorphed(expression: $0, transform: transform) })
+    case let .choice(expressions):
+      .choice(expressions.map { self.homomorphed(expression: $0, transform: transform) })
+    case let .optional(expression):
+      .optional(self.homomorphed(expression: expression, transform: transform))
+    case let .zeroOrMore(expression):
+      .zeroOrMore(self.homomorphed(expression: expression, transform: transform))
+    case let .group(expression):
+      .group(self.homomorphed(expression: expression, transform: transform))
+    case let .ref(identifier):
+      .ref(identifier)
+    case let .special(special):
+      .special(special)
+    case let .terminal(terminal):
+      transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
+    }
   }
 }
 
