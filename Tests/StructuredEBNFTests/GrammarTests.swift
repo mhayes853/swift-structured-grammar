@@ -13,6 +13,8 @@ struct `Grammar tests` {
 
     expectNoDifference(grammar.productions.count, 2)
     expectNoDifference(grammar.productions.startIndex, 0)
+    expectNoDifference(grammar[0], Production("expression") { "value" })
+    expectNoDifference(grammar[1], Production("term", Ref("expression")))
     expectNoDifference(grammar.productions[0], Production("expression") { "value" })
     expectNoDifference(grammar.productions[1], Production("term", Ref("expression")))
   }
@@ -44,6 +46,21 @@ struct `Grammar tests` {
     expectNoDifference(grammar.productions["expression"], Production("expression") { "value" })
     expectNoDifference(grammar.productions["term"], Production("term", Ref("expression")))
     expectNoDifference(grammar.productions["factor"], nil)
+    expectNoDifference(grammar["expression"], Production("expression") { "value" })
+    expectNoDifference(grammar["term"], Production("term", Ref("expression")))
+    expectNoDifference(grammar["factor"], nil)
+  }
+
+  @Test
+  func `Contains Production Reports Presence By Identifier`() {
+    let grammar = Grammar {
+      Production("expression") { "value" }
+      Production("term") { Ref("expression") }
+    }
+
+    expectNoDifference(grammar.containsProduction(identifier: "expression"), true)
+    expectNoDifference(grammar.containsProduction(identifier: "term"), true)
+    expectNoDifference(grammar.containsProduction(identifier: "factor"), false)
   }
 
   @Test

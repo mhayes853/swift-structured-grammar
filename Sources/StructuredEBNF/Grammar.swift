@@ -43,8 +43,16 @@ public struct Grammar: Hashable, Sendable {
     self.productionsByIdentifier[identifier]
   }
 
+  public func containsProduction(identifier: Identifier) -> Bool {
+    self.productionsByIdentifier[identifier] != nil
+  }
+
   public subscript(_ identifier: Identifier) -> Production? {
     self.productionsByIdentifier[identifier]
+  }
+
+  public subscript(index: Int) -> Production {
+    self.productions[index]
   }
 
   public mutating func append(_ production: Production) {
