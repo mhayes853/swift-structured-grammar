@@ -1,6 +1,6 @@
 // MARK: - Grammar
 
-public struct Grammar: Hashable, Sendable {
+public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   private var orderedIdentifiers: [Identifier]
   private var productionsByIdentifier: [Identifier: Production]
 
@@ -9,6 +9,10 @@ public struct Grammar: Hashable, Sendable {
       orderedIdentifiers: self.orderedIdentifiers,
       productionsByIdentifier: self.productionsByIdentifier
     )
+  }
+
+  public var language: Language {
+    Language(grammar: self)
   }
 
   public init() {
