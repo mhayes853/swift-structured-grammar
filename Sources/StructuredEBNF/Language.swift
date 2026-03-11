@@ -8,6 +8,60 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     case reverse(Language)
   }
 
+  public enum GrammarOperation: Hashable, Sendable {
+    case union
+    case concatenate
+    case kleeneStar
+    case reverse
+    case grammar
+  }
+
+  public struct GrammarNameResolutionContext: Sendable {
+    public let grammarIndex: Int
+    public let currentOperation: GrammarOperation
+    public let existingSymbols: Set<Symbol>
+    public let grammars: [Grammar]
+  }
+
+  public struct ResolvableGrammarSymbol: Sendable {
+    public let symbol: Symbol
+    public let grammar: Grammar
+  }
+
+  public protocol GrammarNameResolver: Sendable {
+    func resolveSymbolConflict(
+      for new: ResolvableGrammarSymbol,
+      against existing: ResolvableGrammarSymbol,
+      context: GrammarNameResolutionContext
+    ) -> Symbol
+
+    func createNewSymbol(
+      grammars: [Grammar],
+      context: GrammarNameResolutionContext
+    ) -> Symbol
+  }
+
+  public struct DefaultGrammarNameResolver: GrammarNameResolver {
+    public init() {}
+
+    public func resolveSymbolConflict(
+      for new: ResolvableGrammarSymbol,
+      against existing: ResolvableGrammarSymbol,
+      context: GrammarNameResolutionContext
+    ) -> Symbol {
+      let namespace = context.grammarIndex
+      return Symbol(rawValue: "g\(namespace)__\(new.symbol.rawValue)")!
+    }
+
+    public func createNewSymbol(
+      grammars: [Grammar],
+      context: GrammarNameResolutionContext
+    ) -> Symbol {
+      let namespace = context.grammarIndex
+      return Symbol(rawValue: "l\(namespace)__start")!
+    }
+  }
+
   private let operation: Operation
 
   public var language: Language {
@@ -94,9 +148,12 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     self.grammar().homomorphMapped(transform).language
   }
 
-  public func grammar(startingSymbol: Symbol = .root) -> Grammar {
-    var resolver = Resolver()
-    let resolved = resolver.resolve(self)
+  public func grammar(
+    startingSymbol: Symbol = .root,
+    nameResolver: some GrammarNameResolver = DefaultGrammarNameResolver()
+  ) -> Grammar {
+    var resolver = Resolver(nameResolver: nameResolver)
+    let resolved = resolver.resolve(self, operation: .grammar)
     guard
       resolved.synthesizedEntry,
       let entrySymbol = resolved.entrySymbol,
@@ -130,9 +187,15 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
   }
 
   private struct Resolver {
+    var nameResolver: any GrammarNameResolver
     var nextLanguageNamespace = 0
+    var grammars: [Grammar] = []
 
-    mutating func resolve(_ language: Language) -> ResolvedLanguage {
+    init(nameResolver: some GrammarNameResolver) {
+      self.nameResolver = nameResolver
+    }
+
+    mutating func resolve(_ language: Language, operation: GrammarOperation) -> ResolvedLanguage {
       switch language.operation {
       case .empty:
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
@@ -145,17 +208,21 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         )
 
       case let .concatenate(languages):
-        let resolved = languages.map { self.resolve($0) }
+        let resolved = languages.map { self.resolve($0, operation: .concatenate) }
         let entrySymbols = resolved.compactMap(\.entrySymbol)
         guard !entrySymbols.isEmpty else {
           return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
         }
         var iterator = resolved.makeIterator()
         var grammar = iterator.next()!.grammar
+        self.grammars = [grammar]
+        var index = 1
         while let language = iterator.next() {
-          grammar.merge(language.grammar)
+          grammar = self.mergeWithConflictResolution(grammar, language.grammar, index: index, operation: .concatenate)
+          self.grammars.append(language.grammar)
+          index += 1
         }
-        let entrySymbol = self.nextLanguageSymbol()
+        let entrySymbol = self.createNewSymbol()
         grammar.append(Production(entrySymbol) {
           for symbol in entrySymbols {
             Ref(symbol)
@@ -164,17 +231,21 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
 
       case let .union(languages):
-        let resolved = languages.map { self.resolve($0) }
+        let resolved = languages.map { self.resolve($0, operation: .union) }
         let entrySymbols = resolved.compactMap(\.entrySymbol)
         guard !entrySymbols.isEmpty else {
           return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
         }
         var iterator = resolved.makeIterator()
         var grammar = iterator.next()!.grammar
+        self.grammars = [grammar]
+        var index = 1
         while let language = iterator.next() {
-          grammar.merge(language.grammar)
+          grammar = self.mergeWithConflictResolution(grammar, language.grammar, index: index, operation: .union)
+          self.grammars.append(language.grammar)
+          index += 1
         }
-        let entrySymbol = self.nextLanguageSymbol()
+        let entrySymbol = self.createNewSymbol()
         if entrySymbols.count == 1 {
           grammar.append(Production(entrySymbol) { Ref(entrySymbols[0]) })
         } else {
@@ -183,12 +254,13 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
 
       case let .kleeneStar(language):
-        let resolved = self.resolve(language)
+        let resolved = self.resolve(language, operation: .kleeneStar)
         guard let entrySymbol = resolved.entrySymbol else {
           return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
         }
         var grammar = resolved.grammar
-        let synthesizedSymbol = self.nextLanguageSymbol()
+        self.grammars = [grammar]
+        let synthesizedSymbol = self.createNewSymbol()
         grammar.append(Production(synthesizedSymbol) {
           ZeroOrMore {
             Ref(entrySymbol)
@@ -201,11 +273,11 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
         )
 
       case let .reverse(language):
-        let resolved = self.resolve(language)
+        let resolved = self.resolve(language, operation: .reverse)
         guard let entrySymbol = resolved.entrySymbol else {
           return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
         }
-        let grammar = self.reversed(grammar: resolved.grammar, startingSymbol: entrySymbol)
+        let grammar = resolved.grammar.reversed()
         return ResolvedLanguage(
           grammar: grammar,
           entrySymbol: entrySymbol,
@@ -214,71 +286,51 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
       }
     }
 
-    mutating func nextLanguageSymbol() -> Symbol {
-      let namespace = self.nextLanguageNamespace
+    private mutating func createNewSymbol() -> Symbol {
+      let context = GrammarNameResolutionContext(
+        grammarIndex: self.nextLanguageNamespace,
+        currentOperation: .grammar,
+        existingSymbols: Set(self.grammars.flatMap { $0.productions.map(\.symbol) }),
+        grammars: self.grammars
+      )
+      let symbol = self.nameResolver.createNewSymbol(grammars: self.grammars, context: context)
       self.nextLanguageNamespace += 1
-      return Symbol(rawValue: "l\(namespace)__start")!
+      return symbol
     }
 
-    private func reversed(grammar: Grammar, startingSymbol: Symbol) -> Grammar {
-      let reachableSymbols = self.reachableSymbols(in: grammar, startingSymbol: startingSymbol)
-      let productions = grammar.productions.compactMap { (production: Production) -> Production? in
-        guard reachableSymbols.contains(production.symbol) else { return nil }
-        return Production(production.symbol, self.reversed(expression: production.expression))
+    private mutating func mergeWithConflictResolution(
+      _ base: Grammar,
+      _ incoming: Grammar,
+      index: Int,
+      operation: GrammarOperation
+    ) -> Grammar {
+      var result = base
+      let existingSymbols = Set(base.productions.map(\.symbol))
+      var allGrammars = self.grammars
+      allGrammars.append(incoming)
+      let context = GrammarNameResolutionContext(
+        grammarIndex: index,
+        currentOperation: operation,
+        existingSymbols: existingSymbols,
+        grammars: allGrammars
+      )
+
+      for production in incoming.productions {
+        if existingSymbols.contains(production.symbol) {
+          if let existingProduction = base.productions.first(where: { $0.symbol == production.symbol }) {
+            let resolvedSymbol = self.nameResolver.resolveSymbolConflict(
+              for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
+              against: ResolvableGrammarSymbol(symbol: existingProduction.symbol, grammar: base),
+              context: context
+            )
+            result.append(Production(resolvedSymbol, production.expression))
+          }
+        } else {
+          result.append(production)
+        }
       }
-      return Grammar(startingSymbol: startingSymbol, productions)
+
+      return result
     }
-
-    private func reachableSymbols(in grammar: Grammar, startingSymbol: Symbol) -> Set<Symbol> {
-      var visited = Set<Symbol>()
-      var stack = [startingSymbol]
-
-      while let symbol = stack.popLast() {
-        guard visited.insert(symbol).inserted else { continue }
-        guard let production = grammar[symbol] else { continue }
-        stack.append(contentsOf: self.referencedSymbols(in: production.expression))
-      }
-
-      return visited
-    }
-
-    private func referencedSymbols(in expression: Expression) -> [Symbol] {
-      switch expression {
-      case .empty:
-        []
-      case let .concat(expressions), let .choice(expressions):
-        expressions.flatMap { self.referencedSymbols(in: $0) }
-      case let .optional(expression), let .zeroOrMore(expression), let .group(expression):
-        self.referencedSymbols(in: expression)
-      case let .ref(symbol):
-        [symbol]
-      case .special, .terminal:
-        []
-      }
-    }
-
-    private func reversed(expression: Expression) -> Expression {
-      switch expression {
-      case .empty:
-        .empty
-      case let .concat(expressions):
-        .concat(expressions.reversed().map { self.reversed(expression: $0) })
-      case let .choice(expressions):
-        .choice(expressions.map { self.reversed(expression: $0) })
-      case let .optional(expression):
-        .optional(self.reversed(expression: expression))
-      case let .zeroOrMore(expression):
-        .zeroOrMore(self.reversed(expression: expression))
-      case let .group(expression):
-        .group(self.reversed(expression: expression))
-      case let .ref(symbol):
-        .ref(symbol)
-      case let .special(special):
-        .special(special)
-      case let .terminal(terminal):
-        .terminal(terminal)
-      }
-    }
-
   }
 }

@@ -266,6 +266,74 @@ extension Grammar {
   }
 }
 
+// MARK: - Reverse
+
+extension Grammar {
+  public mutating func reverse() {
+    self = self.reversed()
+  }
+
+  public func reversed() -> Self {
+    let reachableSymbols = self.reachableSymbols()
+    let productions = self.productions.compactMap { production -> Production? in
+      guard reachableSymbols.contains(production.symbol) else { return nil }
+      return Production(production.symbol, self.reversed(expression: production.expression))
+    }
+    return Grammar(startingSymbol: self.startingSymbol, productions)
+  }
+
+  private func reachableSymbols() -> Set<Symbol> {
+    var visited = Set<Symbol>()
+    var stack = [self.startingSymbol]
+
+    while let symbol = stack.popLast() {
+      guard visited.insert(symbol).inserted else { continue }
+      guard let production = self.productionsBySymbol[symbol] else { continue }
+      stack.append(contentsOf: self.referencedSymbols(in: production.expression))
+    }
+
+    return visited
+  }
+
+  private func referencedSymbols(in expression: Expression) -> [Symbol] {
+    switch expression {
+    case .empty:
+      []
+    case let .concat(expressions), let .choice(expressions):
+      expressions.flatMap { self.referencedSymbols(in: $0) }
+    case let .optional(expr), let .zeroOrMore(expr), let .group(expr):
+      self.referencedSymbols(in: expr)
+    case let .ref(symbol):
+      [symbol]
+    case .special, .terminal:
+      []
+    }
+  }
+
+  private func reversed(expression: Expression) -> Expression {
+    switch expression {
+    case .empty:
+      .empty
+    case let .concat(expressions):
+      .concat(expressions.reversed().map { self.reversed(expression: $0) })
+    case let .choice(expressions):
+      .choice(expressions.map { self.reversed(expression: $0) })
+    case let .optional(expr):
+      .optional(self.reversed(expression: expr))
+    case let .zeroOrMore(expr):
+      .zeroOrMore(self.reversed(expression: expr))
+    case let .group(expr):
+      .group(self.reversed(expression: expr))
+    case let .ref(symbol):
+      .ref(symbol)
+    case let .special(special):
+      .special(special)
+    case let .terminal(terminal):
+      .terminal(terminal)
+    }
+  }
+}
+
 // MARK: - Formatting
 
 extension Grammar {

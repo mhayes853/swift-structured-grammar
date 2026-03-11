@@ -567,4 +567,222 @@ struct `Grammar tests` {
       """
     )
   }
+
+  @Test
+  func `Reversed Concatenation Element Order`() {
+    let grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        ConcatanateExpressions {
+          "a"
+          "b"
+          "c"
+        }
+      }
+    }
+
+    let reversed = grammar.reversed()
+
+    expectNoDifference(
+      reversed,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          ConcatanateExpressions {
+            "c"
+            "b"
+            "a"
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Reversed Reverses Choice Alternatives Contents`() {
+    let grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        Choice {
+          ConcatanateExpressions {
+            "a"
+            "b"
+          }
+          ConcatanateExpressions {
+            "c"
+            "d"
+          }
+        }
+      }
+    }
+
+    let reversed = grammar.reversed()
+
+    expectNoDifference(
+      reversed,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          Choice {
+            ConcatanateExpressions {
+              "b"
+              "a"
+            }
+            ConcatanateExpressions {
+              "d"
+              "c"
+            }
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Reversed Reverses Optional Expression Contents`() {
+    let grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        OptionalExpression {
+          ConcatanateExpressions {
+            "a"
+            "b"
+          }
+        }
+      }
+    }
+
+    let reversed = grammar.reversed()
+
+    expectNoDifference(
+      reversed,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          OptionalExpression {
+            ConcatanateExpressions {
+              "b"
+              "a"
+            }
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Reversed Reverses ZeroOrMore Expression Contents`() {
+    let grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        ZeroOrMore {
+          ConcatanateExpressions {
+            "a"
+            "b"
+          }
+        }
+      }
+    }
+
+    let reversed = grammar.reversed()
+
+    expectNoDifference(
+      reversed,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          ZeroOrMore {
+            ConcatanateExpressions {
+              "b"
+              "a"
+            }
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Reversed Reverses Group Expression Contents`() {
+    let grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        Group {
+          ConcatanateExpressions {
+            "a"
+            "b"
+          }
+        }
+      }
+    }
+
+    let reversed = grammar.reversed()
+
+    expectNoDifference(
+      reversed,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          Group {
+            ConcatanateExpressions {
+              "b"
+              "a"
+            }
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Reversed Omits Unreachable Productions`() {
+    let grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        Ref("term")
+      }
+      Production("term") {
+        Ref("factor")
+      }
+      Production("factor") {
+        "value"
+      }
+      Production("dead") {
+        "unreachable"
+      }
+    }
+
+    let reversed = grammar.reversed()
+
+    expectNoDifference(
+      reversed,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          Ref("term")
+        }
+        Production("term") {
+          Ref("factor")
+        }
+        Production("factor") {
+          "value"
+        }
+      }
+    )
+    expectNoDifference(reversed.containsProduction(for: "dead"), false)
+  }
+
+  @Test
+  func `Mutating Reverse Updates Grammar`() {
+    var grammar = Grammar(startingSymbol: "expression") {
+      Production("expression") {
+        ConcatanateExpressions {
+          "a"
+          "b"
+        }
+      }
+    }
+
+    grammar.reverse()
+
+    expectNoDifference(
+      grammar,
+      Grammar(startingSymbol: "expression") {
+        Production("expression") {
+          ConcatanateExpressions {
+            "b"
+            "a"
+          }
+        }
+      }
+    )
+  }
 }
