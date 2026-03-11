@@ -253,12 +253,12 @@ extension Grammar {
       .optional(self.homomorphed(expression: expression, transform: transform))
     case let .zeroOrMore(expression):
       .zeroOrMore(self.homomorphed(expression: expression, transform: transform))
+    case let .oneOrMore(expression):
+      .oneOrMore(self.homomorphed(expression: expression, transform: transform))
     case let .group(expression):
       .group(self.homomorphed(expression: expression, transform: transform))
     case let .ref(symbol):
       .ref(symbol)
-    case let .special(special):
-      .special(special)
     case let .terminal(terminal):
       transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
     }
@@ -300,11 +300,11 @@ extension Grammar {
       []
     case let .concat(expressions), let .choice(expressions):
       expressions.flatMap { self.referencedSymbols(in: $0) }
-    case let .optional(expr), let .zeroOrMore(expr), let .group(expr):
+    case let .optional(expr), let .zeroOrMore(expr), let .oneOrMore(expr), let .group(expr):
       self.referencedSymbols(in: expr)
     case let .ref(symbol):
       [symbol]
-    case .special, .terminal:
+    case .terminal:
       []
     }
   }
@@ -321,12 +321,12 @@ extension Grammar {
       .optional(self.reversed(expression: expr))
     case let .zeroOrMore(expr):
       .zeroOrMore(self.reversed(expression: expr))
+    case let .oneOrMore(expr):
+      .oneOrMore(self.reversed(expression: expr))
     case let .group(expr):
       .group(self.reversed(expression: expr))
     case let .ref(symbol):
       .ref(symbol)
-    case let .special(special):
-      .special(special)
     case let .terminal(terminal):
       .terminal(terminal)
     }
@@ -338,21 +338,57 @@ extension Grammar {
 extension Grammar {
   public func formatted() -> String {
     self.productions
-      .map { production in
-        let formattedExpression = self.format(expression: production.expression)
-        if formattedExpression.isEmpty {
-          return "\(production.symbol.rawValue) = ;"
-        } else {
-          return "\(production.symbol.rawValue) = \(formattedExpression) ;"
+      .compactMap { production in
+        self.simplified(expression: production.expression).map { expression in
+          "\(production.symbol.rawValue) ::= \(self.format(expression: expression))"
         }
       }
       .joined(separator: "\n")
   }
 
+  private func simplified(expression: Expression) -> Expression? {
+    switch expression {
+    case .empty:
+      return nil
+    case let .concat(expressions):
+      let expressions = expressions.compactMap { self.simplified(expression: $0) }
+      switch expressions.count {
+      case 0:
+        return nil
+      case 1:
+        return expressions[0]
+      default:
+        return .concat(expressions)
+      }
+    case let .choice(expressions):
+      let expressions = expressions.compactMap { self.simplified(expression: $0) }
+      switch expressions.count {
+      case 0:
+        return nil
+      case 1:
+        return expressions[0]
+      default:
+        return .choice(expressions)
+      }
+    case let .optional(expression):
+      return self.simplified(expression: expression).map(Expression.optional)
+    case let .zeroOrMore(expression):
+      return self.simplified(expression: expression).map(Expression.zeroOrMore)
+    case let .oneOrMore(expression):
+      return self.simplified(expression: expression).map(Expression.oneOrMore)
+    case let .group(expression):
+      return self.simplified(expression: expression).map(Expression.group)
+    case let .ref(symbol):
+      return .ref(symbol)
+    case let .terminal(terminal):
+      return .terminal(terminal)
+    }
+  }
+
   private func format(expression: Expression) -> String {
     switch expression {
     case .empty:
-      ""
+      preconditionFailure("Empty expressions must be simplified before formatting.")
     case let .concat(expressions):
       expressions
         .map { expression in
@@ -362,21 +398,38 @@ extension Grammar {
             self.format(expression: expression)
           }
         }
-        .joined(separator: ", ")
+        .joined(separator: " ")
     case let .choice(expressions):
       expressions.map { self.format(expression: $0) }.joined(separator: " | ")
     case let .optional(expression):
-      "[\(self.format(expression: expression))]"
+      self.formatPrimary(expression: expression) + "?"
     case let .zeroOrMore(expression):
-      "{\(self.format(expression: expression))}"
+      self.formatPrimary(expression: expression) + "*"
+    case let .oneOrMore(expression):
+      self.formatPrimary(expression: expression) + "+"
     case let .group(expression):
       "(\(self.format(expression: expression)))"
     case let .ref(symbol):
       symbol.rawValue
-    case let .special(special):
-      "? \(special.value) ?"
     case let .terminal(terminal):
       self.format(terminal: terminal)
+    }
+  }
+
+  private func formatPrimary(expression: Expression) -> String {
+    if self.isPrimary(expression: expression) {
+      self.format(expression: expression)
+    } else {
+      "(\(self.format(expression: expression)))"
+    }
+  }
+
+  private func isPrimary(expression: Expression) -> Bool {
+    switch expression {
+    case .ref, .group, .terminal:
+      true
+    case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore:
+      false
     }
   }
 

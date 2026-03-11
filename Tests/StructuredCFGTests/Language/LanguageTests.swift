@@ -22,7 +22,7 @@ struct `Language tests` {
   func `Format Delegates To Grammar Formatting`() {
     let language = Grammar(Production("expression") { "value" }).language
 
-    expectNoDifference(language.format(), "expression = \"value\" ;")
+    expectNoDifference(language.format(), #"expression ::= "value""#)
   }
 
   @Test

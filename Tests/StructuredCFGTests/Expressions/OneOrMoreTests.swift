@@ -5,9 +5,9 @@ import StructuredCFG
 @Suite
 struct `OneOrMore tests` {
   @Test
-  func `Direct Initialization Lowers To Canonical Concat And Zero Or More`() {
+  func `Direct Initialization Builds One Or More Expression`() {
     let expression = OneOrMore { "value" }.expression
-    expectNoDifference(expression, .concat([.terminal("value"), .zeroOrMore(.terminal("value"))]))
+    expectNoDifference(expression, .oneOrMore(.terminal("value")))
   }
 
   @Test
@@ -19,6 +19,6 @@ struct `OneOrMore tests` {
     }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(), "start = \"value\", {\"value\"} ;")
+    expectNoDifference(grammar.formatted(), #"start ::= "value"+"#)
   }
 }

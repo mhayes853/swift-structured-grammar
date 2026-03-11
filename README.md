@@ -28,8 +28,8 @@ let grammar = Grammar(startingIdentifier: "num") {
             }
         }
     }
-    Production("special case") {
-        Special("this is a special sequence of some kind")
+    Production("literal case") {
+        "literal value"
     }
 }
 

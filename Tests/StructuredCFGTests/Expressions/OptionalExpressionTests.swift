@@ -13,6 +13,6 @@ struct `OptionalExpression tests` {
     }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(), "start = [\"a\"] ;")
+    expectNoDifference(grammar.formatted(), #"start ::= "a"?"#)
   }
 }

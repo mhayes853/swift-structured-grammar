@@ -478,14 +478,14 @@ struct `Grammar tests` {
   }
 
   @Test
-  func `Homomorph Map Handles Empty ConcatanateExpressions Ref Special And Terminal Cases`() {
+  func `Homomorph Map Handles Empty ConcatanateExpressions Ref And Terminal Cases`() {
     let grammar = Grammar(startingSymbol: "epsilon") {
       Production("epsilon") {
         EmptyExpression()
       }
       Production("expression") {
         ConcatanateExpressions {
-          Special("identifier")
+          Ref("identifier")
           Ref("epsilon")
           "a"
         }
@@ -508,7 +508,7 @@ struct `Grammar tests` {
         }
         Production("expression") {
           ConcatanateExpressions {
-            Special("identifier")
+            Ref("identifier")
             Ref("epsilon")
             "b"
         }
@@ -537,7 +537,7 @@ struct `Grammar tests` {
             Ref("expression")
             ")"
           }
-          Special("identifier")
+          "identifier"
         }
       }
 
@@ -561,11 +561,95 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar.formatted(),
       """
-      sign = ["+" | "-"] ;
-      term = number | ("(", expression, ")") | ? identifier ? ;
-      expression = sign, term, {("+" | "-"), term} ;
+      sign ::= ("+" | "-")?
+      term ::= number | ("(" expression ")") | "identifier"
+      expression ::= sign term (("+" | "-") term)*
       """
     )
+  }
+
+  @Test
+  func `Formatting Omits Empty Productions Entirely`() {
+    let grammar = Grammar(startingSymbol: "padding") {
+      Production("padding") {
+        EmptyExpression()
+      }
+    }
+
+    expectNoDifference(grammar.formatted(), "")
+  }
+
+  @Test
+  func `Formatting Concatenation Drops Empty Members`() {
+    let grammar = Grammar(Production("start") {
+      ConcatanateExpressions {
+        EmptyExpression()
+        "a"
+        Ref("target")
+      }
+    })
+
+    expectNoDifference(grammar.formatted(), #"start ::= "a" target"#)
+  }
+
+  @Test
+  func `Formatting Choice Drops Empty Alternatives`() {
+    let grammar = Grammar(Production("start") {
+      Choice {
+        EmptyExpression()
+        "a"
+        "b"
+      }
+    })
+
+    expectNoDifference(grammar.formatted(), #"start ::= "a" | "b""#)
+  }
+
+  @Test
+  func `Formatting Optional Of Empty Disappears`() {
+    let grammar = Grammar(Production("start") {
+      OptionalExpression {
+        EmptyExpression()
+      }
+    })
+
+    expectNoDifference(grammar.formatted(), "")
+  }
+
+  @Test
+  func `Formatting Zero Or More Of Empty Disappears`() {
+    let grammar = Grammar(Production("start") {
+      ZeroOrMore {
+        EmptyExpression()
+      }
+    })
+
+    expectNoDifference(grammar.formatted(), "")
+  }
+
+  @Test
+  func `Formatting Group Of Empty Disappears`() {
+    let grammar = Grammar(Production("start") {
+      Group {
+        EmptyExpression()
+      }
+    })
+
+    expectNoDifference(grammar.formatted(), "")
+  }
+
+  @Test
+  func `Formatting One Or More Uses Native W3C Syntax`() {
+    let grammar = Grammar(Production("start") {
+      OneOrMore {
+        Choice {
+          "a"
+          "b"
+        }
+      }
+    })
+
+    expectNoDifference(grammar.formatted(), #"start ::= ("a" | "b")+"#)
   }
 
   @Test

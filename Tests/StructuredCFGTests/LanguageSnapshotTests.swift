@@ -136,7 +136,7 @@ private enum LanguageSnapshotSuite {
           }
 
           Production("identifier") {
-            Special("identifier")
+            "identifier"
           }
         }
       }.language
@@ -204,7 +204,7 @@ private enum LanguageSnapshotSuite {
           Choice {
             Ref("literal")
             Ref("tuple")
-            Special("computed")
+            "computed"
           }
         }
 
@@ -243,7 +243,7 @@ private enum LanguageSnapshotSuite {
         }
 
         Production("identifier") {
-          Special("identifier")
+          "identifier"
         }
 
         Production("footer") {
@@ -256,6 +256,126 @@ private enum LanguageSnapshotSuite {
 
         Production("g1__qualified") {
           "qualified"
+        }
+      }.language
+    ),
+    LanguageSnapshotCase(
+      name: "json-grammar",
+      language: Grammar(startingSymbol: "value") {
+        Production("value") {
+          Choice {
+            Ref("object")
+            Ref("array")
+            Ref("string")
+            Ref("number")
+            "true"
+            "false"
+            "null"
+          }
+        }
+
+        Production("object") {
+          "{"
+          OptionalExpression {
+            Ref("members")
+          }
+          "}"
+        }
+
+        Production("members") {
+          Ref("pair")
+          ZeroOrMore {
+            Group {
+              ","
+              Ref("pair")
+            }
+          }
+        }
+
+        Production("pair") {
+          Ref("string")
+          ":"
+          Ref("value")
+        }
+
+        Production("array") {
+          "["
+          OptionalExpression {
+            Ref("elements")
+          }
+          "]"
+        }
+
+        Production("elements") {
+          Ref("value")
+          ZeroOrMore {
+            Group {
+              ","
+              Ref("value")
+            }
+          }
+        }
+
+        Production("string") {
+          "string"
+        }
+
+        Production("number") {
+          Ref("integer")
+          OptionalExpression {
+            Ref("fraction")
+          }
+          OptionalExpression {
+            Ref("exponent")
+          }
+        }
+
+        Production("integer") {
+          OneOrMore {
+            Ref("digit")
+          }
+        }
+
+        Production("fraction") {
+          "."
+          OneOrMore {
+            Ref("digit")
+          }
+        }
+
+        Production("exponent") {
+          Choice {
+            "e"
+            "E"
+          }
+          OptionalExpression {
+            Ref("sign")
+          }
+          OneOrMore {
+            Ref("digit")
+          }
+        }
+
+        Production("sign") {
+          Choice {
+            "+"
+            "-"
+          }
+        }
+
+        Production("digit") {
+          Choice {
+            "0"
+            "1"
+            "2"
+            "3"
+            "4"
+            "5"
+            "6"
+            "7"
+            "8"
+            "9"
+          }
         }
       }.language
     )
