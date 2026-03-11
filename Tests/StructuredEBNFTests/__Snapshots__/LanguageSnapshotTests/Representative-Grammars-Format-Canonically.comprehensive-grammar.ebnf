@@ -1,0 +1,11 @@
+document = header, assignment, {assignment}, [footer] ;
+header = "BEGIN" ;
+assignment = identifier, "=", (literal | tuple | ? computed ?) ;
+tuple = "(", literal, {(",", literal)}, ")" ;
+literal = number | g1__qualified | "quoted" ;
+number = digit, {digit} ;
+digit = "0" | "1" | "2" ;
+identifier = ? identifier ? ;
+footer = "END" ;
+padding = ;
+g1__qualified = "qualified" ;

@@ -32,7 +32,8 @@ let package = Package(
         .product(name: "XGrammar", package: "swift-xgrammar"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
-      ]
+      ],
+      exclude: ["__Snapshots__"]
     )
   ],
   swiftLanguageModes: [.v6]

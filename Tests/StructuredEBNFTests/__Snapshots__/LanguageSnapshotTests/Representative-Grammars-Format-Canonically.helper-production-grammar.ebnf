@@ -1,0 +1,3 @@
+root = l0__start ;
+token = "a" | "b" ;
+l0__start = {token} ;
