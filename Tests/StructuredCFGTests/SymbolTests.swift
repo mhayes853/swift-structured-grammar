@@ -1,6 +1,6 @@
 import Testing
 import CustomDump
-import StructuredEBNF
+import StructuredCFG
 
 @Suite
 struct `Symbol tests` {

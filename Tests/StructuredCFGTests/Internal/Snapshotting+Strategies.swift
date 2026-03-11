@@ -1,5 +1,5 @@
 import SnapshotTesting
-import StructuredEBNF
+import StructuredCFG
 
 extension Snapshotting where Value == Grammar, Format == String {
   static func ebnf() -> Self {

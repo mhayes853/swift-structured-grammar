@@ -1,6 +1,6 @@
 import CustomDump
 import Testing
-import StructuredEBNF
+import StructuredCFG
 
 @Suite
 struct `Choice tests` {

@@ -1,7 +1,7 @@
 import CustomDump
 import Foundation
 @preconcurrency import SnapshotTesting
-import StructuredEBNF
+import StructuredCFG
 import Testing
 
 @Suite

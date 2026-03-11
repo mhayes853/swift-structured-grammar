@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-  name: "swift-structured-ebnf",
+  name: "swift-structured-grammar",
   platforms: [
     .iOS(.v13),
     .macOS(.v10_15),
@@ -13,8 +13,8 @@ let package = Package(
   ],
   products: [
     .library(
-      name: "StructuredEBNF",
-      targets: ["StructuredEBNF"]
+      name: "StructuredCFG",
+      targets: ["StructuredCFG"]
     )
   ],
   dependencies: [
@@ -24,11 +24,11 @@ let package = Package(
     .package(url: "https://github.com/mattt/swift-xgrammar", from: "0.1.0")
   ],
   targets: [
-    .target(name: "StructuredEBNF"),
+    .target(name: "StructuredCFG"),
     .testTarget(
-      name: "StructuredEBNFTests",
+      name: "StructuredCFGTests",
       dependencies: [
-        "StructuredEBNF",
+        "StructuredCFG",
         .product(name: "XGrammar", package: "swift-xgrammar"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
