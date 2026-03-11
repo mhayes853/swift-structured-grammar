@@ -1,3 +1,5 @@
+// MARK: - Language
+
 public struct Language: Hashable, Sendable, ConvertibleToLanguage {
   private indirect enum Operation: Hashable, Sendable {
     case empty
@@ -8,6 +10,24 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     case reverse(Language)
   }
 
+  private let operation: Operation
+
+  public var language: Language {
+    self
+  }
+
+  public init() {
+    self.operation = .empty
+  }
+
+  public init(@LanguageBuilder _ content: () -> Language) {
+    self = content()
+  }
+}
+
+// MARK: - Name Resolution
+
+extension Language {
   public enum GrammarOperation: Hashable, Sendable {
     case union
     case concatenate
@@ -27,7 +47,11 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
     public let symbol: Symbol
     public let grammar: Grammar
   }
+}
 
+// MARK: - GrammarNameResolver
+
+extension Language {
   public protocol GrammarNameResolver: Sendable {
     func resolveSymbolConflict(
       for new: ResolvableGrammarSymbol,
@@ -49,33 +73,37 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
       against existing: ResolvableGrammarSymbol,
       context: GrammarNameResolutionContext
     ) -> Symbol {
-      let namespace = context.grammarIndex
-      return Symbol(rawValue: "g\(namespace)__\(new.symbol.rawValue)")!
+      Symbol(rawValue: "g\(context.grammarIndex)__\(new.symbol.rawValue)")!
     }
 
     public func createNewSymbol(
       grammars: [Grammar],
       context: GrammarNameResolutionContext
     ) -> Symbol {
-      let namespace = context.grammarIndex
-      return Symbol(rawValue: "l\(namespace)__start")!
+      Symbol(rawValue: "l\(context.grammarIndex)__start")!
     }
   }
+}
 
-  private let operation: Operation
+extension Language.GrammarNameResolver where Self == Language.DefaultGrammarNameResolver {
+  public static var `default`: Self { Self() }
+}
 
-  public var language: Language {
-    self
+// MARK: - Initializers
+
+extension Language {
+  public init(_ grammar: Grammar) {
+    self.operation = .grammar(grammar)
   }
 
-  public init() {
-    self.operation = .empty
+  private init(operation: Operation) {
+    self.operation = operation
   }
+}
 
-  public init(@LanguageBuilder _ content: () -> Language) {
-    self = content()
-  }
+// MARK: - Operations
 
+extension Language {
   public static func concatenate(_ languages: [any ConvertibleToLanguage]) -> Self {
     Self(operation: .concatenate(languages.map { $0.language }))
   }
@@ -99,7 +127,11 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
   public static func reverse(_ language: some ConvertibleToLanguage) -> Self {
     Self(operation: .reverse(language.language))
   }
+}
 
+// MARK: - Mutation
+
+extension Language {
   public mutating func concatenate(_ other: some ConvertibleToLanguage) {
     self = self.concatenated(other)
   }
@@ -147,10 +179,14 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
   public func homomorphMapped(_ transform: (Terminal) -> Terminal?) -> Self {
     self.grammar().homomorphMapped(transform).language
   }
+}
 
+// MARK: - Grammar
+
+extension Language {
   public func grammar(
     startingSymbol: Symbol = .root,
-    nameResolver: some GrammarNameResolver = DefaultGrammarNameResolver()
+    nameResolver: some GrammarNameResolver = .default
   ) -> Grammar {
     var resolver = Resolver(nameResolver: nameResolver)
     let resolved = resolver.resolve(self, operation: .grammar)
@@ -171,15 +207,11 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
   public func format() -> String {
     self.grammar().formatted()
   }
+}
 
-  init(grammar: Grammar) {
-    self.operation = .grammar(grammar)
-  }
+// MARK: - Resolver
 
-  private init(operation: Operation) {
-    self.operation = operation
-  }
-
+extension Language {
   private struct ResolvedLanguage {
     let grammar: Grammar
     let entrySymbol: Symbol?

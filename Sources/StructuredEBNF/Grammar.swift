@@ -6,6 +6,7 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
       self.updateStartingSymbol(from: oldValue)
     }
   }
+
   private var orderedSymbols: [Symbol]
   private var productionsBySymbol: [Symbol: Production]
 
@@ -17,7 +18,7 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   }
 
   public var language: Language {
-    Language(grammar: self)
+    Language(self)
   }
 
   public init() {
@@ -31,9 +32,7 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   public init(startingSymbol: Symbol, _ productions: some Sequence<Production>) {
     self.startingSymbol = startingSymbol
     self.orderedSymbols = [startingSymbol]
-    self.productionsBySymbol = [
-      startingSymbol: Production(startingSymbol) { EmptyExpression() }
-    ]
+    self.productionsBySymbol = [startingSymbol: Production(startingSymbol) { EmptyExpression() }]
     for production in productions {
       self.append(production)
     }
