@@ -34,7 +34,7 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("statement") { "other" }
@@ -54,8 +54,8 @@ struct `Language tests` {
     }.language
 
     expectNoDifference(
-      language.grammar(startingIdentifier: "entry"),
-      Grammar(startingIdentifier: "entry") {
+      language.grammar(startingSymbol: "entry"),
+      Grammar(startingSymbol: "entry") {
         Production("entry") { Ref("l0__start") }
         Production("expression") { "value" }
         Production("statement") { "other" }
@@ -83,7 +83,7 @@ struct `Language tests` {
     )
     expectNoDifference(
       concatenated.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("statement") { "other" }
@@ -105,7 +105,7 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("statement") { "other" }
@@ -131,7 +131,7 @@ struct `Language tests` {
     )
     expectNoDifference(
       unioned.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("statement") { "other" }
@@ -155,7 +155,7 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("statement") { "other" }
@@ -183,7 +183,7 @@ struct `Language tests` {
     )
     expectNoDifference(
       starred.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("l0__start") {
@@ -205,7 +205,7 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("l0__start") {
@@ -220,7 +220,7 @@ struct `Language tests` {
   @Test
   func `Reversed Returns New Language Without Mutating Original`() {
     let base = Language {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"
@@ -240,7 +240,7 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"
@@ -257,7 +257,7 @@ struct `Language tests` {
     )
     expectNoDifference(
       reversed.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
           ConcatanateExpressions {
@@ -278,7 +278,7 @@ struct `Language tests` {
   @Test
   func `Mutating Reverse Updates Language`() {
     var language = Language {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"
@@ -298,7 +298,7 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
           ConcatanateExpressions {
@@ -319,7 +319,7 @@ struct `Language tests` {
   @Test
   func `Homomorphed Returns New Language Without Mutating Original`() {
     let base = Language {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "+"
           Ref("term")
@@ -334,7 +334,7 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "+"
           Ref("term")
@@ -346,7 +346,7 @@ struct `Language tests` {
     )
     expectNoDifference(
       homomorphed.grammar(),
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "-"
           Ref("term")
@@ -361,7 +361,7 @@ struct `Language tests` {
   @Test
   func `Mutating Homomorph Updates Language`() {
     var language = Language {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "+"
           Ref("term")
@@ -376,7 +376,7 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "-"
           Ref("term")

@@ -1,20 +1,20 @@
 public struct Production: Hashable, Sendable {
-  public let identifier: Identifier
+  public let symbol: Symbol
   public let expression: Expression
 
   public init(
-    _ identifier: Identifier,
+    _ symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
   ) {
-    self.identifier = identifier
+    self.symbol = symbol
     self.expression = expression()
   }
 
   public init(
-    _ identifier: Identifier,
+    _ symbol: Symbol,
     _ expression: some ConvertibleToExpression
   ) {
-    self.identifier = identifier
+    self.symbol = symbol
     self.expression = expression.expression
   }
 }

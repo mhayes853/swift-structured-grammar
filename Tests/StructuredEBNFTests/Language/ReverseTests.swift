@@ -7,7 +7,7 @@ struct `Reverse tests` {
   @Test
   func `Reverse Rewrites Reachable Productions`() {
     let language = Reverse {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"
@@ -25,7 +25,7 @@ struct `Reverse tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
           ConcatanateExpressions {
@@ -46,7 +46,7 @@ struct `Reverse tests` {
   @Test
   func `Reverse Rewrites All Reachable Productions And Omits Unreachable Ones`() {
     let language = Reverse {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"
@@ -76,7 +76,7 @@ struct `Reverse tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
           ConcatanateExpressions {
@@ -106,7 +106,7 @@ struct `Reverse tests` {
   @Test
   func `Static Reverse Helper Matches Wrapper`() {
     let wrapper = Reverse {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"
@@ -122,7 +122,7 @@ struct `Reverse tests` {
       }
     }.language
     let helper = Language.reverse(
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           ConcatanateExpressions {
             "a"

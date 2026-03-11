@@ -1,11 +1,11 @@
 public struct Ref: Hashable, Sendable, ConvertibleToExpression {
-  public let identifier: Identifier
+  public let symbol: Symbol
 
-  public init(_ identifier: Identifier) {
-    self.identifier = identifier
+  public init(_ symbol: Symbol) {
+    self.symbol = symbol
   }
 
   public var expression: Expression {
-    .ref(self.identifier)
+    .ref(self.symbol)
   }
 }

@@ -12,7 +12,7 @@ struct `KleeneStar tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("l0__start") {

@@ -1,7 +1,7 @@
-public struct Identifier: Hashable, Sendable, RawRepresentable, ExpressibleByStringLiteral {
-  public static let root = Identifier(rawValue: "root")!
+public struct Symbol: Hashable, Sendable, RawRepresentable, ExpressibleByStringLiteral {
+  public static let root = Symbol(rawValue: "root")!
 
-  public struct InvalidIdentifierError: Error, Equatable, Sendable {
+  public struct InvalidSymbolError: Error, Equatable, Sendable {
     public let rawValue: String
   }
 
@@ -9,7 +9,7 @@ public struct Identifier: Hashable, Sendable, RawRepresentable, ExpressibleByStr
 
   public init(_ rawValue: String) throws {
     guard Self.isValid(rawValue) else {
-      throw InvalidIdentifierError(rawValue: rawValue)
+      throw InvalidSymbolError(rawValue: rawValue)
     }
     self.rawValue = rawValue
   }
@@ -20,10 +20,10 @@ public struct Identifier: Hashable, Sendable, RawRepresentable, ExpressibleByStr
   }
 
   public init(stringLiteral value: String) {
-    guard let identifier = Self(rawValue: value) else {
-      preconditionFailure("Invalid identifier literal: \(value)")
+    guard let symbol = Self(rawValue: value) else {
+      preconditionFailure("Invalid symbol literal: \(value)")
     }
-    self = identifier
+    self = symbol
   }
 
   private static func isValid(_ rawValue: String) -> Bool {

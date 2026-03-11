@@ -7,11 +7,11 @@ struct `Union tests` {
   @Test
   func `Union Builds Choice Over Distinct Grammar Entry Productions`() {
     let language = Union {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") { "first" }
         Production("term") { "value" }
       }
-      Grammar(startingIdentifier: "statement") {
+      Grammar(startingSymbol: "statement") {
         Production("statement") { "second" }
         Production("factor") { Ref("term") }
       }
@@ -19,7 +19,7 @@ struct `Union tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "first" }
         Production("term") { "value" }
@@ -48,7 +48,7 @@ struct `Union tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("l0__start") { Ref("expression") }

@@ -7,7 +7,7 @@ struct `HomomorphMap tests` {
   @Test
   func `HomomorphMap Eagerly Rewrites Inner Language Grammar`() {
     let language = HomomorphMap {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           Choice {
             "+"

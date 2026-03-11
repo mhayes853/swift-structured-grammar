@@ -7,7 +7,7 @@ struct `Homomorph tests` {
   @Test
   func `Homomorph Eagerly Rewrites Inner Language Grammar`() {
     let language = Homomorph("+", to: "-") {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "+"
           Ref("term")
@@ -20,7 +20,7 @@ struct `Homomorph tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") {
           "-"
           Ref("term")

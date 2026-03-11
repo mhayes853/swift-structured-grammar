@@ -7,11 +7,11 @@ struct `ConcatenateLanguages tests` {
   @Test
   func `ConcatenateLanguages Merges Grammars In Encounter Order`() {
     let language = ConcatenateLanguages {
-      Grammar(startingIdentifier: "expression") {
+      Grammar(startingSymbol: "expression") {
         Production("expression") { "first" }
         Production("term") { "value" }
       }
-      Grammar(startingIdentifier: "factor") {
+      Grammar(startingSymbol: "factor") {
         Production("factor") { Ref("term") }
         Production("statement") { "second" }
       }
@@ -19,7 +19,7 @@ struct `ConcatenateLanguages tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "first" }
         Production("term") { "value" }
@@ -45,7 +45,7 @@ struct `ConcatenateLanguages tests` {
 
     expectNoDifference(
       language.language.grammar(),
-      Grammar(startingIdentifier: .root) {
+      Grammar(startingSymbol: .root) {
         Production(.root) { Ref("l0__start") }
         Production("expression") { "value" }
         Production("l0__start") { Ref("expression") }

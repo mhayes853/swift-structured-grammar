@@ -1,18 +1,18 @@
 // MARK: - Grammar
 
 public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
-  public var startingIdentifier: Identifier {
+  public var startingSymbol: Symbol {
     didSet {
-      self.updateStartingIdentifier(from: oldValue)
+      self.updateStartingSymbol(from: oldValue)
     }
   }
-  private var orderedIdentifiers: [Identifier]
-  private var productionsByIdentifier: [Identifier: Production]
+  private var orderedSymbols: [Symbol]
+  private var productionsBySymbol: [Symbol: Production]
 
   public var productions: Productions {
     Productions(
-      orderedIdentifiers: self.orderedIdentifiers,
-      productionsByIdentifier: self.productionsByIdentifier
+      orderedSymbols: self.orderedSymbols,
+      productionsBySymbol: self.productionsBySymbol
     )
   }
 
@@ -25,44 +25,44 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   }
 
   public init(_ production: Production) {
-    self.init(startingIdentifier: production.identifier, CollectionOfOne(production))
+    self.init(startingSymbol: production.symbol, CollectionOfOne(production))
   }
 
-  public init(startingIdentifier: Identifier, _ productions: some Sequence<Production>) {
-    self.startingIdentifier = startingIdentifier
-    self.orderedIdentifiers = [startingIdentifier]
-    self.productionsByIdentifier = [
-      startingIdentifier: Production(startingIdentifier) { EmptyExpression() }
+  public init(startingSymbol: Symbol, _ productions: some Sequence<Production>) {
+    self.startingSymbol = startingSymbol
+    self.orderedSymbols = [startingSymbol]
+    self.productionsBySymbol = [
+      startingSymbol: Production(startingSymbol) { EmptyExpression() }
     ]
     for production in productions {
       self.append(production)
     }
   }
 
-  public init(startingIdentifier: Identifier, @GrammarBuilder _ content: () -> [Production]) {
-    self.init(startingIdentifier: startingIdentifier, content())
+  public init(startingSymbol: Symbol, @GrammarBuilder _ content: () -> [Production]) {
+    self.init(startingSymbol: startingSymbol, content())
   }
 
   private init(
-    startingIdentifier: Identifier,
-    orderedIdentifiers: [Identifier],
-    productionsByIdentifier: [Identifier: Production]
+    startingSymbol: Symbol,
+    orderedSymbols: [Symbol],
+    productionsBySymbol: [Symbol: Production]
   ) {
-    self.startingIdentifier = startingIdentifier
-    self.orderedIdentifiers = orderedIdentifiers
-    self.productionsByIdentifier = productionsByIdentifier
+    self.startingSymbol = startingSymbol
+    self.orderedSymbols = orderedSymbols
+    self.productionsBySymbol = productionsBySymbol
   }
 
-  public func production(named identifier: Identifier) -> Production? {
-    self.productionsByIdentifier[identifier]
+  public func production(for symbol: Symbol) -> Production? {
+    self.productionsBySymbol[symbol]
   }
 
-  public func containsProduction(identifier: Identifier) -> Bool {
-    self.productionsByIdentifier[identifier] != nil
+  public func containsProduction(for symbol: Symbol) -> Bool {
+    self.productionsBySymbol[symbol] != nil
   }
 
-  public subscript(_ identifier: Identifier) -> Production? {
-    self.productionsByIdentifier[identifier]
+  public subscript(_ symbol: Symbol) -> Production? {
+    self.productionsBySymbol[symbol]
   }
 
   public subscript(index: Int) -> Production {
@@ -70,7 +70,7 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
   }
 
   public mutating func append(_ production: Production) {
-    self.replaceProduction(named: production.identifier, with: production)
+    self.replaceProduction(for: production.symbol, with: production)
   }
 
   public mutating func append(contentsOf productions: some Sequence<Production>) {
@@ -91,100 +91,100 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
     return grammar
   }
 
-  public mutating func removeProduction(identifier: Identifier) {
-    if identifier == self.startingIdentifier {
-      self.productionsByIdentifier[identifier] = Production(identifier) { EmptyExpression() }
+  public mutating func removeProduction(for symbol: Symbol) {
+    if symbol == self.startingSymbol {
+      self.productionsBySymbol[symbol] = Production(symbol) { EmptyExpression() }
       return
     }
-    self.orderedIdentifiers.removeAll { $0 == identifier }
-    self.productionsByIdentifier[identifier] = nil
+    self.orderedSymbols.removeAll { $0 == symbol }
+    self.productionsBySymbol[symbol] = nil
   }
 
   public mutating func removeAll() {
-    self.orderedIdentifiers = [self.startingIdentifier]
-    self.productionsByIdentifier = [
-      self.startingIdentifier: Production(self.startingIdentifier) { EmptyExpression() }
+    self.orderedSymbols = [self.startingSymbol]
+    self.productionsBySymbol = [
+      self.startingSymbol: Production(self.startingSymbol) { EmptyExpression() }
     ]
   }
 
   public mutating func removeAll(where shouldBeRemoved: (Production) -> Bool) {
-    let removedIdentifiers = Set<Identifier>(
-      self.orderedIdentifiers.compactMap { identifier in
-        guard let production = self.productionsByIdentifier[identifier] else { return nil }
-        return shouldBeRemoved(production) ? identifier : nil
+    let removedSymbols = Set<Symbol>(
+      self.orderedSymbols.compactMap { symbol in
+        guard let production = self.productionsBySymbol[symbol] else { return nil }
+        return shouldBeRemoved(production) ? symbol : nil
       }
     )
 
-    self.orderedIdentifiers.removeAll { removedIdentifiers.contains($0) }
-    self.productionsByIdentifier = self.productionsByIdentifier.filter { !removedIdentifiers.contains($0.key) }
-    if removedIdentifiers.contains(self.startingIdentifier) {
-      self.productionsByIdentifier[self.startingIdentifier] = Production(self.startingIdentifier) {
+    self.orderedSymbols.removeAll { removedSymbols.contains($0) }
+    self.productionsBySymbol = self.productionsBySymbol.filter { !removedSymbols.contains($0.key) }
+    if removedSymbols.contains(self.startingSymbol) {
+      self.productionsBySymbol[self.startingSymbol] = Production(self.startingSymbol) {
         EmptyExpression()
       }
-      if !self.orderedIdentifiers.contains(self.startingIdentifier) {
-        self.orderedIdentifiers.insert(self.startingIdentifier, at: 0)
+      if !self.orderedSymbols.contains(self.startingSymbol) {
+        self.orderedSymbols.insert(self.startingSymbol, at: 0)
       }
     }
   }
 
   public mutating func replaceProduction(
-    named identifier: Identifier,
+    for symbol: Symbol,
     with expression: some ConvertibleToExpression
   ) {
-    self.replaceProduction(named: identifier, with: Production(identifier, expression))
+    self.replaceProduction(for: symbol, with: Production(symbol, expression))
   }
 
   public mutating func replaceProduction(
-    named identifier: Identifier,
+    for symbol: Symbol,
     with string: String
   ) {
-    self.replaceProduction(named: identifier, with: Terminal(string))
+    self.replaceProduction(for: symbol, with: Terminal(string))
   }
 
   public mutating func replaceProduction(
-    named identifier: Identifier,
+    for symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
   ) {
-    self.replaceProduction(named: identifier, with: expression())
+    self.replaceProduction(for: symbol, with: expression())
   }
 
   public func replacingProduction(
-    named identifier: Identifier,
+    for symbol: Symbol,
     with expression: some ConvertibleToExpression
   ) -> Self {
     var grammar = self
-    grammar.replaceProduction(named: identifier, with: expression)
+    grammar.replaceProduction(for: symbol, with: expression)
     return grammar
   }
 
   public func replacingProduction(
-    named identifier: Identifier,
+    for symbol: Symbol,
     with string: String
   ) -> Self {
     var grammar = self
-    grammar.replaceProduction(named: identifier, with: string)
+    grammar.replaceProduction(for: symbol, with: string)
     return grammar
   }
 
   public func replacingProduction(
-    named identifier: Identifier,
+    for symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
   ) -> Self {
     var grammar = self
-    grammar.replaceProduction(named: identifier, with: expression())
+    grammar.replaceProduction(for: symbol, with: expression())
     return grammar
   }
 
-  private mutating func replaceProduction(named identifier: Identifier, with production: Production) {
-    if self.productionsByIdentifier[identifier] == nil {
-      self.appendIdentifierIfNeeded(identifier)
+  private mutating func replaceProduction(for symbol: Symbol, with production: Production) {
+    if self.productionsBySymbol[symbol] == nil {
+      self.appendSymbolIfNeeded(symbol)
     }
-    self.productionsByIdentifier[identifier] = production
+    self.productionsBySymbol[symbol] = production
   }
 
   public mutating func merge(_ grammar: Grammar) {
     for production in grammar.productions {
-      self.replaceProduction(named: production.identifier, with: production)
+      self.replaceProduction(for: production.symbol, with: production)
     }
   }
 
@@ -194,24 +194,24 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
     return merged
   }
 
-  private mutating func appendIdentifierIfNeeded(_ identifier: Identifier) {
-    guard !self.orderedIdentifiers.contains(identifier) else { return }
-    if identifier == self.startingIdentifier {
-      self.orderedIdentifiers.insert(identifier, at: 0)
+  private mutating func appendSymbolIfNeeded(_ symbol: Symbol) {
+    guard !self.orderedSymbols.contains(symbol) else { return }
+    if symbol == self.startingSymbol {
+      self.orderedSymbols.insert(symbol, at: 0)
     } else {
-      self.orderedIdentifiers.append(identifier)
+      self.orderedSymbols.append(symbol)
     }
   }
 
-  private mutating func updateStartingIdentifier(from oldValue: Identifier) {
-    guard self.startingIdentifier != oldValue else { return }
-    if self.productionsByIdentifier[self.startingIdentifier] == nil {
-      self.productionsByIdentifier[self.startingIdentifier] = Production(self.startingIdentifier) {
+  private mutating func updateStartingSymbol(from oldValue: Symbol) {
+    guard self.startingSymbol != oldValue else { return }
+    if self.productionsBySymbol[self.startingSymbol] == nil {
+      self.productionsBySymbol[self.startingSymbol] = Production(self.startingSymbol) {
         EmptyExpression()
       }
     }
-    self.orderedIdentifiers.removeAll { $0 == self.startingIdentifier }
-    self.orderedIdentifiers.insert(self.startingIdentifier, at: 0)
+    self.orderedSymbols.removeAll { $0 == self.startingSymbol }
+    self.orderedSymbols.insert(self.startingSymbol, at: 0)
   }
 }
 
@@ -219,8 +219,8 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
 
 extension Grammar {
   public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
-    self.productionsByIdentifier = self.productionsByIdentifier.mapValues { production in
-      Production(production.identifier, self.homomorphed(expression: production.expression, transform: transform))
+    self.productionsBySymbol = self.productionsBySymbol.mapValues { production in
+      Production(production.symbol, self.homomorphed(expression: production.expression, transform: transform))
     }
   }
 
@@ -256,8 +256,8 @@ extension Grammar {
       .zeroOrMore(self.homomorphed(expression: expression, transform: transform))
     case let .group(expression):
       .group(self.homomorphed(expression: expression, transform: transform))
-    case let .ref(identifier):
-      .ref(identifier)
+    case let .ref(symbol):
+      .ref(symbol)
     case let .special(special):
       .special(special)
     case let .terminal(terminal):
@@ -274,9 +274,9 @@ extension Grammar {
       .map { production in
         let formattedExpression = self.format(expression: production.expression)
         if formattedExpression.isEmpty {
-          return "\(production.identifier.rawValue) = ;"
+          return "\(production.symbol.rawValue) = ;"
         } else {
-          return "\(production.identifier.rawValue) = \(formattedExpression) ;"
+          return "\(production.symbol.rawValue) = \(formattedExpression) ;"
         }
       }
       .joined(separator: "\n")
@@ -304,8 +304,8 @@ extension Grammar {
       "{\(self.format(expression: expression))}"
     case let .group(expression):
       "(\(self.format(expression: expression)))"
-    case let .ref(identifier):
-      identifier.rawValue
+    case let .ref(symbol):
+      symbol.rawValue
     case let .special(special):
       "? \(special.value) ?"
     case let .terminal(terminal):
@@ -336,28 +336,28 @@ extension Grammar {
     public typealias Element = Production
     public typealias Index = Int
 
-    private let orderedIdentifiers: [Identifier]
-    private let productionsByIdentifier: [Identifier: Production]
+    private let orderedSymbols: [Symbol]
+    private let productionsBySymbol: [Symbol: Production]
 
-    init(orderedIdentifiers: [Identifier], productionsByIdentifier: [Identifier: Production]) {
-      self.orderedIdentifiers = orderedIdentifiers
-      self.productionsByIdentifier = productionsByIdentifier
+    init(orderedSymbols: [Symbol], productionsBySymbol: [Symbol: Production]) {
+      self.orderedSymbols = orderedSymbols
+      self.productionsBySymbol = productionsBySymbol
     }
 
     public var startIndex: Int {
-      self.orderedIdentifiers.startIndex
+      self.orderedSymbols.startIndex
     }
 
     public var endIndex: Int {
-      self.orderedIdentifiers.endIndex
+      self.orderedSymbols.endIndex
     }
 
     public subscript(position: Int) -> Production {
-      self.productionsByIdentifier[self.orderedIdentifiers[position]]!
+      self.productionsBySymbol[self.orderedSymbols[position]]!
     }
 
-    public subscript(identifier: Identifier) -> Production? {
-      self.productionsByIdentifier[identifier]
+    public subscript(symbol: Symbol) -> Production? {
+      self.productionsBySymbol[symbol]
     }
   }
 }
