@@ -6,6 +6,7 @@ public indirect enum Expression: Hashable, Sendable, ConvertibleToExpression {
   case zeroOrMore(Expression)
   case oneOrMore(Expression)
   case group(Expression)
+  case characterGroup(CharacterGroup)
   case ref(Symbol)
   case terminal(Terminal)
 

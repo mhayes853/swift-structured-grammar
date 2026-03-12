@@ -257,6 +257,8 @@ extension Grammar {
       .oneOrMore(self.homomorphed(expression: expression, transform: transform))
     case let .group(expression):
       .group(self.homomorphed(expression: expression, transform: transform))
+    case let .characterGroup(characterGroup):
+      .characterGroup(characterGroup)
     case let .ref(symbol):
       .ref(symbol)
     case let .terminal(terminal):
@@ -302,6 +304,8 @@ extension Grammar {
       expressions.flatMap { self.referencedSymbols(in: $0) }
     case let .optional(expr), let .zeroOrMore(expr), let .oneOrMore(expr), let .group(expr):
       self.referencedSymbols(in: expr)
+    case let .characterGroup(characterGroup):
+      []
     case let .ref(symbol):
       [symbol]
     case .terminal:
@@ -325,6 +329,8 @@ extension Grammar {
       .oneOrMore(self.reversed(expression: expr))
     case let .group(expr):
       .group(self.reversed(expression: expr))
+    case let .characterGroup(characterGroup):
+      .characterGroup(characterGroup)
     case let .ref(symbol):
       .ref(symbol)
     case let .terminal(terminal):
@@ -378,6 +384,8 @@ extension Grammar {
       return self.simplified(expression: expression).map(Expression.oneOrMore)
     case let .group(expression):
       return self.simplified(expression: expression).map(Expression.group)
+    case let .characterGroup(characterGroup):
+      return .characterGroup(characterGroup)
     case let .ref(symbol):
       return .ref(symbol)
     case let .terminal(terminal):
@@ -409,6 +417,8 @@ extension Grammar {
       self.formatPrimary(expression: expression) + "+"
     case let .group(expression):
       "(\(self.format(expression: expression)))"
+    case let .characterGroup(characterGroup):
+      self.format(characterGroup: characterGroup)
     case let .ref(symbol):
       symbol.rawValue
     case let .terminal(terminal):
@@ -426,7 +436,7 @@ extension Grammar {
 
   private func isPrimary(expression: Expression) -> Bool {
     switch expression {
-    case .ref, .group, .terminal:
+    case .ref, .group, .terminal, .characterGroup:
       true
     case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore:
       false
@@ -446,6 +456,96 @@ extension Grammar {
     }
 
     return "\"" + escaped + "\""
+  }
+
+  private func format(characterGroup: CharacterGroup) -> String {
+    var result = characterGroup.isNegated ? "[^" : "["
+
+    for member in characterGroup.members {
+      switch member {
+      case let .character(char):
+        result.append(char)
+      case let .range(start, end):
+        result.append(start)
+        result.append("-")
+        result.append(end)
+      case let .category(cat):
+        result.append("\\p{\(cat)}")
+      case let .negatedCategory(cat):
+        result.append("\\P{\(cat)}")
+      case let .predefined(predefined):
+        switch predefined {
+        case .digit:
+          result.append("\\d")
+        case .nonDigit:
+          result.append("\\D")
+        case .word:
+          result.append("\\w")
+        case .nonWord:
+          result.append("\\W")
+        case .whitespace:
+          result.append("\\s")
+        case .nonWhitespace:
+          result.append("\\S")
+        case .wildcard:
+          result.append(".")
+        }
+      case let .xmlName(xmlClass):
+        switch xmlClass {
+        case .nameStart:
+          result.append("\\i")
+        case .nonNameStart:
+          result.append("\\I")
+        case .nameChar:
+          result.append("\\c")
+        case .nonNameChar:
+          result.append("\\C")
+        }
+      case let .subtraction(subGroup):
+        result.append("-")
+        result.append(self.format(characterGroup: subGroup))
+      case let .escaped(escape):
+        switch escape {
+        case .backslash:
+          result.append("\\\\")
+        case .pipe:
+          result.append("\\|")
+        case .period:
+          result.append("\\.")
+        case .hyphen:
+          result.append("\\-")
+        case .caret:
+          result.append("\\^")
+        case .question:
+          result.append("\\?")
+        case .asterisk:
+          result.append("\\*")
+        case .plus:
+          result.append("\\+")
+        case .leftBrace:
+          result.append("\\{")
+        case .rightBrace:
+          result.append("\\}")
+        case .leftParen:
+          result.append("\\(")
+        case .rightParen:
+          result.append("\\)")
+        case .leftBracket:
+          result.append("\\[")
+        case .rightBracket:
+          result.append("\\]")
+        case .newline:
+          result.append("\\n")
+        case .carriageReturn:
+          result.append("\\r")
+        case .tab:
+          result.append("\\t")
+        }
+      }
+    }
+
+    result.append("]")
+    return result
   }
 }
 

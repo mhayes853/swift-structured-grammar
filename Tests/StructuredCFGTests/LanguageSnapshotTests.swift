@@ -378,6 +378,35 @@ private enum LanguageSnapshotSuite {
           }
         }
       }.language
+    ),
+    LanguageSnapshotCase(
+      name: "character-group-grammar",
+      language: Grammar(startingSymbol: "identifier") {
+        Production("identifier") {
+          CharacterGroup("[a-zA-Z_]")
+          ZeroOrMore {
+            CharacterGroup("[a-zA-Z0-9_]")
+          }
+        }
+        Production("digit") {
+          CharacterGroup("[\\d]")
+        }
+        Production("word") {
+          CharacterGroup("[\\w]")
+        }
+        Production("whitespace") {
+          CharacterGroup("[\\s]")
+        }
+        Production("nonDigit") {
+          CharacterGroup("[^\\d]")
+        }
+        Production("hexDigit") {
+          CharacterGroup("[0-9a-fA-F]")
+        }
+        Production("escaped") {
+          CharacterGroup("[\\n\\r\\t]")
+        }
+      }.language
     )
   ]
 
