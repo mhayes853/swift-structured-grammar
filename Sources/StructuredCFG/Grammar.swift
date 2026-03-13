@@ -1,6 +1,6 @@
 // MARK: - Grammar
 
-public struct Grammar: Hashable, Sendable, LanguageComponent {
+public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   public var startingSymbol: Symbol {
     didSet {
       self.updateStartingSymbol(from: oldValue)
@@ -19,6 +19,10 @@ public struct Grammar: Hashable, Sendable, LanguageComponent {
 
   public var language: Language {
     Language(self)
+  }
+
+  public var grammar: Grammar {
+    self
   }
 
   public init() {
