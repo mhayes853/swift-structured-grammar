@@ -1,6 +1,6 @@
 // MARK: - Language
 
-public struct Language: Hashable, Sendable, ConvertibleToLanguage {
+public struct Language: Hashable, Sendable, LanguageComponent {
   private indirect enum Operation: Hashable, Sendable {
     case empty
     case grammar(Grammar)
@@ -105,27 +105,27 @@ extension Language {
 // MARK: - Operations
 
 extension Language {
-  public static func concatenate(_ languages: [any ConvertibleToLanguage]) -> Self {
+  public static func concatenate(_ languages: [any LanguageComponent]) -> Self {
     Self(operation: .concatenate(languages.map { $0.language }))
   }
 
-  public static func concatenate(_ languages: any ConvertibleToLanguage...) -> Self {
+  public static func concatenate(_ languages: any LanguageComponent...) -> Self {
     Self.concatenate(languages)
   }
 
-  public static func union(_ languages: [any ConvertibleToLanguage]) -> Self {
+  public static func union(_ languages: [any LanguageComponent]) -> Self {
     Self(operation: .union(languages.map { $0.language }))
   }
 
-  public static func union(_ languages: any ConvertibleToLanguage...) -> Self {
+  public static func union(_ languages: any LanguageComponent...) -> Self {
     Self.union(languages)
   }
 
-  public static func kleeneStar(_ language: some ConvertibleToLanguage) -> Self {
+  public static func kleeneStar(_ language: some LanguageComponent) -> Self {
     Self(operation: .kleeneStar(language.language))
   }
 
-  public static func reverse(_ language: some ConvertibleToLanguage) -> Self {
+  public static func reverse(_ language: some LanguageComponent) -> Self {
     Self(operation: .reverse(language.language))
   }
 }
@@ -133,19 +133,19 @@ extension Language {
 // MARK: - Mutation
 
 extension Language {
-  public mutating func concatenate(_ other: some ConvertibleToLanguage) {
+  public mutating func concatenate(_ other: some LanguageComponent) {
     self = self.concatenated(other)
   }
 
-  public func concatenated(_ other: some ConvertibleToLanguage) -> Self {
+  public func concatenated(_ other: some LanguageComponent) -> Self {
     Self.concatenate([self, other.language])
   }
 
-  public mutating func formUnion(_ other: some ConvertibleToLanguage) {
+  public mutating func formUnion(_ other: some LanguageComponent) {
     self = self.unioned(other)
   }
 
-  public func unioned(_ other: some ConvertibleToLanguage) -> Self {
+  public func unioned(_ other: some LanguageComponent) -> Self {
     Self.union([self, other.language])
   }
 

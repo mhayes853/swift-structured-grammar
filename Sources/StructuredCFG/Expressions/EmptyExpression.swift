@@ -1,4 +1,4 @@
-public struct EmptyExpression: Hashable, Sendable, ConvertibleToExpression {
+public struct EmptyExpression: Hashable, Sendable, ExpressionComponent {
   public init() {}
 
   public var expression: Expression {

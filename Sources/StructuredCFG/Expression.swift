@@ -1,4 +1,4 @@
-public indirect enum Expression: Hashable, Sendable, ConvertibleToExpression {
+public indirect enum Expression: Hashable, Sendable, ExpressionComponent {
   case empty
   case concat([Expression])
   case choice([Expression])

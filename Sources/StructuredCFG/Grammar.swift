@@ -1,6 +1,6 @@
 // MARK: - Grammar
 
-public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
+public struct Grammar: Hashable, Sendable, LanguageComponent {
   public var startingSymbol: Symbol {
     didSet {
       self.updateStartingSymbol(from: oldValue)
@@ -128,7 +128,7 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
 
   public mutating func replaceProduction(
     for symbol: Symbol,
-    with expression: some ConvertibleToExpression
+    with expression: some ExpressionComponent
   ) {
     self.replaceProduction(for: symbol, with: Production(symbol, expression))
   }
@@ -149,7 +149,7 @@ public struct Grammar: Hashable, Sendable, ConvertibleToLanguage {
 
   public func replacingProduction(
     for symbol: Symbol,
-    with expression: some ConvertibleToExpression
+    with expression: some ExpressionComponent
   ) -> Self {
     var grammar = self
     grammar.replaceProduction(for: symbol, with: expression)
@@ -304,7 +304,7 @@ extension Grammar {
       expressions.flatMap { self.referencedSymbols(in: $0) }
     case let .optional(expr), let .zeroOrMore(expr), let .oneOrMore(expr), let .group(expr):
       self.referencedSymbols(in: expr)
-    case let .characterGroup(characterGroup):
+    case .characterGroup:
       []
     case let .ref(symbol):
       [symbol]

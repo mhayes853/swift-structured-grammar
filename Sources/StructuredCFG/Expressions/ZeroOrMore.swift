@@ -1,7 +1,7 @@
-public struct ZeroOrMore: Hashable, Sendable, ConvertibleToExpression {
+public struct ZeroOrMore: Hashable, Sendable, ExpressionComponent {
   public let expression: Expression
 
-  public init(_ expression: some ConvertibleToExpression) {
+  public init(_ expression: some ExpressionComponent) {
     self.expression = .zeroOrMore(expression.expression)
   }
 

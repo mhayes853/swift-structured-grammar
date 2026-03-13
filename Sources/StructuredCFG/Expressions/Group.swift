@@ -1,7 +1,7 @@
-public struct Group: Hashable, Sendable, ConvertibleToExpression {
+public struct Group: Hashable, Sendable, ExpressionComponent {
   public let expression: Expression
 
-  public init(_ expression: some ConvertibleToExpression) {
+  public init(_ expression: some ExpressionComponent) {
     self.expression = .group(expression.expression)
   }
 

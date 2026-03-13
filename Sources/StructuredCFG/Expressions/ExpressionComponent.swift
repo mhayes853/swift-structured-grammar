@@ -1,4 +1,4 @@
-public protocol ConvertibleToExpression {
+public protocol ExpressionComponent {
   @ExpressionBuilder
   var expression: Expression { get }
 }

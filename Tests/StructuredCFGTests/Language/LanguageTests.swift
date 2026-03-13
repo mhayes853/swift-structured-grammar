@@ -222,13 +222,13 @@ struct `Language tests` {
     let base = Language {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "c"
           }
@@ -242,13 +242,13 @@ struct `Language tests` {
       base.grammar(),
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "c"
           }
@@ -260,13 +260,13 @@ struct `Language tests` {
       Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "c"
             "b"
           }
@@ -280,13 +280,13 @@ struct `Language tests` {
     var language = Language {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "c"
           }
@@ -301,13 +301,13 @@ struct `Language tests` {
       Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "c"
             "b"
           }

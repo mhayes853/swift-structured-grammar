@@ -128,7 +128,7 @@ private enum LanguageSnapshotSuite {
           Production("statement") {
             Choice {
               "pass"
-              ConcatanateExpressions {
+              ConcatenateExpressions {
                 "let"
                 Ref("identifier")
               }

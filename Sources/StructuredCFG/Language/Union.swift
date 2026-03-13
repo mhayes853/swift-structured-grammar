@@ -1,4 +1,4 @@
-public struct Union: Hashable, Sendable, ConvertibleToLanguage {
+public struct Union: Hashable, Sendable, LanguageComponent {
   public let language: Language
 
   public init(@UnionBuilder _ content: () -> [Language]) {

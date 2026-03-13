@@ -1,4 +1,4 @@
-public struct CharacterGroup: Hashable, Sendable, ConvertibleToExpression {
+public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   public let isNegated: Bool
   public let members: [Member]
 

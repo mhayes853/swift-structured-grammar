@@ -1,6 +1,6 @@
 @resultBuilder
 public enum LanguageBuilder {
-  public static func buildExpression(_ value: some ConvertibleToLanguage) -> Language {
+  public static func buildExpression(_ value: some LanguageComponent) -> Language {
     value.language
   }
   

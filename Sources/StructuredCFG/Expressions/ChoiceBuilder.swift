@@ -1,6 +1,6 @@
 @resultBuilder
 public enum ChoiceBuilder {
-  public static func buildExpression(_ value: some ConvertibleToExpression) -> [Expression] {
+  public static func buildExpression(_ value: some ExpressionComponent) -> [Expression] {
     [value.expression]
   }
 

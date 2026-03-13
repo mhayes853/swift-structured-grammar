@@ -484,7 +484,7 @@ struct `Grammar tests` {
         EmptyExpression()
       }
       Production("expression") {
-        ConcatanateExpressions {
+        ConcatenateExpressions {
           Ref("identifier")
           Ref("epsilon")
           "a"
@@ -507,7 +507,7 @@ struct `Grammar tests` {
           EmptyExpression()
         }
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Ref("identifier")
             Ref("epsilon")
             "b"
@@ -545,7 +545,7 @@ struct `Grammar tests` {
         Ref("sign")
         Ref("term")
         ZeroOrMore {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Group {
               Choice {
                 "+"
@@ -582,7 +582,7 @@ struct `Grammar tests` {
   @Test
   func `Formatting Concatenation Drops Empty Members`() {
     let grammar = Grammar(Production("start") {
-      ConcatanateExpressions {
+      ConcatenateExpressions {
         EmptyExpression()
         "a"
         Ref("target")
@@ -656,7 +656,7 @@ struct `Grammar tests` {
   func `Reversed Concatenation Element Order`() {
     let grammar = Grammar(startingSymbol: "expression") {
       Production("expression") {
-        ConcatanateExpressions {
+        ConcatenateExpressions {
           "a"
           "b"
           "c"
@@ -670,7 +670,7 @@ struct `Grammar tests` {
       reversed,
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "c"
             "b"
             "a"
@@ -685,11 +685,11 @@ struct `Grammar tests` {
     let grammar = Grammar(startingSymbol: "expression") {
       Production("expression") {
         Choice {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             "b"
           }
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "c"
             "d"
           }
@@ -704,11 +704,11 @@ struct `Grammar tests` {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
           Choice {
-            ConcatanateExpressions {
+            ConcatenateExpressions {
               "b"
               "a"
             }
-            ConcatanateExpressions {
+            ConcatenateExpressions {
               "d"
               "c"
             }
@@ -723,7 +723,7 @@ struct `Grammar tests` {
     let grammar = Grammar(startingSymbol: "expression") {
       Production("expression") {
         OptionalExpression {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             "b"
           }
@@ -738,7 +738,7 @@ struct `Grammar tests` {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
           OptionalExpression {
-            ConcatanateExpressions {
+            ConcatenateExpressions {
               "b"
               "a"
             }
@@ -753,7 +753,7 @@ struct `Grammar tests` {
     let grammar = Grammar(startingSymbol: "expression") {
       Production("expression") {
         ZeroOrMore {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             "b"
           }
@@ -768,7 +768,7 @@ struct `Grammar tests` {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
           ZeroOrMore {
-            ConcatanateExpressions {
+            ConcatenateExpressions {
               "b"
               "a"
             }
@@ -783,7 +783,7 @@ struct `Grammar tests` {
     let grammar = Grammar(startingSymbol: "expression") {
       Production("expression") {
         Group {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             "b"
           }
@@ -798,7 +798,7 @@ struct `Grammar tests` {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
           Group {
-            ConcatanateExpressions {
+            ConcatenateExpressions {
               "b"
               "a"
             }
@@ -848,7 +848,7 @@ struct `Grammar tests` {
   func `Mutating Reverse Updates Grammar`() {
     var grammar = Grammar(startingSymbol: "expression") {
       Production("expression") {
-        ConcatanateExpressions {
+        ConcatenateExpressions {
           "a"
           "b"
         }
@@ -861,7 +861,7 @@ struct `Grammar tests` {
       grammar,
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "a"
           }

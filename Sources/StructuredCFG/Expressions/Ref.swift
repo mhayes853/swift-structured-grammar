@@ -1,4 +1,4 @@
-public struct Ref: Hashable, Sendable, ConvertibleToExpression {
+public struct Ref: Hashable, Sendable, ExpressionComponent {
   public let symbol: Symbol
 
   public init(_ symbol: Symbol) {

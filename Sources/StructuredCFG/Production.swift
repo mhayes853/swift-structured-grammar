@@ -12,7 +12,7 @@ public struct Production: Hashable, Sendable {
 
   public init(
     _ symbol: Symbol,
-    _ expression: some ConvertibleToExpression
+    _ expression: some ExpressionComponent
   ) {
     self.symbol = symbol
     self.expression = expression.expression

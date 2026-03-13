@@ -1,6 +1,6 @@
 @resultBuilder
 public enum ConcatenateLanguagesBuilder {
-  public static func buildExpression(_ value: some ConvertibleToLanguage) -> [Language] {
+  public static func buildExpression(_ value: some LanguageComponent) -> [Language] {
     [value.language]
   }
 

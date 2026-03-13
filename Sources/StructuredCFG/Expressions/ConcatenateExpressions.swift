@@ -1,7 +1,7 @@
-public struct ConcatanateExpressions: Hashable, Sendable, ConvertibleToExpression {
+public struct ConcatenateExpressions: Hashable, Sendable, ExpressionComponent {
   public let expression: Expression
 
-  public init(_ expression: some ConvertibleToExpression) {
+  public init(_ expression: some ExpressionComponent) {
     self.expression = .concat([expression.expression])
   }
 

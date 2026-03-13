@@ -1,4 +1,4 @@
-public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, ConvertibleToExpression {
+public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, ExpressionComponent {
   public let value: String
 
   public init(_ value: String) {

@@ -9,13 +9,13 @@ struct `Reverse tests` {
     let language = Reverse {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "c"
           }
@@ -28,13 +28,13 @@ struct `Reverse tests` {
       Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "c"
             "b"
           }
@@ -48,13 +48,13 @@ struct `Reverse tests` {
     let language = Reverse {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Ref("factor")
             "b"
           }
@@ -79,13 +79,13 @@ struct `Reverse tests` {
       Grammar(startingSymbol: .root) {
         Production(.root) { Ref("expression") }
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             Ref("factor")
           }
@@ -108,13 +108,13 @@ struct `Reverse tests` {
     let wrapper = Reverse {
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "c"
           }
@@ -124,13 +124,13 @@ struct `Reverse tests` {
     let helper = Language.reverse(
       Grammar(startingSymbol: "expression") {
         Production("expression") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
         Production("term") {
-          ConcatanateExpressions {
+          ConcatenateExpressions {
             "b"
             "c"
           }

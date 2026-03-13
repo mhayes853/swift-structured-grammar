@@ -7,7 +7,7 @@ struct `ConcatanateExpressions tests` {
   @Test
   func `Formats As Concatenation`() {
     let production = Production("start") {
-      ConcatanateExpressions {
+      ConcatenateExpressions {
         "a"
         Ref("target")
       }

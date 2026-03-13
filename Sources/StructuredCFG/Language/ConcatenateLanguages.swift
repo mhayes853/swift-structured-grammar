@@ -1,4 +1,4 @@
-public struct ConcatenateLanguages: Hashable, Sendable, ConvertibleToLanguage {
+public struct ConcatenateLanguages: Hashable, Sendable, LanguageComponent {
   public let language: Language
 
   public init(@ConcatenateLanguagesBuilder _ content: () -> [Language]) {

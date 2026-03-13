@@ -1,9 +1,9 @@
 @resultBuilder
 public enum ExpressionBuilder {
-  public static func buildExpression(_ value: some ConvertibleToExpression) -> Expression {
+  public static func buildExpression(_ value: some ExpressionComponent) -> Expression {
     value.expression
   }
-  
+
   public static func buildExpression(_ expression: Expression) -> Expression {
     expression
   }
