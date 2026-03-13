@@ -213,12 +213,12 @@ struct `GBNFFormatter tests` {
     expectNoDifference(
       grammar.formatted(with: .gbnf),
       """
-      start ::= [\\d]
-      word ::= [\\w]
-      space ::= [\\s]
-      digit ::= [\\D]
-      nonWord ::= [\\W]
-      nonSpace ::= [\\S]
+      start ::= [0-9]
+      word ::= [a-zA-Z0-9_]
+      space ::= [ \\t\\n\\r]
+      digit ::= [^0-9]
+      nonWord ::= [^a-zA-Z0-9_]
+      nonSpace ::= [^ \\t\\n\\r]
       any ::= [.]
       """
     )

@@ -15,14 +15,36 @@ struct `Language tests` {
   func `Grammar Lifts To Language`() {
     let grammar = Grammar(Production("expression") { "value" })
 
-    expectNoDifference(grammar.language.grammar(), grammar)
+    expectNoDifference(
+      grammar.language.grammar(),
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") { "value" }
+      }
+    )
+  }
+
+  @Test
+  func `Grammar Lift Supports Custom Starting Identifier Without Synthesis`() {
+    let grammar = Grammar(Production("expression") { "value" })
+
+    expectNoDifference(
+      grammar.language.grammar(startingSymbol: "entry"),
+      Grammar(startingSymbol: "entry") {
+        Production("entry") { Ref("expression") }
+        Production("expression") { "value" }
+      }
+    )
   }
 
   @Test
   func `Format Delegates To Grammar Formatting`() {
     let language = Grammar(Production("expression") { "value" }).language
 
-    expectNoDifference(language.formatted(with: .w3cEbnf), #"expression ::= "value""#)
+    expectNoDifference(language.formatted(with: .w3cEbnf), """
+      root ::= expression
+      expression ::= "value"
+      """)
   }
 
   @Test
@@ -36,10 +58,10 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
         Production("statement") { "other" }
-        Production("l0__start") {
+        Production("lastart") {
           Ref("expression")
           Ref("statement")
         }
@@ -58,10 +80,10 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(startingSymbol: "entry"),
       Grammar(startingSymbol: "entry") {
-        Production("entry") { Ref("l0__start") }
+        Production("entry") { Ref("lastart") }
         Production("expression") { "value" }
         Production("statement") { "other" }
-        Production("l0__start") {
+        Production("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -81,15 +103,18 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(Production("expression") { "value" })
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") { "value" }
+      }
     )
     expectNoDifference(
       concatenated.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
         Production("statement") { "other" }
-        Production("l0__start") {
+        Production("lastart") {
           Ref("expression")
           Ref("statement")
         }
@@ -108,10 +133,10 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
         Production("statement") { "other" }
-        Production("l0__start") {
+        Production("lastart") {
           Ref("expression")
           Ref("statement")
         }
@@ -129,15 +154,18 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(Production("expression") { "value" })
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") { "value" }
+      }
     )
     expectNoDifference(
       unioned.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
         Production("statement") { "other" }
-        Production("l0__start") {
+        Production("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -158,10 +186,10 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
         Production("statement") { "other" }
-        Production("l0__start") {
+        Production("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -181,14 +209,17 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(Production("expression") { "value" })
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") { "value" }
+      }
     )
     expectNoDifference(
       starred.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
-        Production("l0__start") {
+        Production("lastart") {
           ZeroOrMore {
             Ref("expression")
           }
@@ -208,9 +239,9 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
-        Production("l0__start") {
+        Production("lastart") {
           ZeroOrMore {
             Ref("expression")
           }
@@ -242,7 +273,8 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(startingSymbol: "expression") {
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           ConcatenateExpressions {
             "a"
@@ -336,7 +368,8 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(startingSymbol: "expression") {
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           "+"
           Ref("term")
@@ -348,7 +381,8 @@ struct `Language tests` {
     )
     expectNoDifference(
       homomorphed.grammar(),
-      Grammar(startingSymbol: "expression") {
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           "-"
           Ref("term")
@@ -378,7 +412,8 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(startingSymbol: "expression") {
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           "-"
           Ref("term")
@@ -413,25 +448,27 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           Choice {
             "+"
             "*"
           }
         }
-      )
+      }
     )
     expectNoDifference(
       homomorphed.grammar(),
-      Grammar(
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           Choice {
             "-"
             "*"
           }
         }
-      )
+      }
     )
   }
 
@@ -458,14 +495,15 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
         Production("expression") {
           Choice {
             "-"
             "*"
           }
         }
-      )
+      }
     )
   }
 }

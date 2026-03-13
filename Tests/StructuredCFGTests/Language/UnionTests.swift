@@ -20,12 +20,12 @@ struct `Union tests` {
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "first" }
         Production("term") { "value" }
         Production("statement") { "second" }
         Production("factor") { Ref("term") }
-        Production("l0__start") {
+        Production("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -49,9 +49,9 @@ struct `Union tests` {
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
-        Production("l0__start") { Ref("expression") }
+        Production("lastart") { Ref("expression") }
       }
     )
   }

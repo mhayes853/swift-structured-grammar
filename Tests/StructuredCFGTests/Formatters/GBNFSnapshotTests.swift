@@ -146,24 +146,24 @@ private enum GBNFSnapshotSuite {
       language: Grammar(startingSymbol: .root) {
         Production(.root) {
           Choice {
-            Ref("g0__expression")
-            Ref("g1__expression")
+            Ref("ga-expression")
+            Ref("gb-expression")
           }
         }
 
-        Production("g0__expression") {
-          Ref("g0__term")
+        Production("ga-expression") {
+          Ref("ga-term")
         }
 
-        Production("g0__term") {
+        Production("ga-term") {
           "left"
         }
 
-        Production("g1__expression") {
-          Ref("g1__term")
+        Production("gb-expression") {
+          Ref("gb-term")
         }
 
-        Production("g1__term") {
+        Production("gb-term") {
           "right"
         }
       }.language
@@ -223,7 +223,7 @@ private enum GBNFSnapshotSuite {
         Production("literal") {
           Choice {
             Ref("number")
-            Ref("g1__qualified")
+            Ref("ga-qualified")
             "quoted"
           }
         }
@@ -254,7 +254,7 @@ private enum GBNFSnapshotSuite {
           EmptyExpression()
         }
 
-        Production("g1__qualified") {
+        Production("ga-qualified") {
           "qualified"
         }
       }.language
@@ -397,7 +397,7 @@ private enum GBNFSnapshotSuite {
         Production("whitespace") {
           CharacterGroup("[\\s]")
         }
-        Production("hexDigit") {
+        Production("hex-digit") {
           CharacterGroup("[0-9a-fA-F]")
         }
         Production("escaped") {

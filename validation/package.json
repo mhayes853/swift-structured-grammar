@@ -1,12 +1,14 @@
 {
   "name": "grammar-validation",
   "version": "1.0.0",
-  "description": "Validates EBNF grammars from snapshot tests",
+  "description": "Validates EBNF and GBNF grammars from snapshot tests",
+  "type": "module",
   "scripts": {
-    "validate": "node validate-grammars.js"
+    "validate": "node validate-grammars.js && node validate-gbnf-grammars.js"
   },
   "dependencies": {
     "ebnf": "^1.9.1",
-    "ebnf-parser": "^0.1.10"
+    "ebnf-parser": "^0.1.10",
+    "gbnf": "^0.1.41"
   }
 }

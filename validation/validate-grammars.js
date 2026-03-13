@@ -1,7 +1,10 @@
-const { Grammars } = require("ebnf");
-const { readFileSync, readdirSync } = require("fs");
-const { join } = require("path");
+import { Grammars } from "ebnf";
+import { readFileSync, readdirSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 const snapshotDir = join(
   rootDir,

@@ -74,14 +74,30 @@ extension Language {
       against existing: ResolvableGrammarSymbol,
       context: GrammarNameResolutionContext
     ) -> Symbol {
-      Symbol(rawValue: "g\(context.grammarIndex)__\(new.symbol.rawValue)")!
+      Symbol(rawValue: "g\(self.letterNamespace(for: context.grammarIndex))\(new.symbol.rawValue)")!
     }
 
     public func createNewSymbol(
       grammars: [Grammar],
       context: GrammarNameResolutionContext
     ) -> Symbol {
-      Symbol(rawValue: "l\(context.grammarIndex)__start")!
+      Symbol(rawValue: "l\(self.letterNamespace(for: context.grammarIndex))start")!
+    }
+
+    private func letterNamespace(for index: Int) -> String {
+      precondition(index >= 0, "Grammar indices must be non-negative.")
+
+      var quotient = index
+      var namespace = ""
+
+      repeat {
+        let remainder = quotient % 26
+        let scalar = UnicodeScalar(UInt8(ascii: "a") + UInt8(remainder))
+        namespace.insert(Character(scalar), at: namespace.startIndex)
+        quotient = (quotient / 26) - 1
+      } while quotient >= 0
+
+      return namespace
     }
   }
 }
@@ -191,14 +207,8 @@ extension Language {
   ) -> Grammar {
     var resolver = Resolver(nameResolver: nameResolver)
     let resolved = resolver.resolve(self, operation: .grammar)
-    guard
-      resolved.synthesizedEntry,
-      let entrySymbol = resolved.entrySymbol,
-      entrySymbol != startingSymbol
-    else {
-      return resolved.grammar
-    }
-
+    guard let entrySymbol = resolved.entrySymbol else { return resolved.grammar }
+    guard entrySymbol != startingSymbol else { return resolved.grammar }
     return Grammar(
       startingSymbol: startingSymbol,
       resolved.grammar.productions + [Production(startingSymbol) { Ref(entrySymbol) }]

@@ -5,7 +5,7 @@ import StructuredCFG
 @Suite
 struct `GrammarNameResolver tests` {
   @Test
-  func `Default Resolver Uses gN Prefix For Union Conflicts`() {
+  func `Default Resolver Uses Validator Safe Prefix For Union Conflicts`() {
     let language = Union {
       Grammar(startingSymbol: "expression") {
         Production("expression") { "first" }
@@ -21,12 +21,12 @@ struct `GrammarNameResolver tests` {
 
     expectNoDifference(
       grammar.productions.map(\.symbol.rawValue).sorted(),
-      ["expression", "factor", "g1__expression", "l0__start", "root", "term"]
+      ["expression", "factor", "gbexpression", "lastart", "root", "term"]
     )
   }
 
   @Test
-  func `Default Resolver Uses gN Prefix For Concatenate Conflicts`() {
+  func `Default Resolver Uses Validator Safe Prefix For Concatenate Conflicts`() {
     let language = ConcatenateLanguages {
       Grammar(startingSymbol: "term") {
         Production("term") { "first" }
@@ -42,12 +42,12 @@ struct `GrammarNameResolver tests` {
 
     expectNoDifference(
       grammar.productions.map(\.symbol.rawValue).sorted(),
-      ["factor", "g1__factor", "g1__term", "l0__start", "root", "term"]
+      ["factor", "gbfactor", "gbterm", "lastart", "root", "term"]
     )
   }
 
   @Test
-  func `Default Resolver Uses lN Prefix For Synthesized Symbols`() {
+  func `Default Resolver Uses Validator Safe Prefix For Synthesized Symbols`() {
     let language = Union {
       Grammar(startingSymbol: "a") {
         Production("a") { "x" }
@@ -60,10 +60,24 @@ struct `GrammarNameResolver tests` {
     let grammar = language.language.grammar()
 
     let synthesizedSymbols = grammar.productions.filter {
-      $0.symbol.rawValue.hasPrefix("l") && $0.symbol.rawValue.hasSuffix("__start")
+      $0.symbol.rawValue.hasPrefix("l") && $0.symbol.rawValue.hasSuffix("start")
     }
 
-    expectNoDifference(synthesizedSymbols.map(\.symbol.rawValue), ["l0__start"])
+    expectNoDifference(synthesizedSymbols.map(\.symbol.rawValue), ["lastart"])
+  }
+
+  @Test
+  func `Default Resolver Uses Alphabetic Rollover For Conflicts`() {
+    let grammars = (0...753).map { index in
+      Grammar(startingSymbol: "expression") {
+        Production("expression") { "value-\(index)" }
+      }
+    }
+
+    let grammar = Language.union(grammars).grammar()
+
+    #expect(grammar.containsProduction(for: "gaaexpression"))
+    #expect(grammar.containsProduction(for: "gabzexpression"))
   }
 
   @Test
@@ -117,7 +131,7 @@ struct `GrammarNameResolver tests` {
         grammars: [Grammar],
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
-        return Symbol(rawValue: "l\(context.grammarIndex)__start")!
+        return Symbol(rawValue: "l\(context.grammarIndex)start")!
       }
     }
 
@@ -178,10 +192,10 @@ struct `GrammarNameResolver tests` {
     let grammar = language.language.grammar()
 
     let synthesizedSymbols = grammar.productions.filter {
-      $0.symbol.rawValue.hasPrefix("l") && $0.symbol.rawValue.hasSuffix("__start")
+      $0.symbol.rawValue.hasPrefix("l") && $0.symbol.rawValue.hasSuffix("start")
     }
 
-    expectNoDifference(synthesizedSymbols.map(\.symbol.rawValue), ["l0__start"])
+    expectNoDifference(synthesizedSymbols.map(\.symbol.rawValue), ["lastart"])
   }
 
   @Test

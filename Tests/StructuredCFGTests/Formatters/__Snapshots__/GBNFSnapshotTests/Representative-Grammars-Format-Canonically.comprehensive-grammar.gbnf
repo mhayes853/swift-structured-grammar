@@ -1,10 +1,11 @@
+root ::= document
 document ::= header assignment+ footer?
 header ::= "BEGIN"
 assignment ::= identifier "=" (literal | tuple | "computed")
 tuple ::= "(" literal ("," literal)* ")"
-literal ::= number | g1__qualified | "quoted"
+literal ::= number | ga-qualified | "quoted"
 number ::= digit+
 digit ::= "0" | "1" | "2"
 identifier ::= "identifier"
 footer ::= "END"
-g1__qualified ::= "qualified"
+ga-qualified ::= "qualified"

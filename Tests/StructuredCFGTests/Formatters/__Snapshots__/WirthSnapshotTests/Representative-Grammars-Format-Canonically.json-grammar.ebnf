@@ -1,3 +1,4 @@
+root = value .
 value = object | array | string | number | 'true' | 'false' | 'null' .
 object = '{' ([members]) '}' .
 members = pair {(',' pair)} .

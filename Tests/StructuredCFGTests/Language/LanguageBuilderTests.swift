@@ -20,7 +20,10 @@ struct `LanguageBuilder tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(Production("expression") { "value" })
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") { "value" }
+      }
     )
   }
 
@@ -49,7 +52,10 @@ struct `LanguageBuilder tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(Production("expression") { "value" })
+      Grammar(startingSymbol: .root) {
+        Production(.root) { Ref("expression") }
+        Production("expression") { "value" }
+      }
     )
   }
 }

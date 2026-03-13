@@ -13,9 +13,9 @@ struct `KleeneStar tests` {
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("l0__start") }
+        Production(.root) { Ref("lastart") }
         Production("expression") { "value" }
-        Production("l0__start") {
+        Production("lastart") {
           ZeroOrMore {
             Ref("expression")
           }

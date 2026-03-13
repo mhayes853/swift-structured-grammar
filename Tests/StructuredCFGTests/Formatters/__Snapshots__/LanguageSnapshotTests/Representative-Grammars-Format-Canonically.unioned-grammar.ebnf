@@ -1,7 +1,7 @@
-root ::= l0__start
+root ::= lastart
 expression ::= number
 number ::= digit+
 digit ::= "0" | "1"
 statement ::= "pass" | "let" identifier
 identifier ::= "identifier"
-l0__start ::= expression | statement
+lastart ::= expression | statement

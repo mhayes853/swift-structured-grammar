@@ -1,6 +1,7 @@
+root ::= identifier
 identifier ::= [a-zA-Z_] [a-zA-Z0-9_]*
-digit ::= [\d]
-word ::= [\w]
-whitespace ::= [\s]
-hexDigit ::= [0-9a-fA-F]
+digit ::= [0-9]
+word ::= [a-zA-Z0-9_]
+whitespace ::= [ \t\n\r]
+hex-digit ::= [0-9a-fA-F]
 escaped ::= [\n\r\t]

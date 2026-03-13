@@ -1,5 +1,5 @@
-root ::= g0__expression | g1__expression
-g0__expression ::= g0__term
-g0__term ::= "left"
-g1__expression ::= g1__term
-g1__term ::= "right"
+root ::= ga-expression | gb-expression
+ga-expression ::= ga-term
+ga-term ::= "left"
+gb-expression ::= gb-term
+gb-term ::= "right"

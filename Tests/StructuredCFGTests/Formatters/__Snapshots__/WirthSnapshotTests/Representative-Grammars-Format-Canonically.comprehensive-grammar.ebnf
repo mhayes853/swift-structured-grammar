@@ -1,3 +1,4 @@
+root = document .
 document = header assignment {assignment} ([footer]) .
 header = 'BEGIN' .
 assignment = identifier '=' (literal | tuple | 'computed') .

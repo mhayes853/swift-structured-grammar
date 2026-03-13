@@ -118,6 +118,10 @@ extension Grammar {
     }
 
     private func format(characterGroup: CharacterGroup) -> String {
+      if let standalone = self.formatStandalone(characterGroup: characterGroup) {
+        return standalone
+      }
+
       var result = characterGroup.isNegated ? "[^" : "["
 
       for member in characterGroup.members {
@@ -133,22 +137,7 @@ extension Grammar {
         case .negatedCategory(let cat):
           result.append("\\P{\(cat)}")
         case .predefined(let predefined):
-          switch predefined {
-          case .digit:
-            result.append("\\d")
-          case .nonDigit:
-            result.append("\\D")
-          case .word:
-            result.append("\\w")
-          case .nonWord:
-            result.append("\\W")
-          case .whitespace:
-            result.append("\\s")
-          case .nonWhitespace:
-            result.append("\\S")
-          case .wildcard:
-            result.append(".")
-          }
+          result.append(self.format(predefined: predefined))
         case .xmlName(let xmlClass):
           switch xmlClass {
           case .nameStart:
@@ -205,6 +194,41 @@ extension Grammar {
 
       result.append("]")
       return result
+    }
+
+    private func formatStandalone(characterGroup: CharacterGroup) -> String? {
+      guard characterGroup.members.count == 1 else { return nil }
+      guard case .predefined(let predefined) = characterGroup.members[0] else { return nil }
+
+      let characterSet = self.predefinedCharacterSet(predefined)
+      let isNegated = characterGroup.isNegated != characterSet.isNegated
+      return "[" + (isNegated ? "^" : "") + characterSet.members + "]"
+    }
+
+    private func format(predefined: CharacterGroup.PredefinedClass) -> String {
+      let characterSet = self.predefinedCharacterSet(predefined)
+      return (characterSet.isNegated ? "^" : "") + characterSet.members
+    }
+
+    private func predefinedCharacterSet(
+      _ predefined: CharacterGroup.PredefinedClass
+    ) -> (members: String, isNegated: Bool) {
+      switch predefined {
+      case .digit:
+        (members: "0-9", isNegated: false)
+      case .nonDigit:
+        (members: "0-9", isNegated: true)
+      case .word:
+        (members: "a-zA-Z0-9_", isNegated: false)
+      case .nonWord:
+        (members: "a-zA-Z0-9_", isNegated: true)
+      case .whitespace:
+        (members: " \\t\\n\\r", isNegated: false)
+      case .nonWhitespace:
+        (members: " \\t\\n\\r", isNegated: true)
+      case .wildcard:
+        (members: ".", isNegated: false)
+      }
     }
   }
 }
