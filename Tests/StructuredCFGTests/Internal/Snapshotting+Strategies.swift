@@ -7,4 +7,10 @@ extension Snapshotting where Value == Grammar, Format == String {
       grammar.formatted(with: .w3cEbnf)
     }
   }
+
+  static func wirthEbnf() -> Self {
+    Self(pathExtension: "ebnf", diffing: .lines) { grammar in
+      grammar.formatted(with: .wirthEbnf)
+    }
+  }
 }
