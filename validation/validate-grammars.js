@@ -7,8 +7,9 @@ const snapshotDir = join(
   rootDir,
   "Tests",
   "StructuredCFGTests",
+  "Formatters",
   "__Snapshots__",
-  "LanguageSnapshotTests",
+  "LanguageSnapshotTests"
 );
 
 function getEbnfFiles(dir) {
