@@ -12,6 +12,7 @@ public struct Language: Hashable, Sendable, ConvertibleToLanguage {
 
   private let operation: Operation
 
+  @LanguageBuilder
   public var language: Language {
     self
   }

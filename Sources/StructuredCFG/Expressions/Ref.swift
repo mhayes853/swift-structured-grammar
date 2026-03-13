@@ -6,6 +6,6 @@ public struct Ref: Hashable, Sendable, ConvertibleToExpression {
   }
 
   public var expression: Expression {
-    .ref(self.symbol)
+    Expression.ref(self.symbol)
   }
 }

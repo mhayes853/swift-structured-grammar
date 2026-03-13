@@ -14,7 +14,7 @@ public struct CharacterGroup: Hashable, Sendable, ConvertibleToExpression {
   }
 
   public var expression: Expression {
-    .characterGroup(self)
+    Expression.characterGroup(self)
   }
 
   public func negated() -> CharacterGroup {

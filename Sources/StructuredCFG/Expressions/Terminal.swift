@@ -10,6 +10,6 @@ public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Converti
   }
 
   public var expression: Expression {
-    .terminal(self)
+    Expression.terminal(self)
   }
 }
