@@ -14,6 +14,6 @@ struct `Choice tests` {
     }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(), #"start ::= "a" | "b""#)
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "a" | "b""#)
   }
 }

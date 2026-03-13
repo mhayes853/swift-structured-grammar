@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `Language tests` {
@@ -22,7 +22,7 @@ struct `Language tests` {
   func `Format Delegates To Grammar Formatting`() {
     let language = Grammar(Production("expression") { "value" }).language
 
-    expectNoDifference(language.format(), #"expression ::= "value""#)
+    expectNoDifference(language.formatted(with: .w3cEbnf), #"expression ::= "value""#)
   }
 
   @Test
@@ -30,7 +30,8 @@ struct `Language tests` {
     let language = ConcatenateLanguages {
       Grammar(Production("expression") { "value" })
       Grammar(Production("statement") { "other" })
-    }.language
+    }
+    .language
 
     expectNoDifference(
       language.grammar(),
@@ -51,7 +52,8 @@ struct `Language tests` {
     let language = Union {
       Grammar(Production("expression") { "value" })
       Grammar(Production("statement") { "other" })
-    }.language
+    }
+    .language
 
     expectNoDifference(
       language.grammar(startingSymbol: "entry"),
@@ -391,12 +393,14 @@ struct `Language tests` {
   @Test
   func `HomomorphMapped Returns New Language Without Mutating Original`() {
     let base = Language {
-      Grammar(Production("expression") {
-        Choice {
-          "+"
-          "*"
+      Grammar(
+        Production("expression") {
+          Choice {
+            "+"
+            "*"
+          }
         }
-      })
+      )
     }
 
     let homomorphed = base.homomorphMapped { terminal -> Terminal? in
@@ -409,33 +413,39 @@ struct `Language tests` {
 
     expectNoDifference(
       base.grammar(),
-      Grammar(Production("expression") {
-        Choice {
-          "+"
-          "*"
+      Grammar(
+        Production("expression") {
+          Choice {
+            "+"
+            "*"
+          }
         }
-      })
+      )
     )
     expectNoDifference(
       homomorphed.grammar(),
-      Grammar(Production("expression") {
-        Choice {
-          "-"
-          "*"
+      Grammar(
+        Production("expression") {
+          Choice {
+            "-"
+            "*"
+          }
         }
-      })
+      )
     )
   }
 
   @Test
   func `Mutating HomomorphMap Updates Language`() {
     var language = Language {
-      Grammar(Production("expression") {
-        Choice {
-          "+"
-          "*"
+      Grammar(
+        Production("expression") {
+          Choice {
+            "+"
+            "*"
+          }
         }
-      })
+      )
     }
 
     language.homomorphMap { terminal -> Terminal? in
@@ -448,12 +458,14 @@ struct `Language tests` {
 
     expectNoDifference(
       language.grammar(),
-      Grammar(Production("expression") {
-        Choice {
-          "-"
-          "*"
+      Grammar(
+        Production("expression") {
+          Choice {
+            "-"
+            "*"
+          }
         }
-      })
+      )
     )
   }
 }

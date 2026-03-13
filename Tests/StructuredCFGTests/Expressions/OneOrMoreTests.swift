@@ -19,6 +19,6 @@ struct `OneOrMore tests` {
     }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(), #"start ::= "value"+"#)
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "value"+"#)
   }
 }

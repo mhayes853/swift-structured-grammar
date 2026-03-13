@@ -205,8 +205,8 @@ extension Language {
     )
   }
 
-  public func format() -> String {
-    self.grammar().formatted()
+  public func formatted(with formatter: some Grammar.Formatter) -> String {
+    self.grammar().formatted(with: formatter)
   }
 }
 
@@ -233,14 +233,14 @@ extension Language {
       case .empty:
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
 
-      case let .grammar(grammar):
+      case .grammar(let grammar):
         return ResolvedLanguage(
           grammar: grammar,
           entrySymbol: grammar.productions.first?.symbol,
           synthesizedEntry: false
         )
 
-      case let .concatenate(languages):
+      case .concatenate(let languages):
         let resolved = languages.map { self.resolve($0, operation: .concatenate) }
         let entrySymbols = resolved.compactMap(\.entrySymbol)
         guard !entrySymbols.isEmpty else {
@@ -251,19 +251,26 @@ extension Language {
         self.grammars = [grammar]
         var index = 1
         while let language = iterator.next() {
-          grammar = self.mergeWithConflictResolution(grammar, language.grammar, index: index, operation: .concatenate)
+          grammar = self.mergeWithConflictResolution(
+            grammar,
+            language.grammar,
+            index: index,
+            operation: .concatenate
+          )
           self.grammars.append(language.grammar)
           index += 1
         }
         let entrySymbol = self.createNewSymbol()
-        grammar.append(Production(entrySymbol) {
-          for symbol in entrySymbols {
-            Ref(symbol)
+        grammar.append(
+          Production(entrySymbol) {
+            for symbol in entrySymbols {
+              Ref(symbol)
+            }
           }
-        })
+        )
         return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
 
-      case let .union(languages):
+      case .union(let languages):
         let resolved = languages.map { self.resolve($0, operation: .union) }
         let entrySymbols = resolved.compactMap(\.entrySymbol)
         guard !entrySymbols.isEmpty else {
@@ -274,7 +281,12 @@ extension Language {
         self.grammars = [grammar]
         var index = 1
         while let language = iterator.next() {
-          grammar = self.mergeWithConflictResolution(grammar, language.grammar, index: index, operation: .union)
+          grammar = self.mergeWithConflictResolution(
+            grammar,
+            language.grammar,
+            index: index,
+            operation: .union
+          )
           self.grammars.append(language.grammar)
           index += 1
         }
@@ -282,11 +294,13 @@ extension Language {
         if entrySymbols.count == 1 {
           grammar.append(Production(entrySymbol) { Ref(entrySymbols[0]) })
         } else {
-          grammar.append(Production(entrySymbol, Expression.choice(entrySymbols.map(Expression.ref))))
+          grammar.append(
+            Production(entrySymbol, Expression.choice(entrySymbols.map(Expression.ref)))
+          )
         }
         return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
 
-      case let .kleeneStar(language):
+      case .kleeneStar(let language):
         let resolved = self.resolve(language, operation: .kleeneStar)
         guard let entrySymbol = resolved.entrySymbol else {
           return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
@@ -294,18 +308,20 @@ extension Language {
         var grammar = resolved.grammar
         self.grammars = [grammar]
         let synthesizedSymbol = self.createNewSymbol()
-        grammar.append(Production(synthesizedSymbol) {
-          ZeroOrMore {
-            Ref(entrySymbol)
+        grammar.append(
+          Production(synthesizedSymbol) {
+            ZeroOrMore {
+              Ref(entrySymbol)
+            }
           }
-        })
+        )
         return ResolvedLanguage(
           grammar: grammar,
           entrySymbol: synthesizedSymbol,
           synthesizedEntry: true
         )
 
-      case let .reverse(language):
+      case .reverse(let language):
         let resolved = self.resolve(language, operation: .reverse)
         guard let entrySymbol = resolved.entrySymbol else {
           return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
@@ -350,7 +366,9 @@ extension Language {
 
       for production in incoming.productions {
         if existingSymbols.contains(production.symbol) {
-          if let existingProduction = base.productions.first(where: { $0.symbol == production.symbol }) {
+          if let existingProduction = base.productions.first(where: {
+            $0.symbol == production.symbol
+          }) {
             let resolvedSymbol = self.nameResolver.resolveSymbolConflict(
               for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
               against: ResolvableGrammarSymbol(symbol: existingProduction.symbol, grammar: base),

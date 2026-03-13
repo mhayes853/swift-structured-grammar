@@ -20,7 +20,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[a-zA-Z0-9]"))
   }
 
@@ -61,7 +61,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\d]"))
   }
 
@@ -75,7 +75,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\w]"))
   }
 
@@ -89,7 +89,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\s]"))
   }
 
@@ -103,7 +103,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\D]"))
   }
 
@@ -117,7 +117,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\W]"))
   }
 
@@ -131,7 +131,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\S]"))
   }
 
@@ -145,7 +145,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\i]"))
   }
 
@@ -159,7 +159,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\c]"))
   }
 
@@ -173,7 +173,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\n]"))
   }
 
@@ -187,7 +187,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\r]"))
   }
 
@@ -201,7 +201,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[\\t]"))
   }
 
@@ -215,7 +215,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted()
+    let formatted = grammar.formatted(with: .w3cEbnf)
     #expect(formatted.contains("[a-zA-Z0-9_]"))
   }
 }

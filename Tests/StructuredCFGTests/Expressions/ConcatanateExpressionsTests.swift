@@ -14,6 +14,6 @@ struct `ConcatanateExpressions tests` {
     }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(), #"start ::= "a" target"#)
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "a" target"#)
   }
 }

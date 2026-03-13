@@ -342,210 +342,234 @@ extension Grammar {
 // MARK: - Formatting
 
 extension Grammar {
-  public func formatted() -> String {
-    self.productions
-      .compactMap { production in
-        self.simplified(expression: production.expression).map { expression in
-          "\(production.symbol.rawValue) ::= \(self.format(expression: expression))"
+  public protocol Formatter: Sendable {
+    func format(production: Production) -> String
+  }
+
+  public struct W3CEBNFFormatter: Formatter {
+    public init() {}
+
+    public func format(production: Production) -> String {
+      guard let expression = self.simplified(expression: production.expression) else {
+        return ""
+      }
+      return "\(production.symbol.rawValue) ::= \(self.format(expression: expression))"
+    }
+
+    private func simplified(expression: Expression) -> Expression? {
+      switch expression {
+      case .empty:
+        return nil
+      case let .concat(expressions):
+        let expressions = expressions.compactMap { self.simplified(expression: $0) }
+        switch expressions.count {
+        case 0:
+          return nil
+        case 1:
+          return expressions[0]
+        default:
+          return .concat(expressions)
+        }
+      case let .choice(expressions):
+        let expressions = expressions.compactMap { self.simplified(expression: $0) }
+        switch expressions.count {
+        case 0:
+          return nil
+        case 1:
+          return expressions[0]
+        default:
+          return .choice(expressions)
+        }
+      case let .optional(expression):
+        return self.simplified(expression: expression).map(Expression.optional)
+      case let .zeroOrMore(expression):
+        return self.simplified(expression: expression).map(Expression.zeroOrMore)
+      case let .oneOrMore(expression):
+        return self.simplified(expression: expression).map(Expression.oneOrMore)
+      case let .group(expression):
+        return self.simplified(expression: expression).map(Expression.group)
+      case let .characterGroup(characterGroup):
+        return .characterGroup(characterGroup)
+      case let .ref(symbol):
+        return .ref(symbol)
+      case let .terminal(terminal):
+        return .terminal(terminal)
+      }
+    }
+
+    private func format(expression: Expression) -> String {
+      switch expression {
+      case .empty:
+        preconditionFailure("Empty expressions must be simplified before formatting.")
+      case let .concat(expressions):
+        expressions
+          .map { expression in
+            if case .choice = expression {
+              "(\(self.format(expression: expression)))"
+            } else {
+              self.format(expression: expression)
+            }
+          }
+          .joined(separator: " ")
+      case let .choice(expressions):
+        expressions.map { self.format(expression: $0) }.joined(separator: " | ")
+      case let .optional(expression):
+        self.formatPrimary(expression: expression) + "?"
+      case let .zeroOrMore(expression):
+        self.formatPrimary(expression: expression) + "*"
+      case let .oneOrMore(expression):
+        self.formatPrimary(expression: expression) + "+"
+      case let .group(expression):
+        "(\(self.format(expression: expression)))"
+      case let .characterGroup(characterGroup):
+        self.format(characterGroup: characterGroup)
+      case let .ref(symbol):
+        symbol.rawValue
+      case let .terminal(terminal):
+        self.format(terminal: terminal)
+      }
+    }
+
+    private func formatPrimary(expression: Expression) -> String {
+      if self.isPrimary(expression: expression) {
+        self.format(expression: expression)
+      } else {
+        "(\(self.format(expression: expression)))"
+      }
+    }
+
+    private func isPrimary(expression: Expression) -> Bool {
+      switch expression {
+      case .ref, .group, .terminal, .characterGroup:
+        true
+      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore:
+        false
+      }
+    }
+
+    private func format(terminal: Terminal) -> String {
+      let escaped = terminal.value.reduce(into: "") { result, character in
+        switch character {
+        case "\\":
+          result += "\\\\"
+        case #"""#:
+          result += #"\""#
+        default:
+          result.append(character)
         }
       }
-      .joined(separator: "\n")
-  }
 
-  private func simplified(expression: Expression) -> Expression? {
-    switch expression {
-    case .empty:
-      return nil
-    case let .concat(expressions):
-      let expressions = expressions.compactMap { self.simplified(expression: $0) }
-      switch expressions.count {
-      case 0:
-        return nil
-      case 1:
-        return expressions[0]
-      default:
-        return .concat(expressions)
-      }
-    case let .choice(expressions):
-      let expressions = expressions.compactMap { self.simplified(expression: $0) }
-      switch expressions.count {
-      case 0:
-        return nil
-      case 1:
-        return expressions[0]
-      default:
-        return .choice(expressions)
-      }
-    case let .optional(expression):
-      return self.simplified(expression: expression).map(Expression.optional)
-    case let .zeroOrMore(expression):
-      return self.simplified(expression: expression).map(Expression.zeroOrMore)
-    case let .oneOrMore(expression):
-      return self.simplified(expression: expression).map(Expression.oneOrMore)
-    case let .group(expression):
-      return self.simplified(expression: expression).map(Expression.group)
-    case let .characterGroup(characterGroup):
-      return .characterGroup(characterGroup)
-    case let .ref(symbol):
-      return .ref(symbol)
-    case let .terminal(terminal):
-      return .terminal(terminal)
+      return "\"" + escaped + "\""
     }
-  }
 
-  private func format(expression: Expression) -> String {
-    switch expression {
-    case .empty:
-      preconditionFailure("Empty expressions must be simplified before formatting.")
-    case let .concat(expressions):
-      expressions
-        .map { expression in
-          if case .choice = expression {
-            "(\(self.format(expression: expression)))"
-          } else {
-            self.format(expression: expression)
+    private func format(characterGroup: CharacterGroup) -> String {
+      var result = characterGroup.isNegated ? "[^" : "["
+
+      for member in characterGroup.members {
+        switch member {
+        case let .character(char):
+          result.append(char)
+        case let .range(start, end):
+          result.append(start)
+          result.append("-")
+          result.append(end)
+        case let .category(cat):
+          result.append("\\p{\(cat)}")
+        case let .negatedCategory(cat):
+          result.append("\\P{\(cat)}")
+        case let .predefined(predefined):
+          switch predefined {
+          case .digit:
+            result.append("\\d")
+          case .nonDigit:
+            result.append("\\D")
+          case .word:
+            result.append("\\w")
+          case .nonWord:
+            result.append("\\W")
+          case .whitespace:
+            result.append("\\s")
+          case .nonWhitespace:
+            result.append("\\S")
+          case .wildcard:
+            result.append(".")
+          }
+        case let .xmlName(xmlClass):
+          switch xmlClass {
+          case .nameStart:
+            result.append("\\i")
+          case .nonNameStart:
+            result.append("\\I")
+          case .nameChar:
+            result.append("\\c")
+          case .nonNameChar:
+            result.append("\\C")
+          }
+        case let .subtraction(subGroup):
+          result.append("-")
+          result.append(self.format(characterGroup: subGroup))
+        case let .escaped(escape):
+          switch escape {
+          case .backslash:
+            result.append("\\\\")
+          case .pipe:
+            result.append("\\|")
+          case .period:
+            result.append("\\.")
+          case .hyphen:
+            result.append("\\-")
+          case .caret:
+            result.append("\\^")
+          case .question:
+            result.append("\\?")
+          case .asterisk:
+            result.append("\\*")
+          case .plus:
+            result.append("\\+")
+          case .leftBrace:
+            result.append("\\{")
+          case .rightBrace:
+            result.append("\\}")
+          case .leftParen:
+            result.append("\\(")
+          case .rightParen:
+            result.append("\\)")
+          case .leftBracket:
+            result.append("\\[")
+          case .rightBracket:
+            result.append("\\]")
+          case .newline:
+            result.append("\\n")
+          case .carriageReturn:
+            result.append("\\r")
+          case .tab:
+            result.append("\\t")
           }
         }
-        .joined(separator: " ")
-    case let .choice(expressions):
-      expressions.map { self.format(expression: $0) }.joined(separator: " | ")
-    case let .optional(expression):
-      self.formatPrimary(expression: expression) + "?"
-    case let .zeroOrMore(expression):
-      self.formatPrimary(expression: expression) + "*"
-    case let .oneOrMore(expression):
-      self.formatPrimary(expression: expression) + "+"
-    case let .group(expression):
-      "(\(self.format(expression: expression)))"
-    case let .characterGroup(characterGroup):
-      self.format(characterGroup: characterGroup)
-    case let .ref(symbol):
-      symbol.rawValue
-    case let .terminal(terminal):
-      self.format(terminal: terminal)
-    }
-  }
-
-  private func formatPrimary(expression: Expression) -> String {
-    if self.isPrimary(expression: expression) {
-      self.format(expression: expression)
-    } else {
-      "(\(self.format(expression: expression)))"
-    }
-  }
-
-  private func isPrimary(expression: Expression) -> Bool {
-    switch expression {
-    case .ref, .group, .terminal, .characterGroup:
-      true
-    case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore:
-      false
-    }
-  }
-
-  private func format(terminal: Terminal) -> String {
-    let escaped = terminal.value.reduce(into: "") { result, character in
-      switch character {
-      case "\\":
-        result += "\\\\"
-      case #"""#:
-        result += #"\""#
-      default:
-        result.append(character)
       }
-    }
 
-    return "\"" + escaped + "\""
+      result.append("]")
+      return result
+    }
   }
 
-  private func format(characterGroup: CharacterGroup) -> String {
-    var result = characterGroup.isNegated ? "[^" : "["
+  public static var w3cEbnf: Grammar.W3CEBNFFormatter {
+    W3CEBNFFormatter()
+  }
+}
 
-    for member in characterGroup.members {
-      switch member {
-      case let .character(char):
-        result.append(char)
-      case let .range(start, end):
-        result.append(start)
-        result.append("-")
-        result.append(end)
-      case let .category(cat):
-        result.append("\\p{\(cat)}")
-      case let .negatedCategory(cat):
-        result.append("\\P{\(cat)}")
-      case let .predefined(predefined):
-        switch predefined {
-        case .digit:
-          result.append("\\d")
-        case .nonDigit:
-          result.append("\\D")
-        case .word:
-          result.append("\\w")
-        case .nonWord:
-          result.append("\\W")
-        case .whitespace:
-          result.append("\\s")
-        case .nonWhitespace:
-          result.append("\\S")
-        case .wildcard:
-          result.append(".")
-        }
-      case let .xmlName(xmlClass):
-        switch xmlClass {
-        case .nameStart:
-          result.append("\\i")
-        case .nonNameStart:
-          result.append("\\I")
-        case .nameChar:
-          result.append("\\c")
-        case .nonNameChar:
-          result.append("\\C")
-        }
-      case let .subtraction(subGroup):
-        result.append("-")
-        result.append(self.format(characterGroup: subGroup))
-      case let .escaped(escape):
-        switch escape {
-        case .backslash:
-          result.append("\\\\")
-        case .pipe:
-          result.append("\\|")
-        case .period:
-          result.append("\\.")
-        case .hyphen:
-          result.append("\\-")
-        case .caret:
-          result.append("\\^")
-        case .question:
-          result.append("\\?")
-        case .asterisk:
-          result.append("\\*")
-        case .plus:
-          result.append("\\+")
-        case .leftBrace:
-          result.append("\\{")
-        case .rightBrace:
-          result.append("\\}")
-        case .leftParen:
-          result.append("\\(")
-        case .rightParen:
-          result.append("\\)")
-        case .leftBracket:
-          result.append("\\[")
-        case .rightBracket:
-          result.append("\\]")
-        case .newline:
-          result.append("\\n")
-        case .carriageReturn:
-          result.append("\\r")
-        case .tab:
-          result.append("\\t")
-        }
-      }
-    }
+extension Grammar.Formatter where Self == Grammar.W3CEBNFFormatter {
+  public static var w3cEbnf: Grammar.W3CEBNFFormatter {
+    Grammar.W3CEBNFFormatter()
+  }
+}
 
-    result.append("]")
-    return result
+extension Grammar {
+  public func formatted(with formatter: some Formatter) -> String {
+    self.productions
+      .map { formatter.format(production: $0) }
+      .filter { !$0.isEmpty }
+      .joined(separator: "\n")
   }
 }
 

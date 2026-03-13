@@ -559,7 +559,7 @@ struct `Grammar tests` {
     }
 
     expectNoDifference(
-      grammar.formatted(),
+      grammar.formatted(with: .w3cEbnf),
       """
       sign ::= ("+" | "-")?
       term ::= number | ("(" expression ")") | "identifier"
@@ -576,7 +576,7 @@ struct `Grammar tests` {
       }
     }
 
-    expectNoDifference(grammar.formatted(), "")
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -589,7 +589,7 @@ struct `Grammar tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(), #"start ::= "a" target"#)
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "a" target"#)
   }
 
   @Test
@@ -602,7 +602,7 @@ struct `Grammar tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(), #"start ::= "a" | "b""#)
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "a" | "b""#)
   }
 
   @Test
@@ -613,7 +613,7 @@ struct `Grammar tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(), "")
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -624,7 +624,7 @@ struct `Grammar tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(), "")
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -635,7 +635,7 @@ struct `Grammar tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(), "")
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -649,7 +649,7 @@ struct `Grammar tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(), #"start ::= ("a" | "b")+"#)
+    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= ("a" | "b")+"#)
   }
 
   @Test
