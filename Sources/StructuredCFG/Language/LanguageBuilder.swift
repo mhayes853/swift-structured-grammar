@@ -3,6 +3,10 @@ public enum LanguageBuilder {
   public static func buildExpression(_ value: some ConvertibleToLanguage) -> Language {
     value.language
   }
+  
+  public static func buildExpression(_ language: Language) -> Language {
+    language
+  }
 
   public static func buildBlock() -> Language {
     Language()

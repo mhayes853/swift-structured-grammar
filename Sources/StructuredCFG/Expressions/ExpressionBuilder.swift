@@ -3,6 +3,10 @@ public enum ExpressionBuilder {
   public static func buildExpression(_ value: some ConvertibleToExpression) -> Expression {
     value.expression
   }
+  
+  public static func buildExpression(_ expression: Expression) -> Expression {
+    expression
+  }
 
   public static func buildExpression(_ string: String) -> Expression {
     Terminal(string).expression
