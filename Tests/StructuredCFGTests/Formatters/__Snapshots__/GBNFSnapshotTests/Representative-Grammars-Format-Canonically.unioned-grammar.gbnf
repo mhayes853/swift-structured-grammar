@@ -1,0 +1,7 @@
+root ::= l0__start
+expression ::= number
+number ::= digit+
+digit ::= "0" | "1"
+statement ::= "pass" | "let" identifier
+identifier ::= "identifier"
+l0__start ::= expression | statement

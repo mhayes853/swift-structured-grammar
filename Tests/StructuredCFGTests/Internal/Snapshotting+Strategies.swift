@@ -13,4 +13,10 @@ extension Snapshotting where Value == Grammar, Format == String {
       grammar.formatted(with: .wirthEbnf)
     }
   }
+
+  static func gbnf() -> Self {
+    Self(pathExtension: "gbnf", diffing: .lines) { grammar in
+      grammar.formatted(with: .gbnf)
+    }
+  }
 }
