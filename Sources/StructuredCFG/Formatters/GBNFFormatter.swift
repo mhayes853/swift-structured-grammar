@@ -41,6 +41,8 @@ extension Grammar {
         return self.simplified(expression: expression).map(Expression.zeroOrMore)
       case .oneOrMore(let expression):
         return self.simplified(expression: expression).map(Expression.oneOrMore)
+      case .range(let min, let max, let expression):
+        return self.simplified(expression: expression).map { Expression.range(min: min, max: max, expression: $0) }
       case .group(let expression):
         return self.simplified(expression: expression).map(Expression.group)
       case .characterGroup(let characterGroup):
@@ -57,7 +59,7 @@ extension Grammar {
       case .empty:
         preconditionFailure("Empty expressions must be simplified before formatting.")
       case .concat(let expressions):
-        expressions
+        return expressions
           .map { expression in
             if case .choice = expression {
               "(\(self.format(expression: expression)))"
@@ -67,21 +69,35 @@ extension Grammar {
           }
           .joined(separator: " ")
       case .choice(let expressions):
-        expressions.map { self.format(expression: $0) }.joined(separator: " | ")
+        return expressions.map { self.format(expression: $0) }.joined(separator: " | ")
       case .optional(let expression):
-        self.formatPrimary(expression: expression) + "?"
+        return self.formatPrimary(expression: expression) + "?"
       case .zeroOrMore(let expression):
-        self.formatPrimary(expression: expression) + "*"
+        return self.formatPrimary(expression: expression) + "*"
       case .oneOrMore(let expression):
-        self.formatPrimary(expression: expression) + "+"
+        return self.formatPrimary(expression: expression) + "+"
+      case .range(let min, let max, let expression):
+        let inner = self.formatPrimary(expression: expression)
+        switch (min, max) {
+        case let (m?, n?) where m == n:
+          return inner + "{\(m)}"
+        case let (m?, nil):
+          return inner + "{\(m),}"
+        case let (nil, n?):
+          return inner + "{\(n)}"
+        case let (m?, n?):
+          return inner + "{\(m),\(n)}"
+        default:
+          preconditionFailure("Range must have at least one bound")
+        }
       case .group(let expression):
-        "(\(self.format(expression: expression)))"
+        return "(\(self.format(expression: expression)))"
       case .characterGroup(let characterGroup):
-        self.format(characterGroup: characterGroup)
+        return self.format(characterGroup: characterGroup)
       case .ref(let symbol):
-        symbol.rawValue
+        return symbol.rawValue
       case .terminal(let terminal):
-        self.format(terminal: terminal)
+        return self.format(terminal: terminal)
       }
     }
 
@@ -97,7 +113,7 @@ extension Grammar {
       switch expression {
       case .ref, .group, .terminal, .characterGroup:
         true
-      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore:
+      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore, .range:
         false
       }
     }

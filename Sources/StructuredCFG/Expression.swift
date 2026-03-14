@@ -5,6 +5,7 @@ public indirect enum Expression: Hashable, Sendable, ExpressionComponent {
   case optional(Expression)
   case zeroOrMore(Expression)
   case oneOrMore(Expression)
+  case range(min: Int?, max: Int?, expression: Expression)
   case group(Expression)
   case characterGroup(CharacterGroup)
   case ref(Symbol)

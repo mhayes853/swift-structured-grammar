@@ -407,6 +407,23 @@ private enum LanguageSnapshotSuite {
           CharacterGroup("[\\n\\r\\t]")
         }
       }.language
+    ),
+    LanguageSnapshotCase(
+      name: "range-grammar",
+      language: Grammar(startingSymbol: "password") {
+        Production("password") {
+          Range(2..., Terminal("x"))
+        }
+        Production("code") {
+          Range(4, Terminal("0"))
+        }
+        Production("upto5") {
+          Range(...5, Terminal("a"))
+        }
+        Production("bounded") {
+          Range(1...3, Terminal("b"))
+        }
+      }.language
     )
   ]
 

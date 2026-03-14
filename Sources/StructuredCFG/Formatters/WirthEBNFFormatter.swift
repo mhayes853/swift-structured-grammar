@@ -8,7 +8,11 @@ extension Grammar {
       guard let expression = self.simplified(expression: production.expression) else {
         return ""
       }
-      return "\(production.symbol.rawValue) = \(self.format(expression: expression)) ."
+      let formatted = self.format(expression: expression)
+      if formatted.isEmpty {
+        return ""
+      }
+      return "\(production.symbol.rawValue) = \(formatted) ."
     }
 
     private func simplified(expression: Expression) -> Expression? {
@@ -41,6 +45,11 @@ extension Grammar {
         return self.simplified(expression: expression).map(Expression.zeroOrMore)
       case .oneOrMore(let expression):
         return self.simplified(expression: expression).map(Expression.oneOrMore)
+      case .range(let min, let max, let expression):
+        guard let simplified = self.simplified(expression: expression) else {
+          return nil
+        }
+        return .range(min: min, max: max, expression: simplified)
       case .group(let expression):
         return self.simplified(expression: expression).map(Expression.group)
       case .characterGroup(let characterGroup):
@@ -82,6 +91,46 @@ extension Grammar {
           firstElement = "(\(formatted))"
         }
         return "\(firstElement) {\(formatted)}"
+      case .range(let min, let max, let expression):
+        switch (min, max) {
+        case let (n?, nil):
+          if n == 0 {
+            return self.format(expression: .zeroOrMore(expression))
+          } else {
+            let required = Expression.concat(Array(repeating: expression, count: n))
+            let expanded: Expression = .concat([required, .zeroOrMore(expression)])
+            return self.format(expression: self.simplified(expression: expanded) ?? .empty)
+          }
+        case let (nil, n?):
+          if n == 0 {
+            return ""
+          } else {
+            var choices: [Expression] = [.empty]
+            for i in 1...n {
+              choices.append(Expression.concat(Array(repeating: expression, count: i)))
+            }
+            let expanded: Expression = .choice(choices)
+            return self.format(expression: self.simplified(expression: expanded) ?? .empty)
+          }
+        case let (m?, n?) where m == n:
+          if m == 0 {
+            return ""
+          }
+          let expanded = Expression.concat(Array(repeating: expression, count: m))
+          return self.format(expression: self.simplified(expression: expanded) ?? .empty)
+        case let (m?, n?):
+          let required = Expression.concat(Array(repeating: expression, count: m))
+          let additionalMax = n - m
+          var additionalChoices: [Expression] = [.empty]
+          for i in 1...additionalMax {
+            additionalChoices.append(Expression.concat(Array(repeating: expression, count: i)))
+          }
+          let optionalAdditional = Expression.optional(Expression.choice(additionalChoices))
+          let expanded: Expression = .concat([required, optionalAdditional])
+          return self.format(expression: self.simplified(expression: expanded) ?? .empty)
+        default:
+          return ""
+        }
       case .group(let expression):
         return "(\(self.format(expression: expression)))"
       case .characterGroup(let characterGroup):
@@ -97,7 +146,7 @@ extension Grammar {
       switch expression {
       case .ref, .group, .terminal, .characterGroup:
         true
-      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore:
+      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore, .range:
         false
       }
     }
