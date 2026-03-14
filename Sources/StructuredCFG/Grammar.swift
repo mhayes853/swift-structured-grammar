@@ -259,8 +259,8 @@ extension Grammar {
       .zeroOrMore(self.homomorphed(expression: expression, transform: transform))
     case let .oneOrMore(expression):
       .oneOrMore(self.homomorphed(expression: expression, transform: transform))
-    case let .range(min, max, expression):
-      .range(min: min, max: max, expression: self.homomorphed(expression: expression, transform: transform))
+    case let .`repeat`(min, max, expression):
+      .`repeat`(min: min, max: max, expression: self.homomorphed(expression: expression, transform: transform))
     case let .group(expression):
       .group(self.homomorphed(expression: expression, transform: transform))
     case let .characterGroup(characterGroup):
@@ -308,7 +308,7 @@ extension Grammar {
       []
     case let .concat(expressions), let .choice(expressions):
       expressions.flatMap { self.referencedSymbols(in: $0) }
-    case let .optional(expr), let .zeroOrMore(expr), let .oneOrMore(expr), let .group(expr), let .range(_, _, expr):
+    case let .optional(expr), let .zeroOrMore(expr), let .oneOrMore(expr), let .group(expr), let .`repeat`(_, _, expr):
       self.referencedSymbols(in: expr)
     case .characterGroup:
       []
@@ -333,8 +333,8 @@ extension Grammar {
       .zeroOrMore(self.reversed(expression: expr))
     case let .oneOrMore(expr):
       .oneOrMore(self.reversed(expression: expr))
-    case let .range(min, max, expr):
-      .range(min: min, max: max, expression: self.reversed(expression: expr))
+    case let .`repeat`(min, max, expr):
+      .`repeat`(min: min, max: max, expression: self.reversed(expression: expr))
     case let .group(expr):
       .group(self.reversed(expression: expr))
     case let .characterGroup(characterGroup):

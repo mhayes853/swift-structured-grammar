@@ -41,8 +41,8 @@ extension Grammar {
         return self.simplified(expression: expression).map(Expression.zeroOrMore)
       case .oneOrMore(let expression):
         return self.simplified(expression: expression).map(Expression.oneOrMore)
-      case .range(let min, let max, let expression):
-        return self.simplified(expression: expression).map { Expression.range(min: min, max: max, expression: $0) }
+      case .`repeat`(let min, let max, let expression):
+        return self.simplified(expression: expression).map { Expression.`repeat`(min: min, max: max, expression: $0) }
       case .group(let expression):
         return self.simplified(expression: expression).map(Expression.group)
       case .characterGroup(let characterGroup):
@@ -76,7 +76,7 @@ extension Grammar {
         return self.formatPrimary(expression: expression) + "*"
       case .oneOrMore(let expression):
         return self.formatPrimary(expression: expression) + "+"
-      case .range(let min, let max, let expression):
+      case .`repeat`(let min, let max, let expression):
         let inner = self.formatPrimary(expression: expression)
         switch (min, max) {
         case let (m?, n?) where m == n:
@@ -113,7 +113,7 @@ extension Grammar {
       switch expression {
       case .ref, .group, .terminal, .characterGroup:
         true
-      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore, .range:
+      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore, .`repeat`:
         false
       }
     }

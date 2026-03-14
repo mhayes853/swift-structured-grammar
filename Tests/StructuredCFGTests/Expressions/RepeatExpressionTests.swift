@@ -3,11 +3,13 @@ import Testing
 import StructuredCFG
 
 @Suite
-struct `RangeExpressionTests` {
+struct `RepeatExpressionTests` {
   @Test
-  func `Exact Range Formats In GBNF`() {
+  func `Exact Repeat Formats In GBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(exactly: 3, Terminal("a"))
+      Repeat(3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -17,9 +19,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `At Least Range Formats In GBNF`() {
+  func `At Least Repeat Formats In GBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(2..., Terminal("a"))
+      Repeat(2...) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -29,9 +33,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `At Most Range Formats In GBNF`() {
+  func `At Most Repeat Formats In GBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(...4, Terminal("a"))
+      Repeat(...4) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -41,9 +47,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Bounded Range Formats In GBNF`() {
+  func `Bounded Repeat Formats In GBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(1...3, Terminal("a"))
+      Repeat(1...3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -53,9 +61,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Exact Range Expands In W3C EBNF`() {
+  func `Exact Repeat Expands In W3C EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(exactly: 3, Terminal("a"))
+      Repeat(3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -65,9 +75,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `At Least Range Expands In W3C EBNF`() {
+  func `At Least Repeat Expands In W3C EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(2..., Terminal("a"))
+      Repeat(2...) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -77,9 +89,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `At Most Range Expands In W3C EBNF`() {
+  func `At Most Repeat Expands In W3C EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(...3, Terminal("a"))
+      Repeat(...3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -89,9 +103,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Bounded Range Expands In W3C EBNF`() {
+  func `Bounded Repeat Expands In W3C EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(1...3, Terminal("a"))
+      Repeat(1...3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -101,9 +117,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Exact Range Expands In Wirth EBNF`() {
+  func `Exact Repeat Expands In Wirth EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(exactly: 3, Terminal("a"))
+      Repeat(3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -113,9 +131,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `At Least Range Expands In Wirth EBNF`() {
+  func `At Least Repeat Expands In Wirth EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(2..., Terminal("a"))
+      Repeat(2...) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -125,9 +145,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `At Most Range Expands In Wirth EBNF`() {
+  func `At Most Repeat Expands In Wirth EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(...3, Terminal("a"))
+      Repeat(...3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -137,9 +159,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Bounded Range Expands In Wirth EBNF`() {
+  func `Bounded Repeat Expands In Wirth EBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(1...3, Terminal("a"))
+      Repeat(1...3) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -149,12 +173,14 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Range With Complex Expression In GBNF`() {
+  func `Repeat With Complex Expression In GBNF`() {
     let grammar = Grammar(Production("start") {
-      Range(exactly: 2, Choice {
-        Terminal("a")
-        Terminal("b")
-      })
+      Repeat(2) {
+        Choice {
+          "a"
+          "b"
+        }
+      }
     })
 
     expectNoDifference(
@@ -164,9 +190,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Range Of Zero Or More Is Zero Or More In W3C`() {
+  func `Repeat Of Zero Or More Is Zero Or More In W3C`() {
     let grammar = Grammar(Production("start") {
-      Range(0..., Terminal("a"))
+      Repeat(0...) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -176,9 +204,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Range Of Zero Is Empty In W3C`() {
+  func `Repeat Of Zero Is Empty In W3C`() {
     let grammar = Grammar(Production("start") {
-      Range(0, Terminal("a"))
+      Repeat(0) {
+        "a"
+      }
     })
 
     expectNoDifference(
@@ -188,9 +218,11 @@ struct `RangeExpressionTests` {
   }
 
   @Test
-  func `Range With Partial Range Up To`() {
+  func `Repeat With Partial Range Up To`() {
     let grammar = Grammar(Production("start") {
-      Range(..<3, Terminal("a"))
+      Repeat(..<3) {
+        "a"
+      }
     })
 
     expectNoDifference(
