@@ -5,53 +5,10 @@ extension Grammar {
     public init() {}
 
     public func format(production: Production) -> String {
-      guard let expression = self.simplified(expression: production.expression) else {
+      guard let expression = production.expression.simplified else {
         return ""
       }
       return "\(production.symbol.rawValue) ::= \(self.format(expression: expression))"
-    }
-
-    private func simplified(expression: Expression) -> Expression? {
-      switch expression {
-      case .empty:
-        return nil
-      case .concat(let expressions):
-        let expressions = expressions.compactMap { self.simplified(expression: $0) }
-        switch expressions.count {
-        case 0:
-          return nil
-        case 1:
-          return expressions[0]
-        default:
-          return .concat(expressions)
-        }
-      case .choice(let expressions):
-        let expressions = expressions.compactMap { self.simplified(expression: $0) }
-        switch expressions.count {
-        case 0:
-          return nil
-        case 1:
-          return expressions[0]
-        default:
-          return .choice(expressions)
-        }
-      case .optional(let expression):
-        return self.simplified(expression: expression).map(Expression.optional)
-      case .zeroOrMore(let expression):
-        return self.simplified(expression: expression).map(Expression.zeroOrMore)
-      case .oneOrMore(let expression):
-        return self.simplified(expression: expression).map(Expression.oneOrMore)
-      case .`repeat`(let min, let max, let expression):
-        return self.simplified(expression: expression).map { Expression.`repeat`(min: min, max: max, expression: $0) }
-      case .group(let expression):
-        return self.simplified(expression: expression).map(Expression.group)
-      case .characterGroup(let characterGroup):
-        return .characterGroup(characterGroup)
-      case .ref(let symbol):
-        return .ref(symbol)
-      case .terminal(let terminal):
-        return .terminal(terminal)
-      }
     }
 
     private func format(expression: Expression) -> String {
@@ -102,19 +59,10 @@ extension Grammar {
     }
 
     private func formatPrimary(expression: Expression) -> String {
-      if self.isPrimary(expression: expression) {
+      if expression.isPrimary {
         self.format(expression: expression)
       } else {
         "(\(self.format(expression: expression)))"
-      }
-    }
-
-    private func isPrimary(expression: Expression) -> Bool {
-      switch expression {
-      case .ref, .group, .terminal, .characterGroup:
-        true
-      case .empty, .concat, .choice, .optional, .zeroOrMore, .oneOrMore, .`repeat`:
-        false
       }
     }
 
