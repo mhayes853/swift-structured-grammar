@@ -383,25 +383,25 @@ private enum GBNFSnapshotSuite {
       name: "character-group-grammar",
       language: Grammar(startingSymbol: "identifier") {
         Production("identifier") {
-          CharacterGroup("[a-zA-Z_]")
+          CharacterGroup("a-zA-Z_")
           ZeroOrMore {
-            CharacterGroup("[a-zA-Z0-9_]")
+            CharacterGroup("a-zA-Z0-9_")
           }
         }
         Production("digit") {
-          CharacterGroup("[\\d]")
+          CharacterGroup("\\d")
         }
         Production("word") {
-          CharacterGroup("[\\w]")
+          CharacterGroup("\\w")
         }
         Production("whitespace") {
-          CharacterGroup("[\\s]")
+          CharacterGroup("\\s")
         }
         Production("hex-digit") {
-          CharacterGroup("[0-9a-fA-F]")
+          CharacterGroup("0-9a-fA-F")
         }
         Production("escaped") {
-          CharacterGroup("[\\n\\r\\t]")
+          CharacterGroup("\\n\\r\\t")
         }
       }.language
     ),

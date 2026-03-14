@@ -8,7 +8,11 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   }
 
   public init(_ string: String) {
-    let parsed = Self.parse(string)
+    var processedString = string
+    if !string.hasPrefix("[") || !string.hasSuffix("]") {
+      processedString = "[" + string + "]"
+    }
+    let parsed = Self.parse(processedString)
     self.isNegated = parsed.isNegated
     self.members = parsed.members
   }

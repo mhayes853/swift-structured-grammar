@@ -169,7 +169,7 @@ struct `GBNFFormatter tests` {
   @Test
   func `Negated Character Groups Use GBNF Syntax`() {
     let grammar = Grammar(Production("start") {
-      CharacterGroup("[^abc]")
+      CharacterGroup("^abc")
     })
 
     expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= [^abc]"#)
@@ -178,7 +178,7 @@ struct `GBNFFormatter tests` {
   @Test
   func `Character Group Ranges Use GBNF Syntax`() {
     let grammar = Grammar(Production("start") {
-      CharacterGroup("[a-z]")
+      CharacterGroup("a-z")
     })
 
     expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= [a-z]"#)
@@ -188,25 +188,25 @@ struct `GBNFFormatter tests` {
   func `Predefined Character Classes Use GBNF Syntax`() {
     let grammar = Grammar(startingSymbol: "start") {
       Production("start") {
-        CharacterGroup("[\\d]")
+        CharacterGroup("\\d")
       }
       Production("word") {
-        CharacterGroup("[\\w]")
+        CharacterGroup("\\w")
       }
       Production("space") {
-        CharacterGroup("[\\s]")
+        CharacterGroup("\\s")
       }
       Production("digit") {
-        CharacterGroup("[\\D]")
+        CharacterGroup("\\D")
       }
       Production("nonWord") {
-        CharacterGroup("[\\W]")
+        CharacterGroup("\\W")
       }
       Production("nonSpace") {
-        CharacterGroup("[\\S]")
+        CharacterGroup("\\S")
       }
       Production("any") {
-        CharacterGroup("[.]")
+        CharacterGroup(".")
       }
     }
 
