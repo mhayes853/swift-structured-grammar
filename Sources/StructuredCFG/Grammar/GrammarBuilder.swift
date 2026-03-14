@@ -8,6 +8,10 @@ public enum GrammarBuilder {
     Array(grammar.productions)
   }
 
+  public static func buildExpression(_ component: some GrammarComponent) -> [Production] {
+    Array(component.grammar.productions)
+  }
+
   public static func buildBlock(_ components: [Production]...) -> [Production] {
     components.flatMap { $0 }
   }
