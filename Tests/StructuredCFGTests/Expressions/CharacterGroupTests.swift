@@ -20,7 +20,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("a-zA-Z0-9"), true)
   }
 
@@ -61,7 +61,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\d"), true)
   }
 
@@ -75,7 +75,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\w"), true)
   }
 
@@ -89,7 +89,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\s"), true)
   }
 
@@ -103,7 +103,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\D"), true)
   }
 
@@ -117,7 +117,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\W"), true)
   }
 
@@ -131,7 +131,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\S"), true)
   }
 
@@ -145,7 +145,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\i"), true)
   }
 
@@ -159,7 +159,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\c"), true)
   }
 
@@ -173,7 +173,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\n"), true)
   }
 
@@ -187,7 +187,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\r"), true)
   }
 
@@ -201,7 +201,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("\\t"), true)
   }
 
@@ -215,7 +215,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = grammar.formatted(with: .w3cEbnf)
+    let formatted = try! grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted.contains("a-zA-Z0-9_"), true)
   }
 }

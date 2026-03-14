@@ -41,7 +41,7 @@ struct `Language tests` {
   func `Format Delegates To Grammar Formatting`() {
     let language = Grammar(Production("expression") { "value" }).language
 
-    expectNoDifference(language.formatted(with: .w3cEbnf), """
+    expectNoDifference(try! language.formatted(with: .w3cEbnf), """
       root ::= expression
       expression ::= "value"
       """)

@@ -4,7 +4,7 @@ extension Grammar {
   public struct W3CEBNFFormatter: Formatter {
     public init() {}
 
-    public func format(production: Production) -> String {
+    public func format(production: Production) throws -> String {
       guard let expression = production.expression.simplified else {
         return ""
       }

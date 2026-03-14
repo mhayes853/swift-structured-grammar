@@ -46,7 +46,7 @@ struct `W3CEBNFFormatter tests` {
     }
 
     expectNoDifference(
-      grammar.formatted(with: .w3cEbnf),
+      try grammar.formatted(with: .w3cEbnf),
       """
       sign ::= ("+" | "-")?
       term ::= number | ("(" expression ")") | "identifier"
@@ -63,7 +63,7 @@ struct `W3CEBNFFormatter tests` {
       }
     }
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -76,7 +76,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "a" target"#)
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= "a" target"#)
   }
 
   @Test
@@ -89,7 +89,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= "a" | "b""#)
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= "a" | "b""#)
   }
 
   @Test
@@ -100,7 +100,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -111,7 +111,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -122,7 +122,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
   }
 
   @Test
@@ -136,6 +136,6 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= ("a" | "b")+"#)
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= ("a" | "b")+"#)
   }
 }

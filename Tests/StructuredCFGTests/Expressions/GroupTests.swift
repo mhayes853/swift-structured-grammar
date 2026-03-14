@@ -14,6 +14,6 @@ struct `Group tests` {
     }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), #"start ::= ("a" target)"#)
+    expectNoDifference(try! grammar.formatted(with: .w3cEbnf), #"start ::= ("a" target)"#)
   }
 }

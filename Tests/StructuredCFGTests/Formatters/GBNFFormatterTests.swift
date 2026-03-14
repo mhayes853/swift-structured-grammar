@@ -46,7 +46,7 @@ struct `GBNFFormatter tests` {
     }
 
     expectNoDifference(
-      grammar.formatted(with: .gbnf),
+      try grammar.formatted(with: .gbnf),
       """
       sign ::= ("+" | "-")?
       term ::= number | ("(" expression ")") | "identifier"
@@ -63,7 +63,7 @@ struct `GBNFFormatter tests` {
       }
     }
 
-    expectNoDifference(grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), "")
   }
 
   @Test
@@ -76,7 +76,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= "a" target"#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "a" target"#)
   }
 
   @Test
@@ -89,7 +89,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= "a" | "b""#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "a" | "b""#)
   }
 
   @Test
@@ -100,7 +100,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), "")
   }
 
   @Test
@@ -111,7 +111,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), "")
   }
 
   @Test
@@ -122,7 +122,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), "")
   }
 
   @Test
@@ -136,7 +136,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= ("a" | "b")+"#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= ("a" | "b")+"#)
   }
 
   @Test
@@ -145,7 +145,7 @@ struct `GBNFFormatter tests` {
       "hello"
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= "hello""#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "hello""#)
   }
 
   @Test
@@ -154,7 +154,7 @@ struct `GBNFFormatter tests` {
       "say \"hello\""
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= "say \"hello\"""#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "say \"hello\"""#)
   }
 
   @Test
@@ -163,7 +163,7 @@ struct `GBNFFormatter tests` {
       "path\\to\\file"
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= "path\\to\\file""#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "path\\to\\file""#)
   }
 
   @Test
@@ -172,7 +172,7 @@ struct `GBNFFormatter tests` {
       CharacterGroup("^abc")
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= [^abc]"#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [^abc]"#)
   }
 
   @Test
@@ -181,7 +181,7 @@ struct `GBNFFormatter tests` {
       CharacterGroup("a-z")
     })
 
-    expectNoDifference(grammar.formatted(with: .gbnf), #"start ::= [a-z]"#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [a-z]"#)
   }
 
   @Test
@@ -211,7 +211,7 @@ struct `GBNFFormatter tests` {
     }
 
     expectNoDifference(
-      grammar.formatted(with: .gbnf),
+      try grammar.formatted(with: .gbnf),
       """
       start ::= [0-9]
       word ::= [a-zA-Z0-9_]

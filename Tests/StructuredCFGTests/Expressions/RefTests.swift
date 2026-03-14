@@ -9,6 +9,6 @@ struct `Ref tests` {
     let production = Production("start") { Ref("target") }
     let grammar = Grammar(production)
 
-    expectNoDifference(grammar.formatted(with: .w3cEbnf), "start ::= target")
+    expectNoDifference(try! grammar.formatted(with: .w3cEbnf), "start ::= target")
   }
 }

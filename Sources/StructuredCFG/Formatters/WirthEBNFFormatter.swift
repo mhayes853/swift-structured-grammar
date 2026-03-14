@@ -1,43 +1,69 @@
 import Foundation
 
 extension Grammar {
+  public struct WirthEBNFFormatterError: Error, Hashable {
+    private enum Kind: Hashable {
+      case negatedCharacterGroup
+      case unicodeCategory
+      case negatedCategory
+      case characterGroupSubtraction
+      case xmlNameClasses
+      case negatedPredefinedClass
+      case wildcard
+    }
+
+    private let kind: Kind
+
+    private init(kind: Kind) {
+      self.kind = kind
+    }
+
+    public static let negatedCharacterGroup = WirthEBNFFormatterError(kind: .negatedCharacterGroup)
+    public static let unicodeCategory = WirthEBNFFormatterError(kind: .unicodeCategory)
+    public static let negatedCategory = WirthEBNFFormatterError(kind: .negatedCategory)
+    public static let characterGroupSubtraction = WirthEBNFFormatterError(kind: .characterGroupSubtraction)
+    public static let xmlNameClasses = WirthEBNFFormatterError(kind: .xmlNameClasses)
+    public static let negatedPredefinedClass = WirthEBNFFormatterError(kind: .negatedPredefinedClass)
+    public static let wildcard = WirthEBNFFormatterError(kind: .wildcard)
+  }
+
   public struct WirthEBNFFormatter: Formatter {
     public init() {}
 
-    public func format(production: Production) -> String {
+    public func format(production: Production) throws -> String {
       guard let expression = production.expression.simplified else {
         return ""
       }
-      let formatted = self.format(expression: expression)
+      let formatted = try self.format(expression: expression)
       if formatted.isEmpty {
         return ""
       }
       return "\(production.symbol.rawValue) = \(formatted) ."
     }
 
-    private func format(expression: Expression) -> String {
+    private func format(expression: Expression) throws -> String {
       switch expression {
       case .empty:
         preconditionFailure("Empty expressions must be simplified before formatting.")
       case .concat(let expressions):
-        return expressions
+        return try expressions
           .map { expression in
             switch expression {
             case .choice, .optional:
-              "(\(self.format(expression: expression)))"
+              "(\(try self.format(expression: expression)))"
             default:
-              self.format(expression: expression)
+              try self.format(expression: expression)
             }
           }
           .joined(separator: " ")
       case .choice(let expressions):
-        return expressions.map { self.format(expression: $0) }.joined(separator: " | ")
+        return try expressions.map { try self.format(expression: $0) }.joined(separator: " | ")
       case .optional(let expression):
-        return "[\(self.format(expression: expression))]"
+        return "[\(try self.format(expression: expression))]"
       case .zeroOrMore(let expression):
-        return "{\(self.format(expression: expression))}"
+        return "{\(try self.format(expression: expression))}"
       case .oneOrMore(let expression):
-        let formatted = self.format(expression: expression)
+        let formatted = try self.format(expression: expression)
         let firstElement: String
         if expression.isPrimary {
           firstElement = formatted
@@ -49,11 +75,11 @@ extension Grammar {
         switch (min, max) {
         case let (n?, nil):
           if n == 0 {
-            return self.format(expression: .zeroOrMore(expression))
+            return try self.format(expression: .zeroOrMore(expression))
           } else {
             let required = Expression.concat(Array(repeating: expression, count: n))
             let expanded: Expression = .concat([required, .zeroOrMore(expression)])
-            return self.format(expression: expanded.simplified ?? .empty)
+            return try self.format(expression: expanded.simplified ?? .empty)
           }
         case let (nil, n?):
           if n == 0 {
@@ -64,14 +90,14 @@ extension Grammar {
               choices.append(Expression.concat(Array(repeating: expression, count: i)))
             }
             let expanded: Expression = .choice(choices)
-            return self.format(expression: expanded.simplified ?? .empty)
+            return try self.format(expression: expanded.simplified ?? .empty)
           }
         case let (m?, n?) where m == n:
           if m == 0 {
             return ""
           }
           let expanded = Expression.concat(Array(repeating: expression, count: m))
-          return self.format(expression: expanded.simplified ?? .empty)
+          return try self.format(expression: expanded.simplified ?? .empty)
         case let (m?, n?):
           let required = Expression.concat(Array(repeating: expression, count: m))
           let additionalMax = n - m
@@ -81,14 +107,14 @@ extension Grammar {
           }
           let optionalAdditional = Expression.optional(Expression.choice(additionalChoices))
           let expanded: Expression = .concat([required, optionalAdditional])
-          return self.format(expression: expanded.simplified ?? .empty)
+          return try self.format(expression: expanded.simplified ?? .empty)
         default:
           return ""
         }
       case .group(let expression):
-        return "(\(self.format(expression: expression)))"
+        return "(\(try self.format(expression: expression)))"
       case .characterGroup(let characterGroup):
-        return self.format(characterGroup: characterGroup)
+        return try self.format(characterGroup: characterGroup)
       case .ref(let symbol):
         return symbol.rawValue
       case .terminal(let terminal):
@@ -111,9 +137,9 @@ extension Grammar {
       return "'" + escaped + "'"
     }
 
-    private func format(characterGroup: CharacterGroup) -> String {
+    private func format(characterGroup: CharacterGroup) throws -> String {
       if characterGroup.isNegated {
-        fatalError("Negated character groups are not supported in Wirth EBNF formatting.")
+        throw WirthEBNFFormatterError.negatedCharacterGroup
       }
 
       var terminals: [String] = []
@@ -130,15 +156,15 @@ extension Grammar {
             terminals.append(self.format(terminal: Terminal(String(char))))
           }
         case .category:
-          self.unsupported("Unicode categories")
+          throw WirthEBNFFormatterError.unicodeCategory
         case .negatedCategory:
-          self.unsupported("Negated categories")
+          throw WirthEBNFFormatterError.negatedCategory
         case .predefined(let predefined):
-          terminals.append(contentsOf: self.terminalsForPredefined(predefined))
+          terminals.append(contentsOf: try self.terminalsForPredefined(predefined))
         case .xmlName:
-          self.unsupported("XML name classes")
+          throw WirthEBNFFormatterError.xmlNameClasses
         case .subtraction:
-          self.unsupported("Character group subtraction")
+          throw WirthEBNFFormatterError.characterGroupSubtraction
         case .escaped(let escape):
           let escapedStr = self.escapedString(for: escape)
           terminals.append(self.format(terminal: Terminal(escapedStr)))
@@ -148,24 +174,20 @@ extension Grammar {
       return terminals.joined(separator: " | ")
     }
 
-    private func terminalsForPredefined(_ predefined: CharacterGroup.PredefinedClass) -> [String] {
+    private func terminalsForPredefined(_ predefined: CharacterGroup.PredefinedClass) throws -> [String] {
       switch predefined {
       case .digit:
         return (0...9).map { self.format(terminal: Terminal(String($0))) }
       case .nonDigit, .nonWord, .nonWhitespace:
-        self.unsupported("Negated predefined classes")
+        throw WirthEBNFFormatterError.negatedPredefinedClass
       case .word:
         let wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
         return wordChars.map { self.format(terminal: Terminal(String($0))) }
       case .whitespace:
         return [" ", "\t", "\n", "\r"].map { self.format(terminal: Terminal(String($0))) }
       case .wildcard:
-        self.unsupported("Wildcard")
+        throw WirthEBNFFormatterError.wildcard
       }
-    }
-
-    private func unsupported(_ feature: String) -> Never {
-      fatalError("\(feature) are not supported in Wirth EBNF formatting.")
     }
 
     private func escapedString(for escape: CharacterGroup.EscapeSequence) -> String {

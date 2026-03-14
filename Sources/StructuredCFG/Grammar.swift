@@ -350,9 +350,9 @@ extension Grammar {
 // MARK: - Formatting
 
 extension Grammar {
-  public func formatted(with formatter: some Formatter) -> String {
-    self.productions
-      .map { formatter.format(production: $0) }
+  public func formatted(with formatter: some Formatter) throws -> String {
+    try self.productions
+      .map { try formatter.format(production: $0) }
       .filter { !$0.isEmpty }
       .joined(separator: "\n")
   }
