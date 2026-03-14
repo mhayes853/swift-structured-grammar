@@ -1,7 +1,19 @@
 public struct Repeat: Hashable, Sendable, ExpressionComponent {
   public let min: Int?
   public let max: Int?
-  public let expression: Expression
+  public let innerExpression: Expression
+
+  public var expression: Expression {
+    .repeat(self)
+  }
+
+  public var isZeroOrMore: Bool {
+    self.min == 0 && self.max == nil
+  }
+
+  public var isOneOrMore: Bool {
+    self.min == 1 && self.max == nil
+  }
 
   public init(min: Int?, max: Int?, _ expression: some ExpressionComponent) {
     precondition(min != nil || max != nil, "Repeat must have at least one bound")
@@ -10,9 +22,9 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
     }
     self.min = min
     self.max = max
-    self.expression = .`repeat`(min: min, max: max, expression: expression.expression)
+    self.innerExpression = expression.expression
   }
-
+  
   public init(exactly count: Int, _ expression: some ExpressionComponent) {
     self.init(min: count, max: count, expression)
   }

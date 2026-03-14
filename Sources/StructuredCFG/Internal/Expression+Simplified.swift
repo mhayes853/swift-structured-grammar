@@ -29,24 +29,13 @@ extension Expression {
         return .empty
       }
       return Expression.optional(simplified)
-    case .zeroOrMore(let expression):
-      let simplified = expression.simplified
+    case .`repeat`(let repeatExpr):
+      let simplified = repeatExpr.innerExpression.simplified
       if simplified == .empty {
         return .empty
       }
-      return Expression.zeroOrMore(simplified)
-    case .oneOrMore(let expression):
-      let simplified = expression.simplified
-      if simplified == .empty {
-        return .empty
-      }
-      return Expression.oneOrMore(simplified)
-    case .repeat(let min, let max, let expression):
-      let simplified = expression.simplified
-      if simplified == .empty {
-        return .empty
-      }
-      return Expression.repeat(min: min, max: max, expression: simplified)
+      let newRepeat = Repeat(min: repeatExpr.min, max: repeatExpr.max, simplified)
+      return Expression.repeat(newRepeat)
     case .group(let expression):
       let simplified = expression.simplified
       if simplified == .empty {

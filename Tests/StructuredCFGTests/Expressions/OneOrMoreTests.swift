@@ -7,7 +7,8 @@ struct `OneOrMore tests` {
   @Test
   func `Direct Initialization Builds One Or More Expression`() {
     let expression = OneOrMore { "value" }.expression
-    expectNoDifference(expression, .oneOrMore(.terminal("value")))
+    let expected = Repeat(min: 1, max: nil, Terminal("value")).expression
+    expectNoDifference(expression, expected)
   }
 
   @Test

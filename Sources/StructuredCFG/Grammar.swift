@@ -248,27 +248,28 @@ extension Grammar {
   private func homomorphed(expression: Expression, transform: (Terminal) -> Terminal?) -> Expression {
     switch expression {
     case .empty:
-      .empty
+      return .empty
     case let .concat(expressions):
-      .concat(expressions.map { self.homomorphed(expression: $0, transform: transform) })
+      return .concat(expressions.map { self.homomorphed(expression: $0, transform: transform) })
     case let .choice(expressions):
-      .choice(expressions.map { self.homomorphed(expression: $0, transform: transform) })
+      return .choice(expressions.map { self.homomorphed(expression: $0, transform: transform) })
     case let .optional(expression):
-      .optional(self.homomorphed(expression: expression, transform: transform))
-    case let .zeroOrMore(expression):
-      .zeroOrMore(self.homomorphed(expression: expression, transform: transform))
-    case let .oneOrMore(expression):
-      .oneOrMore(self.homomorphed(expression: expression, transform: transform))
-    case let .`repeat`(min, max, expression):
-      .`repeat`(min: min, max: max, expression: self.homomorphed(expression: expression, transform: transform))
+      return .optional(self.homomorphed(expression: expression, transform: transform))
+    case .`repeat`(let repeatExpr):
+      let newRepeat = Repeat(
+        min: repeatExpr.min,
+        max: repeatExpr.max,
+        self.homomorphed(expression: repeatExpr.innerExpression, transform: transform)
+      )
+      return .`repeat`(newRepeat)
     case let .group(expression):
-      .group(self.homomorphed(expression: expression, transform: transform))
+      return .group(self.homomorphed(expression: expression, transform: transform))
     case let .characterGroup(characterGroup):
-      .characterGroup(characterGroup)
+      return .characterGroup(characterGroup)
     case let .ref(symbol):
-      .ref(symbol)
+      return .ref(symbol)
     case let .terminal(terminal):
-      transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
+      return transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
     }
   }
 }
@@ -308,8 +309,10 @@ extension Grammar {
       []
     case let .concat(expressions), let .choice(expressions):
       expressions.flatMap { self.referencedSymbols(in: $0) }
-    case let .optional(expr), let .zeroOrMore(expr), let .oneOrMore(expr), let .group(expr), let .`repeat`(_, _, expr):
+    case let .optional(expr), let .group(expr):
       self.referencedSymbols(in: expr)
+    case .`repeat`(let repeatExpr):
+      self.referencedSymbols(in: repeatExpr.innerExpression)
     case .characterGroup:
       []
     case let .ref(symbol):
@@ -322,27 +325,28 @@ extension Grammar {
   private func reversed(expression: Expression) -> Expression {
     switch expression {
     case .empty:
-      .empty
+      return .empty
     case let .concat(expressions):
-      .concat(expressions.reversed().map { self.reversed(expression: $0) })
+      return .concat(expressions.reversed().map { self.reversed(expression: $0) })
     case let .choice(expressions):
-      .choice(expressions.map { self.reversed(expression: $0) })
+      return .choice(expressions.map { self.reversed(expression: $0) })
     case let .optional(expr):
-      .optional(self.reversed(expression: expr))
-    case let .zeroOrMore(expr):
-      .zeroOrMore(self.reversed(expression: expr))
-    case let .oneOrMore(expr):
-      .oneOrMore(self.reversed(expression: expr))
-    case let .`repeat`(min, max, expr):
-      .`repeat`(min: min, max: max, expression: self.reversed(expression: expr))
+      return .optional(self.reversed(expression: expr))
+    case .`repeat`(let repeatExpr):
+      let newRepeat = Repeat(
+        min: repeatExpr.min,
+        max: repeatExpr.max,
+        self.reversed(expression: repeatExpr.innerExpression)
+      )
+      return .`repeat`(newRepeat)
     case let .group(expr):
-      .group(self.reversed(expression: expr))
+      return .group(self.reversed(expression: expr))
     case let .characterGroup(characterGroup):
-      .characterGroup(characterGroup)
+      return .characterGroup(characterGroup)
     case let .ref(symbol):
-      .ref(symbol)
+      return .ref(symbol)
     case let .terminal(terminal):
-      .terminal(terminal)
+      return .terminal(terminal)
     }
   }
 }

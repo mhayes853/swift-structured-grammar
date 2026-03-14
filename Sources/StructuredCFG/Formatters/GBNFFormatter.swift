@@ -30,13 +30,15 @@ extension Grammar {
         return expressions.map { self.format(expression: $0) }.joined(separator: " | ")
       case .optional(let expression):
         return self.formatPrimary(expression: expression) + "?"
-      case .zeroOrMore(let expression):
-        return self.formatPrimary(expression: expression) + "*"
-      case .oneOrMore(let expression):
-        return self.formatPrimary(expression: expression) + "+"
-      case .`repeat`(let min, let max, let expression):
-        let inner = self.formatPrimary(expression: expression)
-        switch (min, max) {
+      case .`repeat`(let repeatExpr):
+        if repeatExpr.isZeroOrMore {
+          return self.formatPrimary(expression: repeatExpr.innerExpression) + "*"
+        }
+        if repeatExpr.isOneOrMore {
+          return self.formatPrimary(expression: repeatExpr.innerExpression) + "+"
+        }
+        let inner = self.formatPrimary(expression: repeatExpr.innerExpression)
+        switch (repeatExpr.min, repeatExpr.max) {
         case let (m?, n?) where m == n:
           return inner + "{\(m)}"
         case let (m?, nil):
