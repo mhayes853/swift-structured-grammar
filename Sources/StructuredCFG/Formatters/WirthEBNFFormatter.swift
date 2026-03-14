@@ -31,7 +31,8 @@ extension Grammar {
     public init() {}
 
     public func format(production: Production) throws -> String {
-      guard let expression = production.expression.simplified else {
+      let expression = production.expression.simplified
+      if expression == .empty {
         return ""
       }
       let formatted = try self.format(expression: expression)
@@ -44,7 +45,7 @@ extension Grammar {
     private func format(expression: Expression) throws -> String {
       switch expression {
       case .empty:
-        preconditionFailure("Empty expressions must be simplified before formatting.")
+        return ""
       case .concat(let expressions):
         return try expressions
           .map { expression in
@@ -79,7 +80,7 @@ extension Grammar {
           } else {
             let required = Expression.concat(Array(repeating: expression, count: n))
             let expanded: Expression = .concat([required, .zeroOrMore(expression)])
-            return try self.format(expression: expanded.simplified ?? .empty)
+            return try self.format(expression: expanded.simplified)
           }
         case let (nil, n?):
           if n == 0 {
@@ -90,14 +91,14 @@ extension Grammar {
               choices.append(Expression.concat(Array(repeating: expression, count: i)))
             }
             let expanded: Expression = .choice(choices)
-            return try self.format(expression: expanded.simplified ?? .empty)
+            return try self.format(expression: expanded.simplified)
           }
         case let (m?, n?) where m == n:
           if m == 0 {
             return ""
           }
           let expanded = Expression.concat(Array(repeating: expression, count: m))
-          return try self.format(expression: expanded.simplified ?? .empty)
+          return try self.format(expression: expanded.simplified)
         case let (m?, n?):
           let required = Expression.concat(Array(repeating: expression, count: m))
           let additionalMax = n - m
@@ -107,7 +108,7 @@ extension Grammar {
           }
           let optionalAdditional = Expression.optional(Expression.choice(additionalChoices))
           let expanded: Expression = .concat([required, optionalAdditional])
-          return try self.format(expression: expanded.simplified ?? .empty)
+          return try self.format(expression: expanded.simplified)
         default:
           return ""
         }

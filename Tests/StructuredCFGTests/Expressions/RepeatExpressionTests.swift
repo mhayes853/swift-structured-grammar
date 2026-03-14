@@ -13,7 +13,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.GBNFFormatter()),
+      try! grammar.formatted(with: .gbnf),
       #"start ::= "a"{3}"#
     )
   }
@@ -27,7 +27,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.GBNFFormatter()),
+      try! grammar.formatted(with: .gbnf),
       #"start ::= "a"{2,}"#
     )
   }
@@ -41,7 +41,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.GBNFFormatter()),
+      try! grammar.formatted(with: .gbnf),
       #"start ::= "a"{4}"#
     )
   }
@@ -55,7 +55,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.GBNFFormatter()),
+      try! grammar.formatted(with: .gbnf),
       #"start ::= "a"{1,3}"#
     )
   }
@@ -69,7 +69,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.W3CEBNFFormatter()),
+      try! grammar.formatted(with: .w3cEbnf),
       #"start ::= "a" "a" "a""#
     )
   }
@@ -83,7 +83,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.W3CEBNFFormatter()),
+      try! grammar.formatted(with: .w3cEbnf),
       #"start ::= "a" "a" "a"*"#
     )
   }
@@ -97,7 +97,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.W3CEBNFFormatter()),
+      try! grammar.formatted(with: .w3cEbnf),
       #"start ::= "a" | "a" "a" | "a" "a" "a""#
     )
   }
@@ -111,7 +111,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.W3CEBNFFormatter()),
+      try! grammar.formatted(with: .w3cEbnf),
       #"start ::= "a" ("a" | "a" "a")?"#
     )
   }
@@ -125,7 +125,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.WirthEBNFFormatter()),
+      try! grammar.formatted(with: .wirthEbnf),
       #"start = 'a' 'a' 'a' ."#
     )
   }
@@ -139,7 +139,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.WirthEBNFFormatter()),
+      try! grammar.formatted(with: .wirthEbnf),
       #"start = 'a' 'a' {'a'} ."#
     )
   }
@@ -153,7 +153,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.WirthEBNFFormatter()),
+      try! grammar.formatted(with: .wirthEbnf),
       #"start = 'a' | 'a' 'a' | 'a' 'a' 'a' ."#
     )
   }
@@ -167,7 +167,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.WirthEBNFFormatter()),
+      try! grammar.formatted(with: .wirthEbnf),
       #"start = 'a' (['a' | 'a' 'a']) ."#
     )
   }
@@ -184,7 +184,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.GBNFFormatter()),
+      try! grammar.formatted(with: .gbnf),
       #"start ::= ("a" | "b"){2}"#
     )
   }
@@ -198,7 +198,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.W3CEBNFFormatter()),
+      try! grammar.formatted(with: .w3cEbnf),
       #"start ::= "a"*"#
     )
   }
@@ -212,7 +212,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.W3CEBNFFormatter()),
+      try! grammar.formatted(with: .w3cEbnf),
       ""
     )
   }
@@ -226,7 +226,7 @@ struct `RepeatExpressionTests` {
     })
 
     expectNoDifference(
-      try! grammar.formatted(with: Grammar.GBNFFormatter()),
+      try! grammar.formatted(with: .gbnf),
       #"start ::= "a"{2}"#
     )
   }
