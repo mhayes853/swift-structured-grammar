@@ -8,4 +8,5 @@ number ::= digit+
 digit ::= "0" | "1" | "2"
 identifier ::= "identifier"
 footer ::= "END"
+padding ::= ""
 ga-qualified ::= "qualified"

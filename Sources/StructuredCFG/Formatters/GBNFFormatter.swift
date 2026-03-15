@@ -6,16 +6,13 @@ extension Grammar {
 
     public func format(production: Production) throws -> String {
       let expression = production.expression.simplified
-      if expression == .empty {
-        return ""
-      }
       return "\(production.symbol.rawValue) ::= \(self.format(expression: expression))"
     }
 
     private func format(expression: Expression) -> String {
       switch expression {
       case .empty:
-        return ""
+        return "\"\""
       case .concat(let expressions):
         return expressions
           .map { expression in

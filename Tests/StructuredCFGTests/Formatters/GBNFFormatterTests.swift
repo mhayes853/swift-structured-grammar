@@ -56,14 +56,14 @@ struct `GBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Omits Empty Productions Entirely`() {
+  func `Formatting Empty Productions Outputs Empty Terminal String`() {
     let grammar = Grammar(startingSymbol: "padding") {
       Production("padding") {
         EmptyExpression()
       }
     }
 
-    expectNoDifference(try grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"padding ::= """#)
   }
 
   @Test
@@ -93,36 +93,36 @@ struct `GBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Optional Of Empty Disappears`() {
+  func `Formatting Optional Of Empty Outputs Empty Terminal String`() {
     let grammar = Grammar(Production("start") {
       OptionalExpression {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= """#)
   }
 
   @Test
-  func `Formatting Zero Or More Of Empty Disappears`() {
+  func `Formatting Zero Or More Of Empty Outputs Empty Terminal String`() {
     let grammar = Grammar(Production("start") {
       ZeroOrMore {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= """#)
   }
 
   @Test
-  func `Formatting Group Of Empty Disappears`() {
+  func `Formatting Group Of Empty Outputs Empty Terminal String`() {
     let grammar = Grammar(Production("start") {
       Group {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .gbnf), "")
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= """#)
   }
 
   @Test
