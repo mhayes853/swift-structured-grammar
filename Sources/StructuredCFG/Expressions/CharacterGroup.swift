@@ -18,7 +18,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     case (true, true):
       processedString = string
     default:
-      throw CharacterGroupParseError("Character groups must be fully bracketed or unbracketed")
+      throw CharacterGroup.ParseError("Character groups must be fully bracketed or unbracketed")
     }
 
     let parsed = try Self.parse(processedString)
@@ -80,7 +80,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
 
   private static func parse(_ string: String) throws -> (isNegated: Bool, members: [Member]) {
     guard string.hasPrefix("[") else {
-      throw CharacterGroupParseError("Character groups must start with '['")
+      throw CharacterGroup.ParseError("Character groups must start with '['")
     }
 
     var isNegated = false
@@ -92,7 +92,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     }
 
     guard content.hasSuffix("]") else {
-      throw CharacterGroupParseError("Character groups must end with ']'")
+      throw CharacterGroup.ParseError("Character groups must end with ']'")
     }
     content = String(content.dropLast())
 
@@ -104,7 +104,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       let character = characters[i]
       if character == "\\" {
         guard i + 1 < characters.count else {
-          throw CharacterGroupParseError("Character groups cannot end with an escape")
+          throw CharacterGroup.ParseError("Character groups cannot end with an escape")
         }
 
         let escapedCharacter = characters[i + 1]
@@ -117,7 +117,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
           members.append(contentsOf: Self.whitespaceMembers)
         case "D":
           guard !isNegated, members.isEmpty, i + 2 == characters.count else {
-            throw CharacterGroupParseError(
+            throw CharacterGroup.ParseError(
               "Negated predefined classes are only supported as standalone groups"
             )
           }
@@ -125,7 +125,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
           members.append(contentsOf: Self.digitMembers)
         case "W":
           guard !isNegated, members.isEmpty, i + 2 == characters.count else {
-            throw CharacterGroupParseError(
+            throw CharacterGroup.ParseError(
               "Negated predefined classes are only supported as standalone groups"
             )
           }
@@ -133,14 +133,14 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
           members.append(contentsOf: Self.wordMembers)
         case "S":
           guard !isNegated, members.isEmpty, i + 2 == characters.count else {
-            throw CharacterGroupParseError(
+            throw CharacterGroup.ParseError(
               "Negated predefined classes are only supported as standalone groups"
             )
           }
           isNegated = true
           members.append(contentsOf: Self.whitespaceMembers)
         case "i", "I", "c", "C":
-          throw CharacterGroupParseError("XML name classes are not supported")
+          throw CharacterGroup.ParseError("XML name classes are not supported")
         case "n":
           members.append(.escaped(.newline))
         case "r":
@@ -264,12 +264,14 @@ extension CharacterGroup.EscapeSequence {
   }
 }
 
-// MARK: - CharacterGroupParseError
+// MARK: - CharacterGroup.ParseError
 
-public struct CharacterGroupParseError: Error, Hashable, Sendable {
-  public let message: String
+extension CharacterGroup {
+  public struct ParseError: Error, Hashable, Sendable {
+    public let message: String
 
-  public init(_ message: String) {
-    self.message = message
+    public init(_ message: String) {
+      self.message = message
+    }
   }
 }

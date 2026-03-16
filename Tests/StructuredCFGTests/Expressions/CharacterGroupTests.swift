@@ -144,21 +144,21 @@ struct `CharacterGroup tests` {
 
   @Test
   func `CharacterGroup Rejects XML NameStart Class`() {
-    #expect(throws: CharacterGroupParseError.self) {
+    #expect(throws: CharacterGroup.ParseError.self) {
       try CharacterGroup(String("\\i"))
     }
   }
 
   @Test
   func `CharacterGroup Rejects XML NameChar Class`() {
-    #expect(throws: CharacterGroupParseError.self) {
+    #expect(throws: CharacterGroup.ParseError.self) {
       try CharacterGroup(String("\\c"))
     }
   }
 
   @Test
   func `CharacterGroup Rejects Mixed Negated Predefined Class`() {
-    #expect(throws: CharacterGroupParseError.self) {
+    #expect(throws: CharacterGroup.ParseError.self) {
       try CharacterGroup(String("a\\D"))
     }
   }
