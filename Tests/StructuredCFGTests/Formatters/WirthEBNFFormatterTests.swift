@@ -228,4 +228,19 @@ struct `WirthEBNFFormatter tests` {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
+
+  @Test
+  func `Formatting Custom Expression Throws`() {
+    struct CustomExpr: Hashable, Sendable {
+      let value: String
+    }
+
+    let grammar = Grammar(Rule("start") {
+      Expression.custom(CustomExpr(value: "test"))
+    })
+
+    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+      try grammar.formatted(with: .wirthEbnf)
+    }
+  }
 }

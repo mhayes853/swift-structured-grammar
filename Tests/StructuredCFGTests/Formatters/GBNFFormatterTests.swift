@@ -223,4 +223,19 @@ struct `GBNFFormatter tests` {
       """
     )
   }
+
+  @Test
+  func `Formatting Custom Expression Throws`() {
+    struct CustomExpr: Hashable, Sendable {
+      let value: String
+    }
+
+    let grammar = Grammar(Rule("start") {
+      Expression.custom(CustomExpr(value: "test"))
+    })
+
+    #expect(throws: Grammar.GBNFFormatterError.self) {
+      try grammar.formatted(with: .gbnf)
+    }
+  }
 }

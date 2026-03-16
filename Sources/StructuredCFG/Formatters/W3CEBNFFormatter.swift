@@ -4,6 +4,7 @@ extension Grammar {
   public struct W3CEBNFFormatterError: Error, Hashable {
     private enum Kind: Hashable {
       case emptyExpression
+      case customExpression
     }
 
     private let kind: Kind
@@ -13,6 +14,7 @@ extension Grammar {
     }
 
     public static let emptyExpression = W3CEBNFFormatterError(kind: .emptyExpression)
+    public static let customExpression = W3CEBNFFormatterError(kind: .customExpression)
   }
 
   public enum Quoting: Sendable {
@@ -31,6 +33,9 @@ extension Grammar {
       let expression = rule.expression.simplified
       if expression == .empty {
         throw Grammar.W3CEBNFFormatterError.emptyExpression
+      }
+      if case .custom = expression {
+        throw Grammar.W3CEBNFFormatterError.customExpression
       }
       let formatted = self.format(expression: expression)
       if formatted.isEmpty {
@@ -115,6 +120,8 @@ extension Grammar {
         return symbol.rawValue
       case .terminal(let terminal):
         return self.format(terminal: terminal)
+      case .custom:
+        return ""
       }
     }
 

@@ -48,6 +48,8 @@ extension Expression {
       return .ref(symbol)
     case .terminal(let terminal):
       return .terminal(terminal)
+    case .custom(let value):
+      return .custom(value)
     }
   }
 }

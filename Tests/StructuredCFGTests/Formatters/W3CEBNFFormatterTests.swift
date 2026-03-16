@@ -191,4 +191,19 @@ struct `W3CEBNFFormatter tests` {
       #"start ::= 'path\\to\\file'"#
     )
   }
+
+  @Test
+  func `Formatting Custom Expression Throws`() {
+    struct CustomExpr: Hashable, Sendable {
+      let value: String
+    }
+
+    let grammar = Grammar(Rule("start") {
+      Expression.custom(CustomExpr(value: "test"))
+    })
+
+    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
+  }
 }

@@ -274,6 +274,8 @@ extension Grammar {
       return .ref(symbol)
     case .terminal(let terminal):
       return transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
+    case .custom(let value):
+      return .custom(value)
     }
   }
 }
@@ -323,6 +325,8 @@ extension Grammar {
       [symbol]
     case .terminal:
       []
+    case .custom:
+      []
     }
   }
 
@@ -351,6 +355,8 @@ extension Grammar {
       return .ref(symbol)
     case .terminal(let terminal):
       return .terminal(terminal)
+    case .custom(let value):
+      return .custom(value)
     }
   }
 }

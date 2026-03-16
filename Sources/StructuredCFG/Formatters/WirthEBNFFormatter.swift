@@ -10,6 +10,7 @@ extension Grammar {
       case xmlNameClasses
       case negatedPredefinedClass
       case wildcard
+      case customExpression
     }
 
     private let kind: Kind
@@ -29,6 +30,7 @@ extension Grammar {
       kind: .negatedPredefinedClass
     )
     public static let wildcard = WirthEBNFFormatterError(kind: .wildcard)
+    public static let customExpression = WirthEBNFFormatterError(kind: .customExpression)
   }
 
   public struct WirthEBNFFormatter: Formatter {
@@ -38,6 +40,9 @@ extension Grammar {
       let expression = rule.expression.simplified
       if expression == .empty {
         return ""
+      }
+      if case .custom = expression {
+        throw Grammar.WirthEBNFFormatterError.customExpression
       }
       let formatted = try self.format(expression: expression)
       if formatted.isEmpty {
@@ -130,6 +135,8 @@ extension Grammar {
         return symbol.rawValue
       case .terminal(let terminal):
         return self.format(terminal: terminal)
+      case .custom:
+        return ""
       }
     }
 
