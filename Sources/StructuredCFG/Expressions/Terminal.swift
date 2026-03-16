@@ -16,4 +16,9 @@ public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Expressi
   public var expression: Expression {
     Expression.terminal(self)
   }
+
+  public var character: Character? {
+    guard self.value.count == 1 else { return nil }
+    return self.value.first
+  }
 }
