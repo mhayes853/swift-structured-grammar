@@ -5,6 +5,10 @@ public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Expressi
     self.value = value
   }
 
+  public init(_ value: Character) {
+    self.init(String(value))
+  }
+
   public init(stringLiteral value: String) {
     self.init(value)
   }
