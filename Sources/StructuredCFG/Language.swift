@@ -74,14 +74,14 @@ extension Language {
       against existing: ResolvableGrammarSymbol,
       context: GrammarNameResolutionContext
     ) -> Symbol {
-      Symbol(rawValue: "g\(self.letterNamespace(for: context.grammarIndex))\(new.symbol.rawValue)")!
+      Symbol(rawValue: "g\(self.letterNamespace(for: context.grammarIndex))\(new.symbol.rawValue)")
     }
 
     public func createNewSymbol(
       grammars: [Grammar],
       context: GrammarNameResolutionContext
     ) -> Symbol {
-      Symbol(rawValue: "l\(self.letterNamespace(for: context.grammarIndex))start")!
+      Symbol(rawValue: "l\(self.letterNamespace(for: context.grammarIndex))start")
     }
 
     private func letterNamespace(for index: Int) -> String {

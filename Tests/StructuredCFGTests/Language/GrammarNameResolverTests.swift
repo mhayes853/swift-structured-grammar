@@ -88,14 +88,14 @@ struct `GrammarNameResolver tests` {
         against existing: Language.ResolvableGrammarSymbol,
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
-        return Symbol(rawValue: "custom__\(new.symbol.rawValue)")!
+        return Symbol(rawValue: "custom__\(new.symbol.rawValue)")
       }
 
       func createNewSymbol(
         grammars: [Grammar],
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
-        return Symbol(rawValue: "lsynth__\(context.grammarIndex)")!
+        return Symbol(rawValue: "lsynth__\(context.grammarIndex)")
       }
     }
 
@@ -131,7 +131,7 @@ struct `GrammarNameResolver tests` {
         grammars: [Grammar],
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
-        return Symbol(rawValue: "l\(context.grammarIndex)start")!
+        return Symbol(rawValue: "l\(context.grammarIndex)start")
       }
     }
 
@@ -159,14 +159,14 @@ struct `GrammarNameResolver tests` {
         against existing: Language.ResolvableGrammarSymbol,
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
-        return Symbol(rawValue: "idx\(context.grammarIndex)__\(new.symbol.rawValue)")!
+        return Symbol(rawValue: "idx\(context.grammarIndex)__\(new.symbol.rawValue)")
       }
 
       func createNewSymbol(
         grammars: [Grammar],
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
-        return Symbol(rawValue: "idx\(context.grammarIndex)__lstart")!
+        return Symbol(rawValue: "idx\(context.grammarIndex)__lstart")
       }
     }
 
@@ -207,7 +207,7 @@ struct `GrammarNameResolver tests` {
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
         let count = context.grammars.count
-        return Symbol(rawValue: "grammars\(count)__\(new.symbol.rawValue)")!
+        return Symbol(rawValue: "grammars\(count)__\(new.symbol.rawValue)")
       }
 
       func createNewSymbol(
@@ -215,7 +215,7 @@ struct `GrammarNameResolver tests` {
         context: Language.GrammarNameResolutionContext
       ) -> Symbol {
         let count = grammars.count
-        return Symbol(rawValue: "grammars\(count)__lstart")!
+        return Symbol(rawValue: "grammars\(count)__lstart")
       }
     }
 
