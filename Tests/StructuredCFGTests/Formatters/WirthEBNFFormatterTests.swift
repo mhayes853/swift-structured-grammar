@@ -151,61 +151,36 @@ struct `WirthEBNFFormatter tests` {
   }
 
   @Test
-  func `Unicode Category Throws`() {
-    let group = CharacterGroup(isNegated: false, members: [.category("Lu")])
+  func `Digit Character Group Expands To Alternation`() {
+    let group = CharacterGroup("\\d")
 
     let grammar = Grammar(Rule("start") {
       group
     })
 
-    #expect(throws: UnsupportedExpressionError.self) {
-      try grammar.formatted(with: .wirthEbnf)
-    }
+    expectNoDifference(
+      try grammar.formatted(with: .wirthEbnf),
+      #"start = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ."#
+    )
   }
 
   @Test
-  func `Negated Unicode Category Throws`() {
-    let group = CharacterGroup(isNegated: false, members: [.negatedCategory("Lu")])
+  func `Whitespace Character Group Expands To Alternation`() {
+    let group = CharacterGroup("\\s")
 
     let grammar = Grammar(Rule("start") {
       group
     })
 
-    #expect(throws: UnsupportedExpressionError.self) {
-      try grammar.formatted(with: .wirthEbnf)
-    }
-  }
-
-  @Test
-  func `XML Name Classes Throws`() {
-    let group = CharacterGroup(isNegated: false, members: [.xmlName(.nameStart)])
-
-    let grammar = Grammar(Rule("start") {
-      group
-    })
-
-    #expect(throws: UnsupportedExpressionError.self) {
-      try grammar.formatted(with: .wirthEbnf)
-    }
-  }
-
-  @Test
-  func `Character Group Subtraction Throws`() {
-    let innerGroup = CharacterGroup(isNegated: false, members: [.range("a", "z")])
-    let group = CharacterGroup(isNegated: false, members: [.subtraction(innerGroup)])
-
-    let grammar = Grammar(Rule("start") {
-      group
-    })
-
-    #expect(throws: UnsupportedExpressionError.self) {
-      try grammar.formatted(with: .wirthEbnf)
-    }
+    expectNoDifference(
+      try grammar.formatted(with: .wirthEbnf),
+      "start = ' ' | '\t' | '\n' | '\r' ."
+    )
   }
 
   @Test
   func `Negated Predefined Class Throws`() {
-    let group = CharacterGroup(isNegated: false, members: [.predefined(.nonDigit)])
+    let group = CharacterGroup("\\D")
 
     let grammar = Grammar(Rule("start") {
       group
@@ -217,8 +192,8 @@ struct `WirthEBNFFormatter tests` {
   }
 
   @Test
-  func `Wildcard Throws`() {
-    let group = CharacterGroup(isNegated: false, members: [.predefined(.wildcard)])
+  func `NonASCII Range Throws`() {
+    let group = CharacterGroup(isNegated: false, members: [.range("é", "ê")])
 
     let grammar = Grammar(Rule("start") {
       group

@@ -148,6 +148,50 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
+  func `Canonical Character Groups Use Bracketed W3C Shorthand`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Rule("start") {
+        CharacterGroup("\\d")
+      }
+      Rule("word") {
+        CharacterGroup("\\w")
+      }
+      Rule("space") {
+        CharacterGroup("\\s")
+      }
+      Rule("nonDigit") {
+        CharacterGroup("\\D")
+      }
+      Rule("nonWord") {
+        CharacterGroup("\\W")
+      }
+      Rule("nonSpace") {
+        CharacterGroup("\\S")
+      }
+      Rule("combo") {
+        CharacterGroup("\\w\\d")
+      }
+      Rule("prefixed") {
+        CharacterGroup("a\\d")
+      }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf),
+      #"""
+      start ::= [\d]
+      word ::= [\w]
+      space ::= [\s]
+      nonDigit ::= [\D]
+      nonWord ::= [\W]
+      nonSpace ::= [\S]
+      combo ::= [\w\d]
+      prefixed ::= [a\d]
+      """#
+    )
+  }
+
+  @Test
   func `Terminals Are Quoted With Single Quotes`() {
     var formatter = Grammar.W3CEBNFFormatter()
     formatter.quoting = .single

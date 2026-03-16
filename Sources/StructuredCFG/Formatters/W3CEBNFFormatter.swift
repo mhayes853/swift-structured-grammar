@@ -147,9 +147,25 @@ extension Grammar {
     }
 
     private func format(characterGroup: CharacterGroup) -> String {
+      if let shorthand = self.shorthand(for: characterGroup) {
+        return shorthand
+      }
+
       var result = characterGroup.isNegated ? "[^" : "["
 
-      for member in characterGroup.members {
+      var memberIndex = 0
+      while memberIndex < characterGroup.members.count {
+        if let shorthand = self.shorthand(
+          in: characterGroup.members,
+          startingAt: memberIndex,
+          isNegated: characterGroup.isNegated
+        ) {
+          result += shorthand.value
+          memberIndex += shorthand.memberCount
+          continue
+        }
+
+        let member = characterGroup.members[memberIndex]
         switch member {
         case .character(let char):
           result.append(char)
@@ -157,84 +173,111 @@ extension Grammar {
           result.append(start)
           result.append("-")
           result.append(end)
-        case .category(let cat):
-          result.append("\\p{\(cat)}")
-        case .negatedCategory(let cat):
-          result.append("\\P{\(cat)}")
-        case .predefined(let predefined):
-          switch predefined {
-          case .digit:
-            result.append("\\d")
-          case .nonDigit:
-            result.append("\\D")
-          case .word:
-            result.append("\\w")
-          case .nonWord:
-            result.append("\\W")
-          case .whitespace:
-            result.append("\\s")
-          case .nonWhitespace:
-            result.append("\\S")
-          case .wildcard:
-            result.append(".")
-          }
-        case .xmlName(let xmlClass):
-          switch xmlClass {
-          case .nameStart:
-            result.append("\\i")
-          case .nonNameStart:
-            result.append("\\I")
-          case .nameChar:
-            result.append("\\c")
-          case .nonNameChar:
-            result.append("\\C")
-          }
-        case .subtraction(let subGroup):
-          result.append("-")
-          result.append(self.format(characterGroup: subGroup))
         case .escaped(let escape):
-          switch escape {
-          case .backslash:
-            result.append("\\\\")
-          case .pipe:
-            result.append("\\|")
-          case .period:
-            result.append("\\.")
-          case .hyphen:
-            result.append("\\-")
-          case .caret:
-            result.append("\\^")
-          case .question:
-            result.append("\\?")
-          case .asterisk:
-            result.append("\\*")
-          case .plus:
-            result.append("\\+")
-          case .leftBrace:
-            result.append("\\{")
-          case .rightBrace:
-            result.append("\\}")
-          case .leftParen:
-            result.append("\\(")
-          case .rightParen:
-            result.append("\\)")
-          case .leftBracket:
-            result.append("\\[")
-          case .rightBracket:
-            result.append("\\]")
-          case .newline:
-            result.append("\\n")
-          case .carriageReturn:
-            result.append("\\r")
-          case .tab:
-            result.append("\\t")
-          }
+          result += self.format(escape: escape)
         }
+        memberIndex += 1
       }
 
       result.append("]")
       return result
     }
+
+    private func shorthand(for characterGroup: CharacterGroup) -> String? {
+      if characterGroup.isDigit {
+        return "[\\d]"
+      }
+      if characterGroup.isWord {
+        return "[\\w]"
+      }
+      if characterGroup.isWhitespace {
+        return "[\\s]"
+      }
+      if characterGroup.isNonDigit {
+        return "[\\D]"
+      }
+      if characterGroup.isNonWord {
+        return "[\\W]"
+      }
+      if characterGroup.isNonWhitespace {
+        return "[\\S]"
+      }
+      return nil
+    }
+
+    private func shorthand(
+      in members: [CharacterGroup.Member],
+      startingAt startIndex: Int,
+      isNegated: Bool
+    ) -> (value: String, memberCount: Int)? {
+      let remainingMembers = Array(members[startIndex...])
+
+      if !isNegated, remainingMembers.starts(with: Self.wordMembers) {
+        return (value: "\\w", memberCount: Self.wordMembers.count)
+      }
+      if !isNegated, remainingMembers.starts(with: Self.whitespaceMembers) {
+        return (value: "\\s", memberCount: Self.whitespaceMembers.count)
+      }
+      if remainingMembers.starts(with: Self.digitMembers) {
+        return (value: isNegated ? "\\D" : "\\d", memberCount: Self.digitMembers.count)
+      }
+      return nil
+    }
+
+    private func format(escape: CharacterGroup.EscapeSequence) -> String {
+      switch escape {
+      case .backslash:
+        "\\\\"
+      case .pipe:
+        "\\|"
+      case .period:
+        "\\."
+      case .hyphen:
+        "\\-"
+      case .caret:
+        "\\^"
+      case .question:
+        "\\?"
+      case .asterisk:
+        "\\*"
+      case .plus:
+        "\\+"
+      case .leftBrace:
+        "\\{"
+      case .rightBrace:
+        "\\}"
+      case .leftParen:
+        "\\("
+      case .rightParen:
+        "\\)"
+      case .leftBracket:
+        "\\["
+      case .rightBracket:
+        "\\]"
+      case .newline:
+        "\\n"
+      case .carriageReturn:
+        "\\r"
+      case .tab:
+        "\\t"
+      }
+    }
+
+    private static let digitMembers: [CharacterGroup.Member] = [.range("0", "9")]
+
+    private static let wordMembers: [CharacterGroup.Member] = [
+      .range("a", "z"),
+      .range("A", "Z"),
+      .range("0", "9"),
+      .character("_")
+    ]
+
+    private static let whitespaceMembers: [CharacterGroup.Member] = [
+      .character(" "),
+      .escaped(.tab),
+      .escaped(.newline),
+      .escaped(.carriageReturn)
+    ]
   }
 }
 

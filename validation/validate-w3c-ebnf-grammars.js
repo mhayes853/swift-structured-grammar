@@ -45,6 +45,7 @@ let hasErrors = false;
 
 for (const file of files) {
   const fileName = file.split("/").pop();
+
   console.log(`Validating ${fileName}...`);
 
   const result = validateGrammar(file);

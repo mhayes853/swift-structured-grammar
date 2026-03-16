@@ -86,10 +86,6 @@ extension Grammar {
     }
 
     private func format(characterGroup: CharacterGroup) -> String {
-      if let standalone = self.formatStandalone(characterGroup: characterGroup) {
-        return standalone
-      }
-
       var result = characterGroup.isNegated ? "[^" : "["
 
       for member in characterGroup.members {
@@ -100,63 +96,8 @@ extension Grammar {
           result.append(start)
           result.append("-")
           result.append(end)
-        case .category(let cat):
-          result.append("\\p{\(cat)}")
-        case .negatedCategory(let cat):
-          result.append("\\P{\(cat)}")
-        case .predefined(let predefined):
-          result.append(self.format(predefined: predefined))
-        case .xmlName(let xmlClass):
-          switch xmlClass {
-          case .nameStart:
-            result.append("\\i")
-          case .nonNameStart:
-            result.append("\\I")
-          case .nameChar:
-            result.append("\\c")
-          case .nonNameChar:
-            result.append("\\C")
-          }
-        case .subtraction(let subGroup):
-          result.append("-")
-          result.append(self.format(characterGroup: subGroup))
         case .escaped(let escape):
-          switch escape {
-          case .backslash:
-            result.append("\\\\")
-          case .pipe:
-            result.append("\\|")
-          case .period:
-            result.append("\\.")
-          case .hyphen:
-            result.append("\\-")
-          case .caret:
-            result.append("\\^")
-          case .question:
-            result.append("\\?")
-          case .asterisk:
-            result.append("\\*")
-          case .plus:
-            result.append("\\+")
-          case .leftBrace:
-            result.append("\\{")
-          case .rightBrace:
-            result.append("\\}")
-          case .leftParen:
-            result.append("\\(")
-          case .rightParen:
-            result.append("\\)")
-          case .leftBracket:
-            result.append("\\[")
-          case .rightBracket:
-            result.append("\\]")
-          case .newline:
-            result.append("\\n")
-          case .carriageReturn:
-            result.append("\\r")
-          case .tab:
-            result.append("\\t")
-          }
+          result += self.format(escape: escape)
         }
       }
 
@@ -164,38 +105,42 @@ extension Grammar {
       return result
     }
 
-    private func formatStandalone(characterGroup: CharacterGroup) -> String? {
-      guard characterGroup.members.count == 1 else { return nil }
-      guard case .predefined(let predefined) = characterGroup.members[0] else { return nil }
-
-      let characterSet = self.predefinedCharacterSet(predefined)
-      let isNegated = characterGroup.isNegated != characterSet.isNegated
-      return "[" + (isNegated ? "^" : "") + characterSet.members + "]"
-    }
-
-    private func format(predefined: CharacterGroup.PredefinedClass) -> String {
-      let characterSet = self.predefinedCharacterSet(predefined)
-      return (characterSet.isNegated ? "^" : "") + characterSet.members
-    }
-
-    private func predefinedCharacterSet(
-      _ predefined: CharacterGroup.PredefinedClass
-    ) -> (members: String, isNegated: Bool) {
-      switch predefined {
-      case .digit:
-        (members: "0-9", isNegated: false)
-      case .nonDigit:
-        (members: "0-9", isNegated: true)
-      case .word:
-        (members: "a-zA-Z0-9_", isNegated: false)
-      case .nonWord:
-        (members: "a-zA-Z0-9_", isNegated: true)
-      case .whitespace:
-        (members: " \\t\\n\\r", isNegated: false)
-      case .nonWhitespace:
-        (members: " \\t\\n\\r", isNegated: true)
-      case .wildcard:
-        (members: ".", isNegated: false)
+    private func format(escape: CharacterGroup.EscapeSequence) -> String {
+      switch escape {
+      case .backslash:
+        "\\\\"
+      case .pipe:
+        "\\|"
+      case .period:
+        "\\."
+      case .hyphen:
+        "\\-"
+      case .caret:
+        "\\^"
+      case .question:
+        "\\?"
+      case .asterisk:
+        "\\*"
+      case .plus:
+        "\\+"
+      case .leftBrace:
+        "\\{"
+      case .rightBrace:
+        "\\}"
+      case .leftParen:
+        "\\("
+      case .rightParen:
+        "\\)"
+      case .leftBracket:
+        "\\["
+      case .rightBracket:
+        "\\]"
+      case .newline:
+        "\\n"
+      case .carriageReturn:
+        "\\r"
+      case .tab:
+        "\\t"
       }
     }
   }

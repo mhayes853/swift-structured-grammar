@@ -133,22 +133,13 @@ extension Grammar {
         case .character(let char):
           terminals.append(self.format(terminal: Terminal(String(char))))
         case .range(let start, let end):
-          let startInt = start.asciiValue!
-          let endInt = end.asciiValue!
+          guard let startInt = start.asciiValue, let endInt = end.asciiValue else {
+            throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
+          }
           for code in startInt...endInt {
             let char = Character(UnicodeScalar(code))
             terminals.append(self.format(terminal: Terminal(String(char))))
           }
-        case .category:
-          throw UnsupportedExpressionError("Unicode categories are not supported")
-        case .negatedCategory:
-          throw UnsupportedExpressionError("Negated unicode categories are not supported")
-        case .predefined(let predefined):
-          terminals.append(contentsOf: try self.terminalsForPredefined(predefined))
-        case .xmlName:
-          throw UnsupportedExpressionError("XML name classes are not supported")
-        case .subtraction:
-          throw UnsupportedExpressionError("Character group subtraction is not supported")
         case .escaped(let escape):
           let escapedStr = self.escapedString(for: escape)
           terminals.append(self.format(terminal: Terminal(escapedStr)))
@@ -156,24 +147,6 @@ extension Grammar {
       }
 
       return terminals.joined(separator: " | ")
-    }
-
-    private func terminalsForPredefined(_ predefined: CharacterGroup.PredefinedClass) throws
-      -> [String]
-    {
-      switch predefined {
-      case .digit:
-        return (0...9).map { self.format(terminal: Terminal(String($0))) }
-      case .nonDigit, .nonWord, .nonWhitespace:
-        throw UnsupportedExpressionError("Negated predefined classes are not supported")
-      case .word:
-        let wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
-        return wordChars.map { self.format(terminal: Terminal(String($0))) }
-      case .whitespace:
-        return [" ", "\t", "\n", "\r"].map { self.format(terminal: Terminal(String($0))) }
-      case .wildcard:
-        throw UnsupportedExpressionError("Wildcard is not supported")
-      }
     }
 
     private func escapedString(for escape: CharacterGroup.EscapeSequence) -> String {
@@ -207,11 +180,11 @@ extension Grammar {
       case .rightBracket:
         "]"
       case .newline:
-        "\\n"
+        "\n"
       case .carriageReturn:
-        "\\r"
+        "\r"
       case .tab:
-        "\\t"
+        "\t"
       }
     }
   }

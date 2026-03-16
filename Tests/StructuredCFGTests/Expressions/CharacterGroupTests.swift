@@ -3,15 +3,24 @@ import StructuredCFG
 import Testing
 
 @Suite
-struct CharacterGroupTests {
+struct `CharacterGroup tests` {
   @Test
   func `CharacterGroup Can Be Created From String`() {
     let group = CharacterGroup("a-zA-Z0-9")
+
     expectNoDifference(group.isNegated, false)
+    expectNoDifference(
+      group.members,
+      [
+        .range("a", "z"),
+        .range("A", "Z"),
+        .range("0", "9")
+      ]
+    )
   }
 
   @Test
-  func `CharacterGroup Formats As Bracket Notation`() {
+  func `CharacterGroup Formats As Bracket Notation`() throws {
     let group = CharacterGroup("a-zA-Z0-9")
 
     let grammar = Grammar(startingSymbol: "test") {
@@ -20,8 +29,8 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("a-zA-Z0-9"), true)
+    let formatted = try grammar.formatted(with: .w3cEbnf)
+    expectNoDifference(formatted, #"test ::= [a-zA-Z\d]"#)
   }
 
   @Test
@@ -42,171 +51,138 @@ struct CharacterGroupTests {
   @Test
   func `CharacterGroup Parses Character Range`() {
     let group = CharacterGroup("a-z")
-    expectNoDifference(group.members.count, 1)
+    expectNoDifference(group.members, [.range("a", "z")])
   }
 
   @Test
   func `CharacterGroup Parses Negated Character Class`() {
     let group = CharacterGroup("^0-9")
     expectNoDifference(group.isNegated, true)
+    expectNoDifference(group.members, [.range("0", "9")])
   }
 
   @Test
   func `CharacterGroup Parses Digit Class`() {
     let group = CharacterGroup("\\d")
 
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\d"), true)
+    expectNoDifference(group.isDigit, true)
+    expectNoDifference(group.members, [.range("0", "9")])
   }
 
   @Test
   func `CharacterGroup Parses Word Class`() {
     let group = CharacterGroup("\\w")
 
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
+    expectNoDifference(group.isWord, true)
+    expectNoDifference(
+      group.members,
+      [
+        .range("a", "z"),
+        .range("A", "Z"),
+        .range("0", "9"),
+        .character("_")
+      ]
+    )
+  }
 
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\w"), true)
+  @Test
+  func `CharacterGroup Parses Mixed Canonical Shorthand`() {
+    let group = CharacterGroup("\\w\\d")
+
+    expectNoDifference(
+      group.members,
+      [
+        .range("a", "z"),
+        .range("A", "Z"),
+        .range("0", "9"),
+        .character("_"),
+        .range("0", "9")
+      ]
+    )
   }
 
   @Test
   func `CharacterGroup Parses Whitespace Class`() {
     let group = CharacterGroup("\\s")
 
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\s"), true)
+    expectNoDifference(group.isWhitespace, true)
+    expectNoDifference(
+      group.members,
+      [
+        .character(" "),
+        .escaped(.tab),
+        .escaped(.newline),
+        .escaped(.carriageReturn)
+      ]
+    )
   }
 
   @Test
-  func `CharacterGroup Parses Non-Digit Class`() {
+  func `CharacterGroup Parses NonDigit Class`() {
     let group = CharacterGroup("\\D")
 
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\D"), true)
+    expectNoDifference(group.isNonDigit, true)
+    expectNoDifference(group.isNegated, true)
+    expectNoDifference(group.members, [.range("0", "9")])
   }
 
   @Test
-  func `CharacterGroup Parses Non-Word Class`() {
+  func `CharacterGroup Parses NonWord Class`() {
     let group = CharacterGroup("\\W")
 
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\W"), true)
+    expectNoDifference(group.isNonWord, true)
+    expectNoDifference(group.isNegated, true)
   }
 
   @Test
-  func `CharacterGroup Parses Non-Whitespace Class`() {
+  func `CharacterGroup Parses NonWhitespace Class`() {
     let group = CharacterGroup("\\S")
 
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\S"), true)
+    expectNoDifference(group.isNonWhitespace, true)
+    expectNoDifference(group.isNegated, true)
   }
 
   @Test
-  func `CharacterGroup Parses XML NameStart Class`() {
-    let group = CharacterGroup("\\i")
-
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
+  func `CharacterGroup Rejects XML NameStart Class`() {
+    #expect(throws: CharacterGroupParseError.self) {
+      try CharacterGroup(String("\\i"))
     }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\i"), true)
   }
 
   @Test
-  func `CharacterGroup Parses XML NameChar Class`() {
-    let group = CharacterGroup("\\c")
-
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
+  func `CharacterGroup Rejects XML NameChar Class`() {
+    #expect(throws: CharacterGroupParseError.self) {
+      try CharacterGroup(String("\\c"))
     }
+  }
 
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\c"), true)
+  @Test
+  func `CharacterGroup Rejects Mixed Negated Predefined Class`() {
+    #expect(throws: CharacterGroupParseError.self) {
+      try CharacterGroup(String("a\\D"))
+    }
   }
 
   @Test
   func `CharacterGroup Parses Newline Escape`() {
     let group = CharacterGroup("\\n")
-
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\n"), true)
+    expectNoDifference(group.members, [.escaped(.newline)])
   }
 
   @Test
   func `CharacterGroup Parses Carriage Return Escape`() {
     let group = CharacterGroup("\\r")
-
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\r"), true)
+    expectNoDifference(group.members, [.escaped(.carriageReturn)])
   }
 
   @Test
   func `CharacterGroup Parses Tab Escape`() {
     let group = CharacterGroup("\\t")
-
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("\\t"), true)
+    expectNoDifference(group.members, [.escaped(.tab)])
   }
 
   @Test
-  func `CharacterGroup Formats Combined Character Class`() {
+  func `CharacterGroup Formats Combined Character Class`() throws {
     let group = CharacterGroup("a-zA-Z0-9_")
 
     let grammar = Grammar(startingSymbol: "test") {
@@ -215,7 +191,7 @@ struct CharacterGroupTests {
       }
     }
 
-    let formatted = try! grammar.formatted(with: .w3cEbnf)
-    expectNoDifference(formatted.contains("a-zA-Z0-9_"), true)
+    let formatted = try grammar.formatted(with: .w3cEbnf)
+    expectNoDifference(formatted, #"test ::= [\w]"#)
   }
 }
