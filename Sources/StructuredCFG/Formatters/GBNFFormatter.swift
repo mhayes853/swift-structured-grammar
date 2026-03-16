@@ -1,5 +1,3 @@
-import Foundation
-
 extension Grammar {
   public struct GBNFFormatter: Formatter {
     public init() {}

@@ -2,6 +2,9 @@
 You are currently working with Swift code within a Swift package. Below are common anti-patterns that agents tend to follow, and what you should do instead. Make sure to generate code in correspondence with examples listed as GOOD or OK, and avoid generating code listed as a BAD example.
 
 ## Basics
+### Forbid `Foundation` In Production Code
+This library must stay highly portable, so production code under `Sources/` must not import `Foundation`. Test code under `Tests/` may still import `Foundation` when needed.
+
 ### Always Use Type Names For Calling Initializers
 ```swift
 struct Foo {}

@@ -1,5 +1,3 @@
-import Foundation
-
 extension Grammar {
   public struct WirthEBNFFormatter: Formatter {
     public init() {}

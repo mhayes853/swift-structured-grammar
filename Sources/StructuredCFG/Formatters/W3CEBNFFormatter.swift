@@ -1,5 +1,3 @@
-import Foundation
-
 extension Grammar {
   public enum Quoting: Sendable {
     case single
