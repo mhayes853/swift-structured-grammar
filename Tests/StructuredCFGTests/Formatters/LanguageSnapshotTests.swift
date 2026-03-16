@@ -11,6 +11,21 @@ struct `LanguageSnapshot tests` {
     let snapshotCase = LanguageSnapshotSuite.snapshotCase(named: snapshotName)
     assertEBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
   }
+
+  @Test
+  func `Representative Grammars Format Canonically With Single Quotes`() {
+    var formatter = Grammar.W3CEBNFFormatter()
+    formatter.quoting = .single
+    let grammar = Grammar(startingSymbol: "expression") {
+      Rule("expression") {
+        Choice {
+          "a"
+          "b"
+        }
+      }
+    }
+    assertEBNFSnapshot(grammar, named: "single-quote-test", formatter: formatter)
+  }
 }
 
 private let isRecordingSnapshots = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"
@@ -28,11 +43,12 @@ private func assertEBNFSnapshot(
   file: StaticString = #filePath,
   function: StaticString = #function,
   line: UInt = #line,
-  column: UInt = #column
+  column: UInt = #column,
+  formatter: Grammar.W3CEBNFFormatter = .w3cEbnf
 ) {
   let failure = verifySnapshot(
     of: value(),
-    as: .ebnf(),
+    as: .ebnf(formatter: formatter),
     named: name,
     record: isRecordingSnapshots,
     fileID: fileID,

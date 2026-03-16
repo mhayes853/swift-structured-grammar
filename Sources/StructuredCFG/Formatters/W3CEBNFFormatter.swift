@@ -15,8 +15,17 @@ extension Grammar {
     public static let emptyExpression = W3CEBNFFormatterError(kind: .emptyExpression)
   }
 
+  public enum Quoting: Sendable {
+    case single
+    case double
+  }
+
   public struct W3CEBNFFormatter: Formatter {
-    public init() {}
+    public var quoting: Quoting = .double
+
+    public init(quoting: Quoting = .double) {
+      self.quoting = quoting
+    }
 
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
@@ -118,18 +127,34 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
-      let escaped = terminal.value.reduce(into: "") { result, character in
-        switch character {
-        case "\\":
-          result += "\\\\"
-        case #"""#:
-          result += #"\""#
-        default:
-          result.append(character)
+      let escaped: String
+      switch self.quoting {
+      case .double:
+        escaped = terminal.value.reduce(into: "") { result, character in
+          switch character {
+          case "\\":
+            result += "\\\\"
+          case "\"":
+            result += #"\""#
+          default:
+            result.append(character)
+          }
+        }
+      case .single:
+        escaped = terminal.value.reduce(into: "") { result, character in
+          switch character {
+          case "\\":
+            result += "\\\\"
+          case "'":
+            result += #"\'"#
+          default:
+            result.append(character)
+          }
         }
       }
 
-      return "\"" + escaped + "\""
+      let quote = self.quoting == .double ? "\"" : "'"
+      return quote + escaped + quote
     }
 
     private func format(characterGroup: CharacterGroup) -> String {
@@ -227,5 +252,9 @@ extension Grammar {
 extension Grammar.Formatter where Self == Grammar.W3CEBNFFormatter {
   public static var w3cEbnf: Grammar.W3CEBNFFormatter {
     Grammar.W3CEBNFFormatter()
+  }
+
+  public static func w3cEbnf(quoting: Grammar.Quoting = .double) -> Grammar.W3CEBNFFormatter {
+    Grammar.W3CEBNFFormatter(quoting: quoting)
   }
 }

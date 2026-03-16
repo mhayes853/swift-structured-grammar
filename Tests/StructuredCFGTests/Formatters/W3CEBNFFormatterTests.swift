@@ -146,4 +146,49 @@ struct `W3CEBNFFormatter tests` {
 
     expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= ("a" | "b")+"#)
   }
+
+  @Test
+  func `Terminals Are Quoted With Single Quotes`() {
+    var formatter = Grammar.W3CEBNFFormatter()
+    formatter.quoting = .single
+
+    let grammar = Grammar(Rule("start") {
+      "hello"
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: formatter),
+      #"start ::= 'hello'"#
+    )
+  }
+
+  @Test
+  func `Single Quotes In Terminal Are Escaped With Single Quoting`() {
+    var formatter = Grammar.W3CEBNFFormatter()
+    formatter.quoting = .single
+
+    let grammar = Grammar(Rule("start") {
+      "it's"
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: formatter),
+      #"start ::= 'it\'s'"#
+    )
+  }
+
+  @Test
+  func `Backslash In Terminal Is Escaped With Single Quoting`() {
+    var formatter = Grammar.W3CEBNFFormatter()
+    formatter.quoting = .single
+
+    let grammar = Grammar(Rule("start") {
+      #"path\to\file"#
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: formatter),
+      #"start ::= 'path\\to\\file'"#
+    )
+  }
 }
