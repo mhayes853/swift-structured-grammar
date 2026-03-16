@@ -234,7 +234,7 @@ struct `GBNFFormatter tests` {
       Expression.custom(CustomExpr(value: "test"))
     })
 
-    #expect(throws: Grammar.GBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .gbnf)
     }
   }

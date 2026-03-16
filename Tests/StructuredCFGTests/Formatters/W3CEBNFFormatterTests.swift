@@ -63,7 +63,7 @@ struct `W3CEBNFFormatter tests` {
       }
     }
 
-    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .w3cEbnf)
     }
   }
@@ -102,7 +102,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .w3cEbnf)
     }
   }
@@ -115,7 +115,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .w3cEbnf)
     }
   }
@@ -128,7 +128,7 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .w3cEbnf)
     }
   }
@@ -202,7 +202,7 @@ struct `W3CEBNFFormatter tests` {
       Expression.custom(CustomExpr(value: "test"))
     })
 
-    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .w3cEbnf)
     }
   }

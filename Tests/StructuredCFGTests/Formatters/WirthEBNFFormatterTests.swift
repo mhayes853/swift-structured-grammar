@@ -145,7 +145,7 @@ struct `WirthEBNFFormatter tests` {
       CharacterGroup("^abc")
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -158,7 +158,7 @@ struct `WirthEBNFFormatter tests` {
       group
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -171,7 +171,7 @@ struct `WirthEBNFFormatter tests` {
       group
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -184,7 +184,7 @@ struct `WirthEBNFFormatter tests` {
       group
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -198,7 +198,7 @@ struct `WirthEBNFFormatter tests` {
       group
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -211,7 +211,7 @@ struct `WirthEBNFFormatter tests` {
       group
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -224,7 +224,7 @@ struct `WirthEBNFFormatter tests` {
       group
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }
@@ -239,7 +239,7 @@ struct `WirthEBNFFormatter tests` {
       Expression.custom(CustomExpr(value: "test"))
     })
 
-    #expect(throws: Grammar.WirthEBNFFormatterError.self) {
+    #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .wirthEbnf)
     }
   }

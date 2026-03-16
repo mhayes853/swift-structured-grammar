@@ -1,27 +1,13 @@
 import Foundation
 
 extension Grammar {
-  public struct GBNFFormatterError: Error, Hashable {
-    private enum Kind: Hashable {
-      case customExpression
-    }
-
-    private let kind: Kind
-
-    private init(kind: Kind) {
-      self.kind = kind
-    }
-
-    public static let customExpression = GBNFFormatterError(kind: .customExpression)
-  }
-
   public struct GBNFFormatter: Formatter {
     public init() {}
 
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if case .custom = expression {
-        throw Grammar.GBNFFormatterError.customExpression
+        throw UnsupportedExpressionError.customExpression
       }
       return "\(rule.symbol.rawValue) ::= \(self.format(expression: expression))"
     }

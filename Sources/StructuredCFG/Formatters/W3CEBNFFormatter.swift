@@ -1,22 +1,6 @@
 import Foundation
 
 extension Grammar {
-  public struct W3CEBNFFormatterError: Error, Hashable {
-    private enum Kind: Hashable {
-      case emptyExpression
-      case customExpression
-    }
-
-    private let kind: Kind
-
-    private init(kind: Kind) {
-      self.kind = kind
-    }
-
-    public static let emptyExpression = W3CEBNFFormatterError(kind: .emptyExpression)
-    public static let customExpression = W3CEBNFFormatterError(kind: .customExpression)
-  }
-
   public enum Quoting: Sendable {
     case single
     case double
@@ -32,10 +16,10 @@ extension Grammar {
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if expression == .empty {
-        throw Grammar.W3CEBNFFormatterError.emptyExpression
+        throw UnsupportedExpressionError("Empty expressions are not supported")
       }
       if case .custom = expression {
-        throw Grammar.W3CEBNFFormatterError.customExpression
+        throw UnsupportedExpressionError.customExpression
       }
       let formatted = self.format(expression: expression)
       if formatted.isEmpty {

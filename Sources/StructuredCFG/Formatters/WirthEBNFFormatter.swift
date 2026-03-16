@@ -1,38 +1,6 @@
 import Foundation
 
 extension Grammar {
-  public struct WirthEBNFFormatterError: Error, Hashable {
-    private enum Kind: Hashable {
-      case negatedCharacterGroup
-      case unicodeCategory
-      case negatedCategory
-      case characterGroupSubtraction
-      case xmlNameClasses
-      case negatedPredefinedClass
-      case wildcard
-      case customExpression
-    }
-
-    private let kind: Kind
-
-    private init(kind: Kind) {
-      self.kind = kind
-    }
-
-    public static let negatedCharacterGroup = WirthEBNFFormatterError(kind: .negatedCharacterGroup)
-    public static let unicodeCategory = WirthEBNFFormatterError(kind: .unicodeCategory)
-    public static let negatedCategory = WirthEBNFFormatterError(kind: .negatedCategory)
-    public static let characterGroupSubtraction = WirthEBNFFormatterError(
-      kind: .characterGroupSubtraction
-    )
-    public static let xmlNameClasses = WirthEBNFFormatterError(kind: .xmlNameClasses)
-    public static let negatedPredefinedClass = WirthEBNFFormatterError(
-      kind: .negatedPredefinedClass
-    )
-    public static let wildcard = WirthEBNFFormatterError(kind: .wildcard)
-    public static let customExpression = WirthEBNFFormatterError(kind: .customExpression)
-  }
-
   public struct WirthEBNFFormatter: Formatter {
     public init() {}
 
@@ -42,7 +10,7 @@ extension Grammar {
         return ""
       }
       if case .custom = expression {
-        throw Grammar.WirthEBNFFormatterError.customExpression
+        throw UnsupportedExpressionError.customExpression
       }
       let formatted = try self.format(expression: expression)
       if formatted.isEmpty {
@@ -157,7 +125,7 @@ extension Grammar {
 
     private func format(characterGroup: CharacterGroup) throws -> String {
       if characterGroup.isNegated {
-        throw WirthEBNFFormatterError.negatedCharacterGroup
+        throw UnsupportedExpressionError("Negated character groups are not supported")
       }
 
       var terminals: [String] = []
@@ -174,15 +142,15 @@ extension Grammar {
             terminals.append(self.format(terminal: Terminal(String(char))))
           }
         case .category:
-          throw WirthEBNFFormatterError.unicodeCategory
+          throw UnsupportedExpressionError("Unicode categories are not supported")
         case .negatedCategory:
-          throw WirthEBNFFormatterError.negatedCategory
+          throw UnsupportedExpressionError("Negated unicode categories are not supported")
         case .predefined(let predefined):
           terminals.append(contentsOf: try self.terminalsForPredefined(predefined))
         case .xmlName:
-          throw WirthEBNFFormatterError.xmlNameClasses
+          throw UnsupportedExpressionError("XML name classes are not supported")
         case .subtraction:
-          throw WirthEBNFFormatterError.characterGroupSubtraction
+          throw UnsupportedExpressionError("Character group subtraction is not supported")
         case .escaped(let escape):
           let escapedStr = self.escapedString(for: escape)
           terminals.append(self.format(terminal: Terminal(escapedStr)))
@@ -199,14 +167,14 @@ extension Grammar {
       case .digit:
         return (0...9).map { self.format(terminal: Terminal(String($0))) }
       case .nonDigit, .nonWord, .nonWhitespace:
-        throw WirthEBNFFormatterError.negatedPredefinedClass
+        throw UnsupportedExpressionError("Negated predefined classes are not supported")
       case .word:
         let wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
         return wordChars.map { self.format(terminal: Terminal(String($0))) }
       case .whitespace:
         return [" ", "\t", "\n", "\r"].map { self.format(terminal: Terminal(String($0))) }
       case .wildcard:
-        throw WirthEBNFFormatterError.wildcard
+        throw UnsupportedExpressionError("Wildcard is not supported")
       }
     }
 
