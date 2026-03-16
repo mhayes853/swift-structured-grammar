@@ -54,7 +54,7 @@ private enum GBNFSnapshotSuite {
     GBNFSnapshotCase(
       name: "arithmetic-grammar",
       language: Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           Ref("term")
           ZeroOrMore {
             Choice {
@@ -65,7 +65,7 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("term") {
+        Rule("term") {
           Ref("factor")
           ZeroOrMore {
             Choice {
@@ -76,7 +76,7 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("factor") {
+        Rule("factor") {
           Choice {
             Ref("number")
             Group {
@@ -87,13 +87,13 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("number") {
+        Rule("number") {
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("digit") {
+        Rule("digit") {
           Choice {
             "0"
             "1"
@@ -106,17 +106,17 @@ private enum GBNFSnapshotSuite {
       name: "unioned-grammar",
       language: Union {
         Grammar(startingSymbol: "expression") {
-          Production("expression") {
+          Rule("expression") {
             Ref("number")
           }
 
-          Production("number") {
+          Rule("number") {
             OneOrMore {
               Ref("digit")
             }
           }
 
-          Production("digit") {
+          Rule("digit") {
             Choice {
               "0"
               "1"
@@ -125,7 +125,7 @@ private enum GBNFSnapshotSuite {
         }
 
         Grammar(startingSymbol: "statement") {
-          Production("statement") {
+          Rule("statement") {
             Choice {
               "pass"
               ConcatenateExpressions {
@@ -135,7 +135,7 @@ private enum GBNFSnapshotSuite {
             }
           }
 
-          Production("identifier") {
+          Rule("identifier") {
             "identifier"
           }
         }
@@ -144,26 +144,26 @@ private enum GBNFSnapshotSuite {
     GBNFSnapshotCase(
       name: "namespaced-grammar",
       language: Grammar(startingSymbol: .root) {
-        Production(.root) {
+        Rule(.root) {
           Choice {
             Ref("ga-expression")
             Ref("gb-expression")
           }
         }
 
-        Production("ga-expression") {
+        Rule("ga-expression") {
           Ref("ga-term")
         }
 
-        Production("ga-term") {
+        Rule("ga-term") {
           "left"
         }
 
-        Production("gb-expression") {
+        Rule("gb-expression") {
           Ref("gb-term")
         }
 
-        Production("gb-term") {
+        Rule("gb-term") {
           "right"
         }
       }.language
@@ -172,7 +172,7 @@ private enum GBNFSnapshotSuite {
       name: "helper-production-grammar",
       language: KleeneStar {
         Grammar(startingSymbol: "token") {
-          Production("token") {
+          Rule("token") {
             Choice {
               "a"
               "b"
@@ -184,7 +184,7 @@ private enum GBNFSnapshotSuite {
     GBNFSnapshotCase(
       name: "comprehensive-grammar",
       language: Grammar(startingSymbol: "document") {
-        Production("document") {
+        Rule("document") {
           Ref("header")
           OneOrMore {
             Ref("assignment")
@@ -194,11 +194,11 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("header") {
+        Rule("header") {
           "BEGIN"
         }
 
-        Production("assignment") {
+        Rule("assignment") {
           Ref("identifier")
           "="
           Choice {
@@ -208,7 +208,7 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("tuple") {
+        Rule("tuple") {
           "("
           Ref("literal")
           ZeroOrMore {
@@ -220,7 +220,7 @@ private enum GBNFSnapshotSuite {
           ")"
         }
 
-        Production("literal") {
+        Rule("literal") {
           Choice {
             Ref("number")
             Ref("ga-qualified")
@@ -228,13 +228,13 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("number") {
+        Rule("number") {
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("digit") {
+        Rule("digit") {
           Choice {
             "0"
             "1"
@@ -242,19 +242,19 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("identifier") {
+        Rule("identifier") {
           "identifier"
         }
 
-        Production("footer") {
+        Rule("footer") {
           "END"
         }
 
-        Production("padding") {
+        Rule("padding") {
           EmptyExpression()
         }
 
-        Production("ga-qualified") {
+        Rule("ga-qualified") {
           "qualified"
         }
       }.language
@@ -262,7 +262,7 @@ private enum GBNFSnapshotSuite {
     GBNFSnapshotCase(
       name: "json-grammar",
       language: Grammar(startingSymbol: "value") {
-        Production("value") {
+        Rule("value") {
           Choice {
             Ref("object")
             Ref("array")
@@ -274,7 +274,7 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("object") {
+        Rule("object") {
           "{"
           OptionalExpression {
             Ref("members")
@@ -282,7 +282,7 @@ private enum GBNFSnapshotSuite {
           "}"
         }
 
-        Production("members") {
+        Rule("members") {
           Ref("pair")
           ZeroOrMore {
             Group {
@@ -292,13 +292,13 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("pair") {
+        Rule("pair") {
           Ref("string")
           ":"
           Ref("value")
         }
 
-        Production("array") {
+        Rule("array") {
           "["
           OptionalExpression {
             Ref("elements")
@@ -306,7 +306,7 @@ private enum GBNFSnapshotSuite {
           "]"
         }
 
-        Production("elements") {
+        Rule("elements") {
           Ref("value")
           ZeroOrMore {
             Group {
@@ -316,11 +316,11 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("string") {
+        Rule("string") {
           "string"
         }
 
-        Production("number") {
+        Rule("number") {
           Ref("integer")
           OptionalExpression {
             Ref("fraction")
@@ -330,20 +330,20 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("integer") {
+        Rule("integer") {
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("fraction") {
+        Rule("fraction") {
           "."
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("exponent") {
+        Rule("exponent") {
           Choice {
             "e"
             "E"
@@ -356,14 +356,14 @@ private enum GBNFSnapshotSuite {
           }
         }
 
-        Production("sign") {
+        Rule("sign") {
           Choice {
             "+"
             "-"
           }
         }
 
-        Production("digit") {
+        Rule("digit") {
           Choice {
             "0"
             "1"
@@ -382,25 +382,25 @@ private enum GBNFSnapshotSuite {
     GBNFSnapshotCase(
       name: "character-group-grammar",
       language: Grammar(startingSymbol: "identifier") {
-        Production("identifier") {
+        Rule("identifier") {
           CharacterGroup("a-zA-Z_")
           ZeroOrMore {
             CharacterGroup("a-zA-Z0-9_")
           }
         }
-        Production("digit") {
+        Rule("digit") {
           CharacterGroup("\\d")
         }
-        Production("word") {
+        Rule("word") {
           CharacterGroup("\\w")
         }
-        Production("whitespace") {
+        Rule("whitespace") {
           CharacterGroup("\\s")
         }
-        Production("hex-digit") {
+        Rule("hex-digit") {
           CharacterGroup("0-9a-fA-F")
         }
-        Production("escaped") {
+        Rule("escaped") {
           CharacterGroup("\\n\\r\\t")
         }
       }.language
@@ -408,16 +408,16 @@ private enum GBNFSnapshotSuite {
     GBNFSnapshotCase(
       name: "range-grammar",
       language: Grammar(startingSymbol: "password") {
-        Production("password") {
+        Rule("password") {
           Repeat(2..., Terminal("x"))
         }
-        Production("code") {
+        Rule("code") {
           Repeat(4, Terminal("0"))
         }
-        Production("upto5") {
+        Rule("upto5") {
           Repeat(...5, Terminal("a"))
         }
-        Production("bounded") {
+        Rule("bounded") {
           Repeat(1...3, Terminal("b"))
         }
       }.language

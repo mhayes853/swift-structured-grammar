@@ -7,31 +7,31 @@ struct `Grammar tests` {
   @Test
   func `Productions Preserves Order And Supports Indexing`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
-    expectNoDifference(grammar.productions.count, 2)
-    expectNoDifference(grammar.productions.startIndex, 0)
-    expectNoDifference(grammar[0], Production("expression") { "value" })
-    expectNoDifference(grammar[1], Production("term", Ref("expression")))
-    expectNoDifference(grammar.productions[0], Production("expression") { "value" })
-    expectNoDifference(grammar.productions[1], Production("term", Ref("expression")))
+    expectNoDifference(grammar.rules.count, 2)
+    expectNoDifference(grammar.rules.startIndex, 0)
+    expectNoDifference(grammar[0], Rule("expression") { "value" })
+    expectNoDifference(grammar[1], Rule("term", Ref("expression")))
+    expectNoDifference(grammar.rules[0], Rule("expression") { "value" })
+    expectNoDifference(grammar.rules[1], Rule("term", Ref("expression")))
   }
 
   @Test
   func `Sequence Initializer Builds Grammar With Last Wins Semantics`() {
     let grammar = Grammar(startingSymbol: "expression", [
-      Production("expression") { "first" },
-      Production("term") { "value" },
-      Production("expression") { "second" }
+      Rule("expression") { "first" },
+      Rule("term") { "value" },
+      Rule("expression") { "second" }
     ])
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
-        Production("term") { "value" }
+        Rule("expression") { "second" }
+        Rule("term") { "value" }
       }
     )
   }
@@ -39,35 +39,35 @@ struct `Grammar tests` {
   @Test
   func `Productions Supports Identifier Subscript Reads`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
-    expectNoDifference(grammar.productions["expression"], Production("expression") { "value" })
-    expectNoDifference(grammar.productions["term"], Production("term", Ref("expression")))
-    expectNoDifference(grammar.productions["factor"], nil)
-    expectNoDifference(grammar["expression"], Production("expression") { "value" })
-    expectNoDifference(grammar["term"], Production("term", Ref("expression")))
+    expectNoDifference(grammar.rules["expression"], Rule("expression") { "value" })
+    expectNoDifference(grammar.rules["term"], Rule("term", Ref("expression")))
+    expectNoDifference(grammar.rules["factor"], nil)
+    expectNoDifference(grammar["expression"], Rule("expression") { "value" })
+    expectNoDifference(grammar["term"], Rule("term", Ref("expression")))
     expectNoDifference(grammar["factor"], nil)
   }
 
   @Test
   func `Contains Production Reports Presence By Identifier`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
-    expectNoDifference(grammar.containsProduction(for: "expression"), true)
-    expectNoDifference(grammar.containsProduction(for: "term"), true)
-    expectNoDifference(grammar.containsProduction(for: "factor"), false)
+    expectNoDifference(grammar.containsRule(for: "expression"), true)
+    expectNoDifference(grammar.containsRule(for: "term"), true)
+    expectNoDifference(grammar.containsRule(for: "factor"), false)
   }
 
   @Test
   func `Mutating Starting Identifier To Existing Production Reorders Start`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
     grammar.startingSymbol = "term"
@@ -76,8 +76,8 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "term") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
       }
     )
   }
@@ -85,8 +85,8 @@ struct `Grammar tests` {
   @Test
   func `Mutating Starting Identifier To Missing Production Inserts Empty Production`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
     grammar.startingSymbol = "factor"
@@ -95,47 +95,47 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "factor") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
       }
     )
-    expectNoDifference(grammar["factor"], Production("factor") { EmptyExpression() })
+    expectNoDifference(grammar["factor"], Rule("factor") { EmptyExpression() })
   }
 
   @Test
   func `Remove Production Identifier Removes Matching Production`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
-      Production("factor") { Ref("term") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
+      Rule("factor") { Ref("term") }
     }
 
-    grammar.removeProduction(for: "term")
+    grammar.removeRule(for: "term")
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("factor") { Ref("term") }
+        Rule("expression") { "value" }
+        Rule("factor") { Ref("term") }
       }
     )
-    expectNoDifference(grammar.containsProduction(for: "term"), false)
+    expectNoDifference(grammar.containsRule(for: "term"), false)
   }
 
   @Test
   func `Remove Production Identifier Is No Op For Missing Identifier`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
-    grammar.removeProduction(for: "factor")
+    grammar.removeRule(for: "factor")
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
       }
     )
   }
@@ -143,23 +143,23 @@ struct `Grammar tests` {
   @Test
   func `Remove All Clears Grammar`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
     grammar.removeAll()
 
-    expectNoDifference(grammar, Grammar(startingSymbol: "expression", [Production("expression") { EmptyExpression() }]))
-    expectNoDifference(grammar.containsProduction(for: "expression"), true)
-    expectNoDifference(grammar.containsProduction(for: "term"), false)
+    expectNoDifference(grammar, Grammar(startingSymbol: "expression", [Rule("expression") { EmptyExpression() }]))
+    expectNoDifference(grammar.containsRule(for: "expression"), true)
+    expectNoDifference(grammar.containsRule(for: "term"), false)
   }
 
   @Test
   func `Remove All Where Removes Matching Productions And Preserves Remaining Order`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
-      Production("factor") { Ref("term") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
+      Rule("factor") { Ref("term") }
     }
 
     grammar.removeAll { production in
@@ -169,8 +169,8 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { EmptyExpression() }
-        Production("term") { Ref("expression") }
+        Rule("expression") { EmptyExpression() }
+        Rule("term") { Ref("expression") }
       }
     )
   }
@@ -178,11 +178,11 @@ struct `Grammar tests` {
   @Test
   func `Replacing Production Overwrites Existing Production Without Mutating Original`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
-    let replaced = grammar.replacingProduction(
+    let replaced = grammar.replacingRule(
       for: "expression",
       with: "updated"
     )
@@ -190,15 +190,15 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("term", Ref("expression"))
+        Rule("expression") { "value" }
+        Rule("term", Ref("expression"))
       }
     )
     expectNoDifference(
       replaced,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "updated" }
-        Production("term", Ref("expression"))
+        Rule("expression") { "updated" }
+        Rule("term", Ref("expression"))
       }
     )
   }
@@ -206,20 +206,20 @@ struct `Grammar tests` {
   @Test
   func `Replacing Production Inserts Missing Production At End`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
-    let replaced = grammar.replacingProduction(for: "factor") {
+    let replaced = grammar.replacingRule(for: "factor") {
       Ref("term")
     }
 
     expectNoDifference(
       replaced,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
-        Production("factor") { Ref("term") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
+        Rule("factor") { Ref("term") }
       }
     )
   }
@@ -228,48 +228,48 @@ struct `Grammar tests` {
   func `Replacing Production Uses Named Identifier For Inserted Production`() {
     let grammar = Grammar()
 
-    let replaced = grammar.replacingProduction(for: "factor", with: "value")
+    let replaced = grammar.replacingRule(for: "factor", with: "value")
 
     expectNoDifference(replaced["factor"]?.symbol, "factor")
     expectNoDifference(
       replaced,
       Grammar(startingSymbol: .root) {
-        Production(.root) { EmptyExpression() }
-        Production("factor") { "value" }
+        Rule(.root) { EmptyExpression() }
+        Rule("factor") { "value" }
       }
     )
   }
 
   @Test
   func `Appending Production Returns New Grammar Without Mutating Original`() {
-    let grammar = Grammar(Production("expression") { "value" })
+    let grammar = Grammar(Rule("expression") { "value" })
 
-    let appended = grammar.appending(Production("term") { Ref("expression") })
+    let appended = grammar.appending(Rule("term") { Ref("expression") })
 
     expectNoDifference(
       grammar,
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     )
     expectNoDifference(
       appended,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
       }
     )
   }
 
   @Test
   func `Append Inserts Missing Production At End`() {
-    var grammar = Grammar(Production("expression") { "value" })
+    var grammar = Grammar(Rule("expression") { "value" })
 
-    grammar.append(Production("term") { Ref("expression") })
+    grammar.append(Rule("term") { Ref("expression") })
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
       }
     )
   }
@@ -277,40 +277,40 @@ struct `Grammar tests` {
   @Test
   func `Append Overwrites Existing Production Using Production Identifier`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "first" }
-      Production("term") { "value" }
+      Rule("expression") { "first" }
+      Rule("term") { "value" }
     }
 
-    grammar.append(Production("expression") { "second" })
+    grammar.append(Rule("expression") { "second" })
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
-        Production("term") { "value" }
+        Rule("expression") { "second" }
+        Rule("term") { "value" }
       }
     )
   }
 
   @Test
   func `Appending Contents Of Returns New Grammar Without Mutating Original`() {
-    let grammar = Grammar(Production("expression") { "value" })
+    let grammar = Grammar(Rule("expression") { "value" })
 
     let appended = grammar.appending(contentsOf: [
-      Production("term") { Ref("expression") },
-      Production("factor") { Ref("term") }
+      Rule("term") { Ref("expression") },
+      Rule("factor") { Ref("term") }
     ])
 
     expectNoDifference(
       grammar,
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     )
     expectNoDifference(
       appended,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value" }
-        Production("term") { Ref("expression") }
-        Production("factor") { Ref("term") }
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
+        Rule("factor") { Ref("term") }
       }
     )
   }
@@ -318,21 +318,21 @@ struct `Grammar tests` {
   @Test
   func `Append Contents Of Applies Last Wins Semantics In Sequence Order`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "first" }
-      Production("term") { "value" }
+      Rule("expression") { "first" }
+      Rule("term") { "value" }
     }
 
     grammar.append(contentsOf: [
-      Production("factor") { Ref("term") },
-      Production("expression") { "second" }
+      Rule("factor") { Ref("term") },
+      Rule("expression") { "second" }
     ])
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
-        Production("term") { "value" }
-        Production("factor") { Ref("term") }
+        Rule("expression") { "second" }
+        Rule("term") { "value" }
+        Rule("factor") { Ref("term") }
       }
     )
   }
@@ -340,12 +340,12 @@ struct `Grammar tests` {
   @Test
   func `Merge Overwrites Existing Productions And Appends New Ones`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "first" }
-      Production("term") { "value" }
+      Rule("expression") { "first" }
+      Rule("term") { "value" }
     }
     let other = Grammar(startingSymbol: "factor") {
-      Production("factor") { Ref("term") }
-      Production("expression") { "second" }
+      Rule("factor") { Ref("term") }
+      Rule("expression") { "second" }
     }
 
     grammar.merge(other)
@@ -353,9 +353,9 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
-        Production("term") { "value" }
-        Production("factor") { Ref("term") }
+        Rule("expression") { "second" }
+        Rule("term") { "value" }
+        Rule("factor") { Ref("term") }
       }
     )
   }
@@ -363,20 +363,20 @@ struct `Grammar tests` {
   @Test
   func `Merge Preserves Original Slot Of Overwritten Production`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "first" }
-      Production("term") { "value" }
-      Production("factor") { Ref("term") }
+      Rule("expression") { "first" }
+      Rule("term") { "value" }
+      Rule("factor") { Ref("term") }
     }
-    let other = Grammar(Production("term") { Ref("expression") })
+    let other = Grammar(Rule("term") { Ref("expression") })
 
     grammar.merge(other)
 
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "first" }
-        Production("term") { Ref("expression") }
-        Production("factor") { Ref("term") }
+        Rule("expression") { "first" }
+        Rule("term") { Ref("expression") }
+        Rule("factor") { Ref("term") }
       }
     )
   }
@@ -384,11 +384,11 @@ struct `Grammar tests` {
   @Test
   func `Homomorph Replaces Matching Terminal Across Grammar`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         "+"
         Ref("term")
       }
-      Production("term") {
+      Rule("term") {
         "+"
       }
     }
@@ -398,11 +398,11 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           "-"
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           "-"
         }
       }
@@ -411,7 +411,7 @@ struct `Grammar tests` {
 
   @Test
   func `Homomorph Map Leaves Unmatched Terminals Unchanged`() {
-    let production = Production("expression") {
+    let production = Rule("expression") {
       Choice {
         "+"
         "*"
@@ -426,7 +426,7 @@ struct `Grammar tests` {
         return nil
       }
     }
-    let expected = Grammar(Production("expression") {
+    let expected = Grammar(Rule("expression") {
       Choice {
         "-"
         "*"
@@ -438,7 +438,7 @@ struct `Grammar tests` {
 
   @Test
   func `Homomorph Map Rewrites Nested Expressions`() {
-    let production = Production("expression") {
+    let production = Rule("expression") {
       OptionalExpression {
         "+"
       }
@@ -460,7 +460,7 @@ struct `Grammar tests` {
         return nil
       }
     }
-    let expected = Grammar(Production("expression") {
+    let expected = Grammar(Rule("expression") {
       OptionalExpression {
         "-"
       }
@@ -480,10 +480,10 @@ struct `Grammar tests` {
   @Test
   func `Homomorph Map Handles Empty ConcatanateExpressions Ref And Terminal Cases`() {
     let grammar = Grammar(startingSymbol: "epsilon") {
-      Production("epsilon") {
+      Rule("epsilon") {
         EmptyExpression()
       }
-      Production("expression") {
+      Rule("expression") {
         ConcatenateExpressions {
           Ref("identifier")
           Ref("epsilon")
@@ -503,10 +503,10 @@ struct `Grammar tests` {
     expectNoDifference(
       homomorphed,
       Grammar(startingSymbol: "epsilon") {
-        Production("epsilon") {
+        Rule("epsilon") {
           EmptyExpression()
         }
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             Ref("identifier")
             Ref("epsilon")
@@ -520,7 +520,7 @@ struct `Grammar tests` {
   @Test
   func `Reversed Concatenation Element Order`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         ConcatenateExpressions {
           "a"
           "b"
@@ -534,7 +534,7 @@ struct `Grammar tests` {
     expectNoDifference(
       reversed,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "c"
             "b"
@@ -548,7 +548,7 @@ struct `Grammar tests` {
   @Test
   func `Reversed Reverses Choice Alternatives Contents`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         Choice {
           ConcatenateExpressions {
             "a"
@@ -567,7 +567,7 @@ struct `Grammar tests` {
     expectNoDifference(
       reversed,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           Choice {
             ConcatenateExpressions {
               "b"
@@ -586,7 +586,7 @@ struct `Grammar tests` {
   @Test
   func `Reversed Reverses Optional Expression Contents`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         OptionalExpression {
           ConcatenateExpressions {
             "a"
@@ -601,7 +601,7 @@ struct `Grammar tests` {
     expectNoDifference(
       reversed,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           OptionalExpression {
             ConcatenateExpressions {
               "b"
@@ -616,7 +616,7 @@ struct `Grammar tests` {
   @Test
   func `Reversed Reverses ZeroOrMore Expression Contents`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         ZeroOrMore {
           ConcatenateExpressions {
             "a"
@@ -631,7 +631,7 @@ struct `Grammar tests` {
     expectNoDifference(
       reversed,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ZeroOrMore {
             ConcatenateExpressions {
               "b"
@@ -646,7 +646,7 @@ struct `Grammar tests` {
   @Test
   func `Reversed Reverses Group Expression Contents`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         Group {
           ConcatenateExpressions {
             "a"
@@ -661,7 +661,7 @@ struct `Grammar tests` {
     expectNoDifference(
       reversed,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           Group {
             ConcatenateExpressions {
               "b"
@@ -676,16 +676,16 @@ struct `Grammar tests` {
   @Test
   func `Reversed Omits Unreachable Productions`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         Ref("term")
       }
-      Production("term") {
+      Rule("term") {
         Ref("factor")
       }
-      Production("factor") {
+      Rule("factor") {
         "value"
       }
-      Production("dead") {
+      Rule("dead") {
         "unreachable"
       }
     }
@@ -695,24 +695,24 @@ struct `Grammar tests` {
     expectNoDifference(
       reversed,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           Ref("factor")
         }
-        Production("factor") {
+        Rule("factor") {
           "value"
         }
       }
     )
-    expectNoDifference(reversed.containsProduction(for: "dead"), false)
+    expectNoDifference(reversed.containsRule(for: "dead"), false)
   }
 
   @Test
   func `Mutating Reverse Updates Grammar`() {
     var grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") {
+      Rule("expression") {
         ConcatenateExpressions {
           "a"
           "b"
@@ -725,7 +725,7 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "b"
             "a"

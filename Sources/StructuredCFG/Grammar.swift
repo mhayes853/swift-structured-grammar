@@ -8,12 +8,12 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   }
 
   private var orderedSymbols: [Symbol]
-  private var productionsBySymbol: [Symbol: Production]
+  private var rulesBySymbol: [Symbol: Rule]
 
-  public var productions: Productions {
-    Productions(
+  public var rules: Rules {
+    Rules(
       orderedSymbols: self.orderedSymbols,
-      productionsBySymbol: self.productionsBySymbol
+      rulesBySymbol: self.rulesBySymbol
     )
   }
 
@@ -26,102 +26,102 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   }
 
   public init() {
-    self.init(Production(.root) { EmptyExpression() })
+    self.init(Rule(.root) { EmptyExpression() })
   }
 
-  public init(_ production: Production) {
-    self.init(startingSymbol: production.symbol, CollectionOfOne(production))
+  public init(_ rule: Rule) {
+    self.init(startingSymbol: rule.symbol, CollectionOfOne(rule))
   }
 
-  public init(startingSymbol: Symbol, _ productions: some Sequence<Production>) {
+  public init(startingSymbol: Symbol, _ rules: some Sequence<Rule>) {
     self.startingSymbol = startingSymbol
     self.orderedSymbols = [startingSymbol]
-    self.productionsBySymbol = [startingSymbol: Production(startingSymbol) { EmptyExpression() }]
-    for production in productions {
-      self.append(production)
+    self.rulesBySymbol = [startingSymbol: Rule(startingSymbol) { EmptyExpression() }]
+    for rule in rules {
+      self.append(rule)
     }
   }
 
-  public init(startingSymbol: Symbol, @GrammarBuilder _ content: () -> [Production]) {
+  public init(startingSymbol: Symbol, @GrammarBuilder _ content: () -> [Rule]) {
     self.init(startingSymbol: startingSymbol, content())
   }
 
   private init(
     startingSymbol: Symbol,
     orderedSymbols: [Symbol],
-    productionsBySymbol: [Symbol: Production]
+    rulesBySymbol: [Symbol: Rule]
   ) {
     self.startingSymbol = startingSymbol
     self.orderedSymbols = orderedSymbols
-    self.productionsBySymbol = productionsBySymbol
+    self.rulesBySymbol = rulesBySymbol
   }
 
-  public func production(for symbol: Symbol) -> Production? {
-    self.productionsBySymbol[symbol]
+  public func rule(for symbol: Symbol) -> Rule? {
+    self.rulesBySymbol[symbol]
   }
 
-  public func containsProduction(for symbol: Symbol) -> Bool {
-    self.productionsBySymbol[symbol] != nil
+  public func containsRule(for symbol: Symbol) -> Bool {
+    self.rulesBySymbol[symbol] != nil
   }
 
-  public subscript(_ symbol: Symbol) -> Production? {
-    self.productionsBySymbol[symbol]
+  public subscript(_ symbol: Symbol) -> Rule? {
+    self.rulesBySymbol[symbol]
   }
 
-  public subscript(index: Int) -> Production {
-    self.productions[index]
+  public subscript(index: Int) -> Rule {
+    self.rules[index]
   }
 
-  public mutating func append(_ production: Production) {
-    self.replaceProduction(for: production.symbol, with: production)
+  public mutating func append(_ rule: Rule) {
+    self.replaceRule(for: rule.symbol, with: rule)
   }
 
-  public mutating func append(contentsOf productions: some Sequence<Production>) {
-    for production in productions {
-      self.append(production)
+  public mutating func append(contentsOf rules: some Sequence<Rule>) {
+    for rule in rules {
+      self.append(rule)
     }
   }
 
-  public func appending(_ production: Production) -> Self {
+  public func appending(_ rule: Rule) -> Self {
     var grammar = self
-    grammar.append(production)
+    grammar.append(rule)
     return grammar
   }
 
-  public func appending(contentsOf productions: some Sequence<Production>) -> Self {
+  public func appending(contentsOf rules: some Sequence<Rule>) -> Self {
     var grammar = self
-    grammar.append(contentsOf: productions)
+    grammar.append(contentsOf: rules)
     return grammar
   }
 
-  public mutating func removeProduction(for symbol: Symbol) {
+  public mutating func removeRule(for symbol: Symbol) {
     if symbol == self.startingSymbol {
-      self.productionsBySymbol[symbol] = Production(symbol) { EmptyExpression() }
+      self.rulesBySymbol[symbol] = Rule(symbol) { EmptyExpression() }
       return
     }
     self.orderedSymbols.removeAll { $0 == symbol }
-    self.productionsBySymbol[symbol] = nil
+    self.rulesBySymbol[symbol] = nil
   }
 
   public mutating func removeAll() {
     self.orderedSymbols = [self.startingSymbol]
-    self.productionsBySymbol = [
-      self.startingSymbol: Production(self.startingSymbol) { EmptyExpression() }
+    self.rulesBySymbol = [
+      self.startingSymbol: Rule(self.startingSymbol) { EmptyExpression() }
     ]
   }
 
-  public mutating func removeAll(where shouldBeRemoved: (Production) -> Bool) {
+  public mutating func removeAll(where shouldBeRemoved: (Rule) -> Bool) {
     let removedSymbols = Set<Symbol>(
       self.orderedSymbols.compactMap { symbol in
-        guard let production = self.productionsBySymbol[symbol] else { return nil }
-        return shouldBeRemoved(production) ? symbol : nil
+        guard let rule = self.rulesBySymbol[symbol] else { return nil }
+        return shouldBeRemoved(rule) ? symbol : nil
       }
     )
 
     self.orderedSymbols.removeAll { removedSymbols.contains($0) }
-    self.productionsBySymbol = self.productionsBySymbol.filter { !removedSymbols.contains($0.key) }
+    self.rulesBySymbol = self.rulesBySymbol.filter { !removedSymbols.contains($0.key) }
     if removedSymbols.contains(self.startingSymbol) {
-      self.productionsBySymbol[self.startingSymbol] = Production(self.startingSymbol) {
+      self.rulesBySymbol[self.startingSymbol] = Rule(self.startingSymbol) {
         EmptyExpression()
       }
       if !self.orderedSymbols.contains(self.startingSymbol) {
@@ -130,64 +130,64 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     }
   }
 
-  public mutating func replaceProduction(
+  public mutating func replaceRule(
     for symbol: Symbol,
     with expression: some ExpressionComponent
   ) {
-    self.replaceProduction(for: symbol, with: Production(symbol, expression))
+    self.replaceRule(for: symbol, with: Rule(symbol, expression))
   }
 
-  public mutating func replaceProduction(
+  public mutating func replaceRule(
     for symbol: Symbol,
     with string: String
   ) {
-    self.replaceProduction(for: symbol, with: Terminal(string))
+    self.replaceRule(for: symbol, with: Terminal(string))
   }
 
-  public mutating func replaceProduction(
+  public mutating func replaceRule(
     for symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
   ) {
-    self.replaceProduction(for: symbol, with: expression())
+    self.replaceRule(for: symbol, with: expression())
   }
 
-  public func replacingProduction(
+  public func replacingRule(
     for symbol: Symbol,
     with expression: some ExpressionComponent
   ) -> Self {
     var grammar = self
-    grammar.replaceProduction(for: symbol, with: expression)
+    grammar.replaceRule(for: symbol, with: expression)
     return grammar
   }
 
-  public func replacingProduction(
+  public func replacingRule(
     for symbol: Symbol,
     with string: String
   ) -> Self {
     var grammar = self
-    grammar.replaceProduction(for: symbol, with: string)
+    grammar.replaceRule(for: symbol, with: string)
     return grammar
   }
 
-  public func replacingProduction(
+  public func replacingRule(
     for symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
   ) -> Self {
     var grammar = self
-    grammar.replaceProduction(for: symbol, with: expression())
+    grammar.replaceRule(for: symbol, with: expression())
     return grammar
   }
 
-  private mutating func replaceProduction(for symbol: Symbol, with production: Production) {
-    if self.productionsBySymbol[symbol] == nil {
+  private mutating func replaceRule(for symbol: Symbol, with rule: Rule) {
+    if self.rulesBySymbol[symbol] == nil {
       self.appendSymbolIfNeeded(symbol)
     }
-    self.productionsBySymbol[symbol] = production
+    self.rulesBySymbol[symbol] = rule
   }
 
   public mutating func merge(_ grammar: Grammar) {
-    for production in grammar.productions {
-      self.replaceProduction(for: production.symbol, with: production)
+    for rule in grammar.rules {
+      self.replaceRule(for: rule.symbol, with: rule)
     }
   }
 
@@ -208,8 +208,8 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
 
   private mutating func updateStartingSymbol(from oldValue: Symbol) {
     guard self.startingSymbol != oldValue else { return }
-    if self.productionsBySymbol[self.startingSymbol] == nil {
-      self.productionsBySymbol[self.startingSymbol] = Production(self.startingSymbol) {
+    if self.rulesBySymbol[self.startingSymbol] == nil {
+      self.rulesBySymbol[self.startingSymbol] = Rule(self.startingSymbol) {
         EmptyExpression()
       }
     }
@@ -222,8 +222,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
 
 extension Grammar {
   public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
-    self.productionsBySymbol = self.productionsBySymbol.mapValues { production in
-      Production(production.symbol, self.homomorphed(expression: production.expression, transform: transform))
+    self.rulesBySymbol = self.rulesBySymbol.mapValues { production in
+      Rule(
+        production.symbol,
+        self.homomorphed(expression: production.expression, transform: transform)
+      )
     }
   }
 
@@ -245,15 +248,16 @@ extension Grammar {
     }
   }
 
-  private func homomorphed(expression: Expression, transform: (Terminal) -> Terminal?) -> Expression {
+  private func homomorphed(expression: Expression, transform: (Terminal) -> Terminal?) -> Expression
+  {
     switch expression {
     case .empty:
       return .empty
-    case let .concat(expressions):
+    case .concat(let expressions):
       return .concat(expressions.map { self.homomorphed(expression: $0, transform: transform) })
-    case let .choice(expressions):
+    case .choice(let expressions):
       return .choice(expressions.map { self.homomorphed(expression: $0, transform: transform) })
-    case let .optional(expression):
+    case .optional(let expression):
       return .optional(self.homomorphed(expression: expression, transform: transform))
     case .`repeat`(let repeatExpr):
       let newRepeat = Repeat(
@@ -262,13 +266,13 @@ extension Grammar {
         self.homomorphed(expression: repeatExpr.innerExpression, transform: transform)
       )
       return .`repeat`(newRepeat)
-    case let .group(expression):
+    case .group(let expression):
       return .group(self.homomorphed(expression: expression, transform: transform))
-    case let .characterGroup(characterGroup):
+    case .characterGroup(let characterGroup):
       return .characterGroup(characterGroup)
-    case let .ref(symbol):
+    case .ref(let symbol):
       return .ref(symbol)
-    case let .terminal(terminal):
+    case .terminal(let terminal):
       return transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
     }
   }
@@ -283,11 +287,11 @@ extension Grammar {
 
   public func reversed() -> Self {
     let reachableSymbols = self.reachableSymbols()
-    let productions = self.productions.compactMap { production -> Production? in
-      guard reachableSymbols.contains(production.symbol) else { return nil }
-      return Production(production.symbol, self.reversed(expression: production.expression))
+    let rules = self.rules.compactMap { rule -> Rule? in
+      guard reachableSymbols.contains(rule.symbol) else { return nil }
+      return Rule(rule.symbol, self.reversed(expression: rule.expression))
     }
-    return Grammar(startingSymbol: self.startingSymbol, productions)
+    return Grammar(startingSymbol: self.startingSymbol, rules)
   }
 
   private func reachableSymbols() -> Set<Symbol> {
@@ -296,8 +300,8 @@ extension Grammar {
 
     while let symbol = stack.popLast() {
       guard visited.insert(symbol).inserted else { continue }
-      guard let production = self.productionsBySymbol[symbol] else { continue }
-      stack.append(contentsOf: self.referencedSymbols(in: production.expression))
+      guard let rule = self.rulesBySymbol[symbol] else { continue }
+      stack.append(contentsOf: self.referencedSymbols(in: rule.expression))
     }
 
     return visited
@@ -307,15 +311,15 @@ extension Grammar {
     switch expression {
     case .empty:
       []
-    case let .concat(expressions), let .choice(expressions):
+    case .concat(let expressions), .choice(let expressions):
       expressions.flatMap { self.referencedSymbols(in: $0) }
-    case let .optional(expr), let .group(expr):
+    case .optional(let expr), .group(let expr):
       self.referencedSymbols(in: expr)
     case .`repeat`(let repeatExpr):
       self.referencedSymbols(in: repeatExpr.innerExpression)
     case .characterGroup:
       []
-    case let .ref(symbol):
+    case .ref(let symbol):
       [symbol]
     case .terminal:
       []
@@ -326,11 +330,11 @@ extension Grammar {
     switch expression {
     case .empty:
       return .empty
-    case let .concat(expressions):
+    case .concat(let expressions):
       return .concat(expressions.reversed().map { self.reversed(expression: $0) })
-    case let .choice(expressions):
+    case .choice(let expressions):
       return .choice(expressions.map { self.reversed(expression: $0) })
-    case let .optional(expr):
+    case .optional(let expr):
       return .optional(self.reversed(expression: expr))
     case .`repeat`(let repeatExpr):
       let newRepeat = Repeat(
@@ -339,13 +343,13 @@ extension Grammar {
         self.reversed(expression: repeatExpr.innerExpression)
       )
       return .`repeat`(newRepeat)
-    case let .group(expr):
+    case .group(let expr):
       return .group(self.reversed(expression: expr))
-    case let .characterGroup(characterGroup):
+    case .characterGroup(let characterGroup):
       return .characterGroup(characterGroup)
-    case let .ref(symbol):
+    case .ref(let symbol):
       return .ref(symbol)
-    case let .terminal(terminal):
+    case .terminal(let terminal):
       return .terminal(terminal)
     }
   }
@@ -355,26 +359,26 @@ extension Grammar {
 
 extension Grammar {
   public func formatted(with formatter: some Formatter) throws -> String {
-    try self.productions
-      .map { try formatter.format(production: $0) }
+    try self.rules
+      .map { try formatter.format(rule: $0) }
       .filter { !$0.isEmpty }
       .joined(separator: "\n")
   }
 }
 
-// MARK: - Productions
+// MARK: - Rules
 
 extension Grammar {
-  public struct Productions: RandomAccessCollection, Sendable {
-    public typealias Element = Production
+  public struct Rules: RandomAccessCollection, Sendable {
+    public typealias Element = Rule
     public typealias Index = Int
 
     private let orderedSymbols: [Symbol]
-    private let productionsBySymbol: [Symbol: Production]
+    private let rulesBySymbol: [Symbol: Rule]
 
-    init(orderedSymbols: [Symbol], productionsBySymbol: [Symbol: Production]) {
+    init(orderedSymbols: [Symbol], rulesBySymbol: [Symbol: Rule]) {
       self.orderedSymbols = orderedSymbols
-      self.productionsBySymbol = productionsBySymbol
+      self.rulesBySymbol = rulesBySymbol
     }
 
     public var startIndex: Int {
@@ -385,12 +389,12 @@ extension Grammar {
       self.orderedSymbols.endIndex
     }
 
-    public subscript(position: Int) -> Production {
-      self.productionsBySymbol[self.orderedSymbols[position]]!
+    public subscript(position: Int) -> Rule {
+      self.rulesBySymbol[self.orderedSymbols[position]]!
     }
 
-    public subscript(symbol: Symbol) -> Production? {
-      self.productionsBySymbol[symbol]
+    public subscript(symbol: Symbol) -> Rule? {
+      self.rulesBySymbol[symbol]
     }
   }
 }

@@ -8,19 +8,19 @@ struct `GrammarNameResolver tests` {
   func `Default Resolver Uses Validator Safe Prefix For Union Conflicts`() {
     let language = Union {
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "first" }
-        Production("term") { "value" }
+        Rule("expression") { "first" }
+        Rule("term") { "value" }
       }
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
-        Production("factor") { "other" }
+        Rule("expression") { "second" }
+        Rule("factor") { "other" }
       }
     }
 
     let grammar = language.language.grammar()
 
     expectNoDifference(
-      grammar.productions.map(\.symbol.rawValue).sorted(),
+      grammar.rules.map(\.symbol.rawValue).sorted(),
       ["expression", "factor", "gbexpression", "lastart", "root", "term"]
     )
   }
@@ -29,19 +29,19 @@ struct `GrammarNameResolver tests` {
   func `Default Resolver Uses Validator Safe Prefix For Concatenate Conflicts`() {
     let language = ConcatenateLanguages {
       Grammar(startingSymbol: "term") {
-        Production("term") { "first" }
-        Production("factor") { "value" }
+        Rule("term") { "first" }
+        Rule("factor") { "value" }
       }
       Grammar(startingSymbol: "term") {
-        Production("term") { "second" }
-        Production("factor") { "other" }
+        Rule("term") { "second" }
+        Rule("factor") { "other" }
       }
     }
 
     let grammar = language.language.grammar()
 
     expectNoDifference(
-      grammar.productions.map(\.symbol.rawValue).sorted(),
+      grammar.rules.map(\.symbol.rawValue).sorted(),
       ["factor", "gbfactor", "gbterm", "lastart", "root", "term"]
     )
   }
@@ -50,16 +50,16 @@ struct `GrammarNameResolver tests` {
   func `Default Resolver Uses Validator Safe Prefix For Synthesized Symbols`() {
     let language = Union {
       Grammar(startingSymbol: "a") {
-        Production("a") { "x" }
+        Rule("a") { "x" }
       }
       Grammar(startingSymbol: "b") {
-        Production("b") { "y" }
+        Rule("b") { "y" }
       }
     }
 
     let grammar = language.language.grammar()
 
-    let synthesizedSymbols = grammar.productions.filter {
+    let synthesizedSymbols = grammar.rules.filter {
       $0.symbol.rawValue.hasPrefix("l") && $0.symbol.rawValue.hasSuffix("start")
     }
 
@@ -70,14 +70,14 @@ struct `GrammarNameResolver tests` {
   func `Default Resolver Uses Alphabetic Rollover For Conflicts`() {
     let grammars = (0...753).map { index in
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "value-\(index)" }
+        Rule("expression") { "value-\(index)" }
       }
     }
 
     let grammar = Language.union(grammars).grammar()
 
-    #expect(grammar.containsProduction(for: "gaaexpression"))
-    #expect(grammar.containsProduction(for: "gabzexpression"))
+    #expect(grammar.containsRule(for: "gaaexpression"))
+    #expect(grammar.containsRule(for: "gabzexpression"))
   }
 
   @Test
@@ -101,17 +101,17 @@ struct `GrammarNameResolver tests` {
 
     let language = Union {
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "first" }
+        Rule("expression") { "first" }
       }
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
+        Rule("expression") { "second" }
       }
     }
 
     let grammar = language.language.grammar(nameResolver: CustomResolver())
 
     expectNoDifference(
-      grammar.productions.map(\.symbol.rawValue).sorted(),
+      grammar.rules.map(\.symbol.rawValue).sorted(),
       ["custom__expression", "expression", "lsynth__0", "root"]
     )
   }
@@ -137,16 +137,16 @@ struct `GrammarNameResolver tests` {
 
     let language = Union {
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "first" }
+        Rule("expression") { "first" }
       }
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "second" }
+        Rule("expression") { "second" }
       }
     }
 
     let grammar = language.language.grammar(nameResolver: KeepOriginalNameResolver())
 
-    let expressionProds = grammar.productions.filter { $0.symbol.rawValue == "expression" }
+    let expressionProds = grammar.rules.filter { $0.symbol.rawValue == "expression" }
     expectNoDifference(expressionProds.count, 1)
     expectNoDifference(expressionProds.first?.expression, Expression.terminal("second"))
   }
@@ -171,13 +171,13 @@ struct `GrammarNameResolver tests` {
     }
 
     let language = Union {
-      Grammar(startingSymbol: "expr") { Production("expr") { "x" } }
-      Grammar(startingSymbol: "expr") { Production("expr") { "y" } }
-      Grammar(startingSymbol: "expr") { Production("expr") { "z" } }
+      Grammar(startingSymbol: "expr") { Rule("expr") { "x" } }
+      Grammar(startingSymbol: "expr") { Rule("expr") { "y" } }
+      Grammar(startingSymbol: "expr") { Rule("expr") { "z" } }
     }
     let grammar = language.language.grammar(nameResolver: IndexCapturingResolver())
 
-    let conflictSymbols = grammar.productions.filter { $0.symbol.rawValue.hasPrefix("idx1__") || $0.symbol.rawValue.hasPrefix("idx2__") }
+    let conflictSymbols = grammar.rules.filter { $0.symbol.rawValue.hasPrefix("idx1__") || $0.symbol.rawValue.hasPrefix("idx2__") }
     expectNoDifference(conflictSymbols.count, 2)
   }
 
@@ -185,13 +185,13 @@ struct `GrammarNameResolver tests` {
   func `Kleene Star Synthesis Uses Default Resolver`() {
     let language = KleeneStar {
       Grammar(startingSymbol: "item") {
-        Production("item") { "a" }
+        Rule("item") { "a" }
       }
     }
 
     let grammar = language.language.grammar()
 
-    let synthesizedSymbols = grammar.productions.filter {
+    let synthesizedSymbols = grammar.rules.filter {
       $0.symbol.rawValue.hasPrefix("l") && $0.symbol.rawValue.hasSuffix("start")
     }
 
@@ -219,9 +219,9 @@ struct `GrammarNameResolver tests` {
       }
     }
 
-    let grammar1 = Grammar(startingSymbol: "a") { Production("a") { "x" } }
-    let grammar2 = Grammar(startingSymbol: "b") { Production("b") { "y" } }
-    let grammar3 = Grammar(startingSymbol: "c") { Production("c") { "z" } }
+    let grammar1 = Grammar(startingSymbol: "a") { Rule("a") { "x" } }
+    let grammar2 = Grammar(startingSymbol: "b") { Rule("b") { "y" } }
+    let grammar3 = Grammar(startingSymbol: "c") { Rule("c") { "z" } }
 
     let language = Union {
       grammar1
@@ -230,7 +230,7 @@ struct `GrammarNameResolver tests` {
     }
     let grammar = language.language.grammar(nameResolver: GrammarCapturingResolver())
 
-    let synthesizedSymbols = grammar.productions.filter { $0.symbol.rawValue.hasPrefix("grammars3__") }
+    let synthesizedSymbols = grammar.rules.filter { $0.symbol.rawValue.hasPrefix("grammars3__") }
     expectNoDifference(synthesizedSymbols.isEmpty, false)
   }
 }

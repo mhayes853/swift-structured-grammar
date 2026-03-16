@@ -13,7 +13,7 @@ struct `OneOrMore tests` {
 
   @Test
   func `Formats As Canonical Concatenation And Repetition`() {
-    let production = Production("start") {
+    let production = Rule("start") {
       OneOrMore {
         "value"
       }

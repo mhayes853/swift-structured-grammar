@@ -15,7 +15,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("a-zA-Z0-9")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -56,7 +56,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\d")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -70,7 +70,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\w")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -84,7 +84,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\s")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -98,7 +98,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\D")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -112,7 +112,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\W")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -126,7 +126,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\S")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -140,7 +140,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\i")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -154,7 +154,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\c")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -168,7 +168,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\n")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -182,7 +182,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\r")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -196,7 +196,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("\\t")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }
@@ -210,7 +210,7 @@ struct CharacterGroupTests {
     let group = CharacterGroup("a-zA-Z0-9_")
 
     let grammar = Grammar(startingSymbol: "test") {
-      Production("test") {
+      Rule("test") {
         group
       }
     }

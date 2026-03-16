@@ -1,5 +1,5 @@
 extension Grammar {
   public protocol Formatter: Sendable {
-    func format(production: Production) throws -> String
+    func format(rule: Rule) throws -> String
   }
 }

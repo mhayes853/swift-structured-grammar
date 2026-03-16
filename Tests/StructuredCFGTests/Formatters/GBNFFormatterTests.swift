@@ -7,7 +7,7 @@ struct `GBNFFormatter tests` {
   @Test
   func `Formats Non Trivial Grammar Exactly`() {
     let grammar = Grammar(startingSymbol: "sign") {
-      Production("sign") {
+      Rule("sign") {
         OptionalExpression {
           Choice {
             "+"
@@ -16,7 +16,7 @@ struct `GBNFFormatter tests` {
         }
       }
 
-      Production("term") {
+      Rule("term") {
         Choice {
           Ref("number")
           Group {
@@ -28,7 +28,7 @@ struct `GBNFFormatter tests` {
         }
       }
 
-      Production("expression") {
+      Rule("expression") {
         Ref("sign")
         Ref("term")
         ZeroOrMore {
@@ -58,7 +58,7 @@ struct `GBNFFormatter tests` {
   @Test
   func `Formatting Empty Productions Outputs Empty Terminal String`() {
     let grammar = Grammar(startingSymbol: "padding") {
-      Production("padding") {
+      Rule("padding") {
         EmptyExpression()
       }
     }
@@ -68,7 +68,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Concatenation Drops Empty Members`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       ConcatenateExpressions {
         EmptyExpression()
         "a"
@@ -81,7 +81,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Choice Drops Empty Alternatives`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Choice {
         EmptyExpression()
         "a"
@@ -94,7 +94,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Optional Of Empty Outputs Empty Terminal String`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       OptionalExpression {
         EmptyExpression()
       }
@@ -105,7 +105,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Zero Or More Of Empty Outputs Empty Terminal String`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       ZeroOrMore {
         EmptyExpression()
       }
@@ -116,7 +116,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Group Of Empty Outputs Empty Terminal String`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Group {
         EmptyExpression()
       }
@@ -127,7 +127,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting One Or More Uses GBNF Syntax`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       OneOrMore {
         Choice {
           "a"
@@ -141,7 +141,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Terminals Are Quoted With Double Quotes`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       "hello"
     })
 
@@ -150,7 +150,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Double Quotes In Terminal Are Escaped`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       "say \"hello\""
     })
 
@@ -159,7 +159,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Backslash In Terminal Is Escaped`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       "path\\to\\file"
     })
 
@@ -168,7 +168,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Negated Character Groups Use GBNF Syntax`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       CharacterGroup("^abc")
     })
 
@@ -177,7 +177,7 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Character Group Ranges Use GBNF Syntax`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       CharacterGroup("a-z")
     })
 
@@ -187,25 +187,25 @@ struct `GBNFFormatter tests` {
   @Test
   func `Predefined Character Classes Use GBNF Syntax`() {
     let grammar = Grammar(startingSymbol: "start") {
-      Production("start") {
+      Rule("start") {
         CharacterGroup("\\d")
       }
-      Production("word") {
+      Rule("word") {
         CharacterGroup("\\w")
       }
-      Production("space") {
+      Rule("space") {
         CharacterGroup("\\s")
       }
-      Production("digit") {
+      Rule("digit") {
         CharacterGroup("\\D")
       }
-      Production("nonWord") {
+      Rule("nonWord") {
         CharacterGroup("\\W")
       }
-      Production("nonSpace") {
+      Rule("nonSpace") {
         CharacterGroup("\\S")
       }
-      Production("any") {
+      Rule("any") {
         CharacterGroup(".")
       }
     }

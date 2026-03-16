@@ -13,33 +13,33 @@ struct `Language tests` {
 
   @Test
   func `Grammar Lifts To Language`() {
-    let grammar = Grammar(Production("expression") { "value" })
+    let grammar = Grammar(Rule("expression") { "value" })
 
     expectNoDifference(
       grammar.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") { "value" }
+        Rule(.root) { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
   }
 
   @Test
   func `Grammar Lift Supports Custom Starting Identifier Without Synthesis`() {
-    let grammar = Grammar(Production("expression") { "value" })
+    let grammar = Grammar(Rule("expression") { "value" })
 
     expectNoDifference(
       grammar.language.grammar(startingSymbol: "entry"),
       Grammar(startingSymbol: "entry") {
-        Production("entry") { Ref("expression") }
-        Production("expression") { "value" }
+        Rule("entry") { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
   }
 
   @Test
   func `Format Delegates To Grammar Formatting`() {
-    let language = Grammar(Production("expression") { "value" }).language
+    let language = Grammar(Rule("expression") { "value" }).language
 
     expectNoDifference(try! language.formatted(with: .w3cEbnf), """
       root ::= expression
@@ -50,18 +50,18 @@ struct `Language tests` {
   @Test
   func `Grammar Uses Default Root Identifier When Language Synthesizes Start Production`() {
     let language = ConcatenateLanguages {
-      Grammar(Production("expression") { "value" })
-      Grammar(Production("statement") { "other" })
+      Grammar(Rule("expression") { "value" })
+      Grammar(Rule("statement") { "other" })
     }
     .language
 
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("statement") { "other" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("statement") { "other" }
+        Rule("lastart") {
           Ref("expression")
           Ref("statement")
         }
@@ -72,18 +72,18 @@ struct `Language tests` {
   @Test
   func `Grammar Supports Custom Starting Identifier`() {
     let language = Union {
-      Grammar(Production("expression") { "value" })
-      Grammar(Production("statement") { "other" })
+      Grammar(Rule("expression") { "value" })
+      Grammar(Rule("statement") { "other" })
     }
     .language
 
     expectNoDifference(
       language.grammar(startingSymbol: "entry"),
       Grammar(startingSymbol: "entry") {
-        Production("entry") { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("statement") { "other" }
-        Production("lastart") {
+        Rule("entry") { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("statement") { "other" }
+        Rule("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -96,25 +96,25 @@ struct `Language tests` {
   @Test
   func `Concatenated Returns New Language Without Mutating Original`() {
     let base = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
-    let concatenated = base.concatenated(Grammar(Production("statement") { "other" }))
+    let concatenated = base.concatenated(Grammar(Rule("statement") { "other" }))
 
     expectNoDifference(
       base.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") { "value" }
+        Rule(.root) { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
     expectNoDifference(
       concatenated.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("statement") { "other" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("statement") { "other" }
+        Rule("lastart") {
           Ref("expression")
           Ref("statement")
         }
@@ -125,18 +125,18 @@ struct `Language tests` {
   @Test
   func `Mutating Concatenate Updates Language`() {
     var language = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
-    language.concatenate(Grammar(Production("statement") { "other" }))
+    language.concatenate(Grammar(Rule("statement") { "other" }))
 
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("statement") { "other" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("statement") { "other" }
+        Rule("lastart") {
           Ref("expression")
           Ref("statement")
         }
@@ -147,25 +147,25 @@ struct `Language tests` {
   @Test
   func `Unioned Returns New Language Without Mutating Original`() {
     let base = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
-    let unioned = base.unioned(Grammar(Production("statement") { "other" }))
+    let unioned = base.unioned(Grammar(Rule("statement") { "other" }))
 
     expectNoDifference(
       base.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") { "value" }
+        Rule(.root) { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
     expectNoDifference(
       unioned.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("statement") { "other" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("statement") { "other" }
+        Rule("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -178,18 +178,18 @@ struct `Language tests` {
   @Test
   func `Mutating Union Updates Language`() {
     var language = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
-    language.formUnion(Grammar(Production("statement") { "other" }))
+    language.formUnion(Grammar(Rule("statement") { "other" }))
 
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("statement") { "other" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("statement") { "other" }
+        Rule("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -202,7 +202,7 @@ struct `Language tests` {
   @Test
   func `KleeneStarred Returns New Language Without Mutating Original`() {
     let base = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
     let starred = base.kleeneStarred()
@@ -210,16 +210,16 @@ struct `Language tests` {
     expectNoDifference(
       base.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") { "value" }
+        Rule(.root) { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
     expectNoDifference(
       starred.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("lastart") {
           ZeroOrMore {
             Ref("expression")
           }
@@ -231,7 +231,7 @@ struct `Language tests` {
   @Test
   func `Mutating KleeneStar Updates Language`() {
     var language = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
     language.formKleeneStar()
@@ -239,9 +239,9 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("lastart") {
           ZeroOrMore {
             Ref("expression")
           }
@@ -254,13 +254,13 @@ struct `Language tests` {
   func `Reversed Returns New Language Without Mutating Original`() {
     let base = Language {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             "c"
@@ -274,14 +274,14 @@ struct `Language tests` {
     expectNoDifference(
       base.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             "c"
@@ -292,14 +292,14 @@ struct `Language tests` {
     expectNoDifference(
       reversed.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "c"
             "b"
@@ -313,13 +313,13 @@ struct `Language tests` {
   func `Mutating Reverse Updates Language`() {
     var language = Language {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             "c"
@@ -333,14 +333,14 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "c"
             "b"
@@ -354,11 +354,11 @@ struct `Language tests` {
   func `Homomorphed Returns New Language Without Mutating Original`() {
     let base = Language {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           "+"
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           "+"
         }
       }
@@ -369,12 +369,12 @@ struct `Language tests` {
     expectNoDifference(
       base.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           "+"
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           "+"
         }
       }
@@ -382,12 +382,12 @@ struct `Language tests` {
     expectNoDifference(
       homomorphed.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           "-"
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           "-"
         }
       }
@@ -398,11 +398,11 @@ struct `Language tests` {
   func `Mutating Homomorph Updates Language`() {
     var language = Language {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           "+"
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           "+"
         }
       }
@@ -413,12 +413,12 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           "-"
           Ref("term")
         }
-        Production("term") {
+        Rule("term") {
           "-"
         }
       }
@@ -429,7 +429,7 @@ struct `Language tests` {
   func `HomomorphMapped Returns New Language Without Mutating Original`() {
     let base = Language {
       Grammar(
-        Production("expression") {
+        Rule("expression") {
           Choice {
             "+"
             "*"
@@ -449,8 +449,8 @@ struct `Language tests` {
     expectNoDifference(
       base.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           Choice {
             "+"
             "*"
@@ -461,8 +461,8 @@ struct `Language tests` {
     expectNoDifference(
       homomorphed.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           Choice {
             "-"
             "*"
@@ -476,7 +476,7 @@ struct `Language tests` {
   func `Mutating HomomorphMap Updates Language`() {
     var language = Language {
       Grammar(
-        Production("expression") {
+        Rule("expression") {
           Choice {
             "+"
             "*"
@@ -496,8 +496,8 @@ struct `Language tests` {
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           Choice {
             "-"
             "*"

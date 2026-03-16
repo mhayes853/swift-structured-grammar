@@ -6,7 +6,7 @@ import StructuredCFG
 struct `Choice tests` {
   @Test
   func `Formats As Alternation`() {
-    let production = Production("start") {
+    let production = Rule("start") {
       Choice {
         "a"
         "b"

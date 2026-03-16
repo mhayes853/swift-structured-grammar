@@ -6,7 +6,7 @@ import StructuredCFG
 struct `ConcatanateExpressions tests` {
   @Test
   func `Formats As Concatenation`() {
-    let production = Production("start") {
+    let production = Rule("start") {
       ConcatenateExpressions {
         "a"
         Ref("target")

@@ -1,4 +1,4 @@
-public struct Production: Hashable, Sendable {
+public struct Rule: Hashable, Sendable {
   public let symbol: Symbol
   public let expression: Expression
 

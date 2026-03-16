@@ -8,13 +8,13 @@ struct `Reverse tests` {
   func `Reverse Rewrites Reachable Productions`() {
     let language = Reverse {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             "c"
@@ -26,14 +26,14 @@ struct `Reverse tests` {
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "c"
             "b"
@@ -47,19 +47,19 @@ struct `Reverse tests` {
   func `Reverse Rewrites All Reachable Productions And Omits Unreachable Ones`() {
     let language = Reverse {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             Ref("factor")
             "b"
           }
         }
-        Production("factor") {
+        Rule("factor") {
           Choice {
             "c"
             Group {
@@ -68,7 +68,7 @@ struct `Reverse tests` {
             }
           }
         }
-        Production("dead") {
+        Rule("dead") {
           "z"
         }
       }
@@ -77,20 +77,20 @@ struct `Reverse tests` {
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") {
+        Rule(.root) { Ref("expression") }
+        Rule("expression") {
           ConcatenateExpressions {
             Ref("term")
             "a"
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             Ref("factor")
           }
         }
-        Production("factor") {
+        Rule("factor") {
           Choice {
             "c"
             Group {
@@ -107,13 +107,13 @@ struct `Reverse tests` {
   func `Static Reverse Helper Matches Wrapper`() {
     let wrapper = Reverse {
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             "c"
@@ -123,13 +123,13 @@ struct `Reverse tests` {
     }.language
     let helper = Language.reverse(
       Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           ConcatenateExpressions {
             "a"
             Ref("term")
           }
         }
-        Production("term") {
+        Rule("term") {
           ConcatenateExpressions {
             "b"
             "c"

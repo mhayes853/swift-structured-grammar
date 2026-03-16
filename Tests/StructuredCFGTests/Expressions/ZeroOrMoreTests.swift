@@ -6,7 +6,7 @@ import StructuredCFG
 struct `ZeroOrMore tests` {
   @Test
   func `Formats As Repetition`() {
-    let production = Production("start") {
+    let production = Rule("start") {
       ZeroOrMore {
         "a"
       }

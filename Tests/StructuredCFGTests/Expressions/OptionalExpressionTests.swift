@@ -6,7 +6,7 @@ import StructuredCFG
 struct `OptionalExpression tests` {
   @Test
   func `Formats As Optional Expression`() {
-    let production = Production("start") {
+    let production = Rule("start") {
       OptionalExpression {
         "a"
       }

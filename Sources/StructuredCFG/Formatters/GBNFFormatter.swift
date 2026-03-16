@@ -4,9 +4,9 @@ extension Grammar {
   public struct GBNFFormatter: Formatter {
     public init() {}
 
-    public func format(production: Production) throws -> String {
-      let expression = production.expression.simplified
-      return "\(production.symbol.rawValue) ::= \(self.format(expression: expression))"
+    public func format(rule: Rule) throws -> String {
+      let expression = rule.expression.simplified
+      return "\(rule.symbol.rawValue) ::= \(self.format(expression: expression))"
     }
 
     private func format(expression: Expression) -> String {
@@ -14,7 +14,8 @@ extension Grammar {
       case .empty:
         return "\"\""
       case .concat(let expressions):
-        return expressions
+        return
+          expressions
           .map { expression in
             if case .choice = expression {
               "(\(self.format(expression: expression)))"
@@ -36,13 +37,13 @@ extension Grammar {
         }
         let inner = self.formatPrimary(expression: repeatExpr.innerExpression)
         switch (repeatExpr.min, repeatExpr.max) {
-        case let (m?, n?) where m == n:
+        case (let m?, let n?) where m == n:
           return inner + "{\(m)}"
-        case let (m?, nil):
+        case (let m?, nil):
           return inner + "{\(m),}"
-        case let (nil, n?):
+        case (nil, let n?):
           return inner + "{\(n)}"
-        case let (m?, n?):
+        case (let m?, let n?):
           return inner + "{\(m),\(n)}"
         default:
           preconditionFailure("Range must have at least one bound")

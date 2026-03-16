@@ -21,17 +21,21 @@ extension Grammar {
     public static let negatedCharacterGroup = WirthEBNFFormatterError(kind: .negatedCharacterGroup)
     public static let unicodeCategory = WirthEBNFFormatterError(kind: .unicodeCategory)
     public static let negatedCategory = WirthEBNFFormatterError(kind: .negatedCategory)
-    public static let characterGroupSubtraction = WirthEBNFFormatterError(kind: .characterGroupSubtraction)
+    public static let characterGroupSubtraction = WirthEBNFFormatterError(
+      kind: .characterGroupSubtraction
+    )
     public static let xmlNameClasses = WirthEBNFFormatterError(kind: .xmlNameClasses)
-    public static let negatedPredefinedClass = WirthEBNFFormatterError(kind: .negatedPredefinedClass)
+    public static let negatedPredefinedClass = WirthEBNFFormatterError(
+      kind: .negatedPredefinedClass
+    )
     public static let wildcard = WirthEBNFFormatterError(kind: .wildcard)
   }
 
   public struct WirthEBNFFormatter: Formatter {
     public init() {}
 
-    public func format(production: Production) throws -> String {
-      let expression = production.expression.simplified
+    public func format(rule: Rule) throws -> String {
+      let expression = rule.expression.simplified
       if expression == .empty {
         return ""
       }
@@ -39,7 +43,7 @@ extension Grammar {
       if formatted.isEmpty {
         return ""
       }
-      return "\(production.symbol.rawValue) = \(formatted) ."
+      return "\(rule.symbol.rawValue) = \(formatted) ."
     }
 
     private func format(expression: Expression) throws -> String {
@@ -47,7 +51,8 @@ extension Grammar {
       case .empty:
         return ""
       case .concat(let expressions):
-        return try expressions
+        return
+          try expressions
           .map { expression in
             switch expression {
             case .choice, .optional:
@@ -77,15 +82,17 @@ extension Grammar {
         }
         let innerExpression = repeatExpr.innerExpression
         switch (repeatExpr.min, repeatExpr.max) {
-        case let (n?, nil):
+        case (let n?, nil):
           if n == 0 {
             return try self.format(expression: Repeat(min: 0, max: nil, innerExpression).expression)
           } else {
             let required = Expression.concat(Array(repeating: innerExpression, count: n))
-            let expanded: Expression = .concat([required, Repeat(min: 0, max: nil, innerExpression).expression])
+            let expanded: Expression = .concat([
+              required, Repeat(min: 0, max: nil, innerExpression).expression
+            ])
             return try self.format(expression: expanded.simplified)
           }
-        case let (nil, n?):
+        case (nil, let n?):
           if n == 0 {
             return ""
           } else {
@@ -96,13 +103,13 @@ extension Grammar {
             let expanded: Expression = .choice(choices)
             return try self.format(expression: expanded.simplified)
           }
-        case let (m?, n?) where m == n:
+        case (let m?, let n?) where m == n:
           if m == 0 {
             return ""
           }
           let expanded = Expression.concat(Array(repeating: innerExpression, count: m))
           return try self.format(expression: expanded.simplified)
-        case let (m?, n?):
+        case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m
           var additionalChoices: [Expression] = [.empty]
@@ -178,7 +185,9 @@ extension Grammar {
       return terminals.joined(separator: " | ")
     }
 
-    private func terminalsForPredefined(_ predefined: CharacterGroup.PredefinedClass) throws -> [String] {
+    private func terminalsForPredefined(_ predefined: CharacterGroup.PredefinedClass) throws
+      -> [String]
+    {
       switch predefined {
       case .digit:
         return (0...9).map { self.format(terminal: Terminal(String($0))) }

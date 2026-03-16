@@ -8,24 +8,24 @@ struct `ConcatenateLanguages tests` {
   func `ConcatenateLanguages Merges Grammars In Encounter Order`() {
     let language = ConcatenateLanguages {
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "first" }
-        Production("term") { "value" }
+        Rule("expression") { "first" }
+        Rule("term") { "value" }
       }
       Grammar(startingSymbol: "factor") {
-        Production("factor") { Ref("term") }
-        Production("statement") { "second" }
+        Rule("factor") { Ref("term") }
+        Rule("statement") { "second" }
       }
     }
 
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "first" }
-        Production("term") { "value" }
-        Production("factor") { Ref("term") }
-        Production("statement") { "second" }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "first" }
+        Rule("term") { "value" }
+        Rule("factor") { Ref("term") }
+        Rule("statement") { "second" }
+        Rule("lastart") {
           Ref("expression")
           Ref("factor")
         }
@@ -37,18 +37,18 @@ struct `ConcatenateLanguages tests` {
   func `ConcatenateLanguages Builder Supports Optional Languages`() {
     let includeExtra = false
     let language = ConcatenateLanguages {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
       if includeExtra {
-        Grammar(Production("term") { "other" })
+        Grammar(Rule("term") { "other" })
       }
     }
 
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("lastart") { Ref("expression") }
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("lastart") { Ref("expression") }
       }
     )
   }

@@ -4,8 +4,8 @@ extension Grammar {
   public struct W3CEBNFFormatter: Formatter {
     public init() {}
 
-    public func format(production: Production) throws -> String {
-      let expression = production.expression.simplified
+    public func format(rule: Rule) throws -> String {
+      let expression = rule.expression.simplified
       if expression == .empty {
         return ""
       }
@@ -13,7 +13,7 @@ extension Grammar {
       if formatted.isEmpty {
         return ""
       }
-      return "\(production.symbol.rawValue) ::= \(formatted)"
+      return "\(rule.symbol.rawValue) ::= \(formatted)"
     }
 
     private func format(expression: Expression) -> String {
@@ -21,7 +21,8 @@ extension Grammar {
       case .empty:
         return ""
       case .concat(let expressions):
-        return expressions
+        return
+          expressions
           .map { expression in
             if case .choice = expression {
               "(\(self.format(expression: expression)))"
@@ -43,15 +44,17 @@ extension Grammar {
         }
         let innerExpression = repeatExpr.innerExpression
         switch (repeatExpr.min, repeatExpr.max) {
-        case let (n?, nil):
+        case (let n?, nil):
           if n == 0 {
             return self.formatPrimary(expression: innerExpression) + "*"
           } else {
             let required = Expression.concat(Array(repeating: innerExpression, count: n))
-            let expanded: Expression = .concat([required, Repeat(min: 0, max: nil, innerExpression).expression])
+            let expanded: Expression = .concat([
+              required, Repeat(min: 0, max: nil, innerExpression).expression
+            ])
             return self.format(expression: expanded.simplified)
           }
-        case let (nil, n?):
+        case (nil, let n?):
           if n == 0 {
             return ""
           } else {
@@ -62,13 +65,13 @@ extension Grammar {
             let expanded: Expression = .choice(choices)
             return self.format(expression: expanded.simplified)
           }
-        case let (m?, n?) where m == n:
+        case (let m?, let n?) where m == n:
           if m == 0 {
             return ""
           }
           let expanded = Expression.concat(Array(repeating: innerExpression, count: m))
           return self.format(expression: expanded.simplified)
-        case let (m?, n?):
+        case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m
           var additionalChoices: [Expression] = [.empty]

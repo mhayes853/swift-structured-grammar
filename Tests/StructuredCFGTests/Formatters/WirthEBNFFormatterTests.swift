@@ -7,7 +7,7 @@ struct `WirthEBNFFormatter tests` {
   @Test
   func `Formats Non Trivial Grammar Exactly`() {
     let grammar = Grammar(startingSymbol: "sign") {
-      Production("sign") {
+      Rule("sign") {
         OptionalExpression {
           Choice {
             "+"
@@ -16,7 +16,7 @@ struct `WirthEBNFFormatter tests` {
         }
       }
 
-      Production("term") {
+      Rule("term") {
         Choice {
           Ref("number")
           Group {
@@ -28,7 +28,7 @@ struct `WirthEBNFFormatter tests` {
         }
       }
 
-      Production("expression") {
+      Rule("expression") {
         Ref("sign")
         Ref("term")
         ZeroOrMore {
@@ -58,7 +58,7 @@ struct `WirthEBNFFormatter tests` {
   @Test
   func `Formatting Omits Empty Productions Entirely`() {
     let grammar = Grammar(startingSymbol: "padding") {
-      Production("padding") {
+      Rule("padding") {
         EmptyExpression()
       }
     }
@@ -68,7 +68,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Formatting Concatenation Drops Empty Members`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       ConcatenateExpressions {
         EmptyExpression()
         "a"
@@ -81,7 +81,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Formatting Choice Drops Empty Alternatives`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Choice {
         EmptyExpression()
         "a"
@@ -94,7 +94,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Formatting Optional Of Empty Disappears`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       OptionalExpression {
         EmptyExpression()
       }
@@ -105,7 +105,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Formatting Zero Or More Of Empty Disappears`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       ZeroOrMore {
         EmptyExpression()
       }
@@ -116,7 +116,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Formatting Group Of Empty Disappears`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Group {
         EmptyExpression()
       }
@@ -127,7 +127,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Formatting One Or More Uses Wirth Syntax`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       OneOrMore {
         Choice {
           "a"
@@ -141,7 +141,7 @@ struct `WirthEBNFFormatter tests` {
 
   @Test
   func `Negated Character Group Throws`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       CharacterGroup("^abc")
     })
 
@@ -154,7 +154,7 @@ struct `WirthEBNFFormatter tests` {
   func `Unicode Category Throws`() {
     let group = CharacterGroup(isNegated: false, members: [.category("Lu")])
 
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       group
     })
 
@@ -167,7 +167,7 @@ struct `WirthEBNFFormatter tests` {
   func `Negated Unicode Category Throws`() {
     let group = CharacterGroup(isNegated: false, members: [.negatedCategory("Lu")])
 
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       group
     })
 
@@ -180,7 +180,7 @@ struct `WirthEBNFFormatter tests` {
   func `XML Name Classes Throws`() {
     let group = CharacterGroup(isNegated: false, members: [.xmlName(.nameStart)])
 
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       group
     })
 
@@ -194,7 +194,7 @@ struct `WirthEBNFFormatter tests` {
     let innerGroup = CharacterGroup(isNegated: false, members: [.range("a", "z")])
     let group = CharacterGroup(isNegated: false, members: [.subtraction(innerGroup)])
 
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       group
     })
 
@@ -207,7 +207,7 @@ struct `WirthEBNFFormatter tests` {
   func `Negated Predefined Class Throws`() {
     let group = CharacterGroup(isNegated: false, members: [.predefined(.nonDigit)])
 
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       group
     })
 
@@ -220,7 +220,7 @@ struct `WirthEBNFFormatter tests` {
   func `Wildcard Throws`() {
     let group = CharacterGroup(isNegated: false, members: [.predefined(.wildcard)])
 
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       group
     })
 

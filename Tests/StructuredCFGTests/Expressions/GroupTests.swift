@@ -6,7 +6,7 @@ import StructuredCFG
 struct `Group tests` {
   @Test
   func `Formats As Parenthesized Expression`() {
-    let production = Production("start") {
+    let production = Rule("start") {
       Group {
         "a"
         Ref("target")

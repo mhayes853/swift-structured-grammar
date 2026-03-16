@@ -6,7 +6,7 @@ import StructuredCFG
 struct `RepeatExpressionTests` {
   @Test
   func `Exact Repeat Formats In GBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(3) {
         "a"
       }
@@ -20,7 +20,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `At Least Repeat Formats In GBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(2...) {
         "a"
       }
@@ -34,7 +34,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `At Most Repeat Formats In GBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(...4) {
         "a"
       }
@@ -48,7 +48,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Bounded Repeat Formats In GBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(1...3) {
         "a"
       }
@@ -62,7 +62,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Exact Repeat Expands In W3C EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(3) {
         "a"
       }
@@ -76,7 +76,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `At Least Repeat Expands In W3C EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(2...) {
         "a"
       }
@@ -90,7 +90,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `At Most Repeat Expands In W3C EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(...3) {
         "a"
       }
@@ -104,7 +104,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Bounded Repeat Expands In W3C EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(1...3) {
         "a"
       }
@@ -118,7 +118,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Exact Repeat Expands In Wirth EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(3) {
         "a"
       }
@@ -132,7 +132,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `At Least Repeat Expands In Wirth EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(2...) {
         "a"
       }
@@ -146,7 +146,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `At Most Repeat Expands In Wirth EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(...3) {
         "a"
       }
@@ -160,7 +160,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Bounded Repeat Expands In Wirth EBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(1...3) {
         "a"
       }
@@ -174,7 +174,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Repeat With Complex Expression In GBNF`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(2) {
         Choice {
           "a"
@@ -191,7 +191,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Repeat Of Zero Or More Is Zero Or More In W3C`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(0...) {
         "a"
       }
@@ -205,7 +205,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Repeat Of Zero Is Empty In W3C`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(0) {
         "a"
       }
@@ -219,7 +219,7 @@ struct `RepeatExpressionTests` {
 
   @Test
   func `Repeat With Partial Range Up To`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Repeat(..<3) {
         "a"
       }

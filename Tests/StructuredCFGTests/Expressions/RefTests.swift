@@ -6,7 +6,7 @@ import StructuredCFG
 struct `Ref tests` {
   @Test
   func `Formats As Referenced Identifier`() {
-    let production = Production("start") { Ref("target") }
+    let production = Rule("start") { Ref("target") }
     let grammar = Grammar(production)
 
     expectNoDifference(try! grammar.formatted(with: .w3cEbnf), "start ::= target")

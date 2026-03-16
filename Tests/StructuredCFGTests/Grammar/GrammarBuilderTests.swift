@@ -8,49 +8,49 @@ struct `GrammarBuilder tests` {
   func `Builds Empty Grammar`() {
     let grammar = Grammar()
     expectNoDifference(grammar.startingSymbol, .root)
-    expectNoDifference(grammar, Grammar(Production(.root) { EmptyExpression() }))
+    expectNoDifference(grammar, Grammar(Rule(.root) { EmptyExpression() }))
   }
 
   @Test
   func `Builds Grammar From Productions`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     }
 
     expectNoDifference(grammar.startingSymbol, "expression")
     expectNoDifference(grammar, Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     })
   }
 
   @Test
   func `Builds Grammar From Nested Grammar Fragments`() {
-    let fragment = Grammar(Production("expression") { "value" })
+    let fragment = Grammar(Rule("expression") { "value" })
 
     let grammar = Grammar(startingSymbol: "expression") {
       fragment
-      Production("term") { Ref("expression") }
+      Rule("term") { Ref("expression") }
     }
 
     expectNoDifference(grammar, Grammar(startingSymbol: "expression") {
-      Production("expression") { "value" }
-      Production("term") { Ref("expression") }
+      Rule("expression") { "value" }
+      Rule("term") { Ref("expression") }
     })
   }
 
   @Test
   func `Duplicate Identifiers Use Last Wins Semantics`() {
     let grammar = Grammar(startingSymbol: "expression") {
-      Production("expression") { "first" }
-      Production("term") { "value" }
-      Production("expression") { "second" }
+      Rule("expression") { "first" }
+      Rule("term") { "value" }
+      Rule("expression") { "second" }
     }
 
     expectNoDifference(grammar, Grammar(startingSymbol: "expression") {
-      Production("expression") { "second" }
-      Production("term") { "value" }
+      Rule("expression") { "second" }
+      Rule("term") { "value" }
     })
   }
 }

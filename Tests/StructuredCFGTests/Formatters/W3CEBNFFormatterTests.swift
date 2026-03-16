@@ -7,7 +7,7 @@ struct `W3CEBNFFormatter tests` {
   @Test
   func `Formats Non Trivial Grammar Exactly`() {
     let grammar = Grammar(startingSymbol: "sign") {
-      Production("sign") {
+      Rule("sign") {
         OptionalExpression {
           Choice {
             "+"
@@ -16,7 +16,7 @@ struct `W3CEBNFFormatter tests` {
         }
       }
 
-      Production("term") {
+      Rule("term") {
         Choice {
           Ref("number")
           Group {
@@ -28,7 +28,7 @@ struct `W3CEBNFFormatter tests` {
         }
       }
 
-      Production("expression") {
+      Rule("expression") {
         Ref("sign")
         Ref("term")
         ZeroOrMore {
@@ -58,7 +58,7 @@ struct `W3CEBNFFormatter tests` {
   @Test
   func `Formatting Omits Empty Productions Entirely`() {
     let grammar = Grammar(startingSymbol: "padding") {
-      Production("padding") {
+      Rule("padding") {
         EmptyExpression()
       }
     }
@@ -68,7 +68,7 @@ struct `W3CEBNFFormatter tests` {
 
   @Test
   func `Formatting Concatenation Drops Empty Members`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       ConcatenateExpressions {
         EmptyExpression()
         "a"
@@ -81,7 +81,7 @@ struct `W3CEBNFFormatter tests` {
 
   @Test
   func `Formatting Choice Drops Empty Alternatives`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Choice {
         EmptyExpression()
         "a"
@@ -94,7 +94,7 @@ struct `W3CEBNFFormatter tests` {
 
   @Test
   func `Formatting Optional Of Empty Disappears`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       OptionalExpression {
         EmptyExpression()
       }
@@ -105,7 +105,7 @@ struct `W3CEBNFFormatter tests` {
 
   @Test
   func `Formatting Zero Or More Of Empty Disappears`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       ZeroOrMore {
         EmptyExpression()
       }
@@ -116,7 +116,7 @@ struct `W3CEBNFFormatter tests` {
 
   @Test
   func `Formatting Group Of Empty Disappears`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       Group {
         EmptyExpression()
       }
@@ -127,7 +127,7 @@ struct `W3CEBNFFormatter tests` {
 
   @Test
   func `Formatting One Or More Uses Native W3C Syntax`() {
-    let grammar = Grammar(Production("start") {
+    let grammar = Grammar(Rule("start") {
       OneOrMore {
         Choice {
           "a"

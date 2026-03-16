@@ -8,24 +8,24 @@ struct `Union tests` {
   func `Union Builds Choice Over Distinct Grammar Entry Productions`() {
     let language = Union {
       Grammar(startingSymbol: "expression") {
-        Production("expression") { "first" }
-        Production("term") { "value" }
+        Rule("expression") { "first" }
+        Rule("term") { "value" }
       }
       Grammar(startingSymbol: "statement") {
-        Production("statement") { "second" }
-        Production("factor") { Ref("term") }
+        Rule("statement") { "second" }
+        Rule("factor") { Ref("term") }
       }
     }
 
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "first" }
-        Production("term") { "value" }
-        Production("statement") { "second" }
-        Production("factor") { Ref("term") }
-        Production("lastart") {
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "first" }
+        Rule("term") { "value" }
+        Rule("statement") { "second" }
+        Rule("factor") { Ref("term") }
+        Rule("lastart") {
           Choice {
             Ref("expression")
             Ref("statement")
@@ -40,18 +40,18 @@ struct `Union tests` {
     let usePrimary = true
     let language = Union {
       if usePrimary {
-        Grammar(Production("expression") { "value" })
+        Grammar(Rule("expression") { "value" })
       } else {
-        Grammar(Production("term") { "other" })
+        Grammar(Rule("term") { "other" })
       }
     }
 
     expectNoDifference(
       language.language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("lastart") }
-        Production("expression") { "value" }
-        Production("lastart") { Ref("expression") }
+        Rule(.root) { Ref("lastart") }
+        Rule("expression") { "value" }
+        Rule("lastart") { Ref("expression") }
       }
     )
   }

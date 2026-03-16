@@ -54,7 +54,7 @@ private enum WirthSnapshotSuite {
     WirthSnapshotCase(
       name: "arithmetic-grammar",
       language: Grammar(startingSymbol: "expression") {
-        Production("expression") {
+        Rule("expression") {
           Ref("term")
           ZeroOrMore {
             Choice {
@@ -65,7 +65,7 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("term") {
+        Rule("term") {
           Ref("factor")
           ZeroOrMore {
             Choice {
@@ -76,7 +76,7 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("factor") {
+        Rule("factor") {
           Choice {
             Ref("number")
             Group {
@@ -87,13 +87,13 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("number") {
+        Rule("number") {
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("digit") {
+        Rule("digit") {
           Choice {
             "0"
             "1"
@@ -106,17 +106,17 @@ private enum WirthSnapshotSuite {
       name: "unioned-grammar",
       language: Union {
         Grammar(startingSymbol: "expression") {
-          Production("expression") {
+          Rule("expression") {
             Ref("number")
           }
 
-          Production("number") {
+          Rule("number") {
             OneOrMore {
               Ref("digit")
             }
           }
 
-          Production("digit") {
+          Rule("digit") {
             Choice {
               "0"
               "1"
@@ -125,7 +125,7 @@ private enum WirthSnapshotSuite {
         }
 
         Grammar(startingSymbol: "statement") {
-          Production("statement") {
+          Rule("statement") {
             Choice {
               "pass"
               ConcatenateExpressions {
@@ -135,7 +135,7 @@ private enum WirthSnapshotSuite {
             }
           }
 
-          Production("identifier") {
+          Rule("identifier") {
             "identifier"
           }
         }
@@ -144,26 +144,26 @@ private enum WirthSnapshotSuite {
     WirthSnapshotCase(
       name: "namespaced-grammar",
       language: Grammar(startingSymbol: .root) {
-        Production(.root) {
+        Rule(.root) {
           Choice {
             Ref("g0__expression")
             Ref("g1__expression")
           }
         }
 
-        Production("g0__expression") {
+        Rule("g0__expression") {
           Ref("g0__term")
         }
 
-        Production("g0__term") {
+        Rule("g0__term") {
           "left"
         }
 
-        Production("g1__expression") {
+        Rule("g1__expression") {
           Ref("g1__term")
         }
 
-        Production("g1__term") {
+        Rule("g1__term") {
           "right"
         }
       }.language
@@ -172,7 +172,7 @@ private enum WirthSnapshotSuite {
       name: "helper-production-grammar",
       language: KleeneStar {
         Grammar(startingSymbol: "token") {
-          Production("token") {
+          Rule("token") {
             Choice {
               "a"
               "b"
@@ -184,7 +184,7 @@ private enum WirthSnapshotSuite {
     WirthSnapshotCase(
       name: "comprehensive-grammar",
       language: Grammar(startingSymbol: "document") {
-        Production("document") {
+        Rule("document") {
           Ref("header")
           OneOrMore {
             Ref("assignment")
@@ -194,11 +194,11 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("header") {
+        Rule("header") {
           "BEGIN"
         }
 
-        Production("assignment") {
+        Rule("assignment") {
           Ref("identifier")
           "="
           Choice {
@@ -208,7 +208,7 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("tuple") {
+        Rule("tuple") {
           "("
           Ref("literal")
           ZeroOrMore {
@@ -220,7 +220,7 @@ private enum WirthSnapshotSuite {
           ")"
         }
 
-        Production("literal") {
+        Rule("literal") {
           Choice {
             Ref("number")
             Ref("g1__qualified")
@@ -228,13 +228,13 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("number") {
+        Rule("number") {
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("digit") {
+        Rule("digit") {
           Choice {
             "0"
             "1"
@@ -242,19 +242,19 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("identifier") {
+        Rule("identifier") {
           "identifier"
         }
 
-        Production("footer") {
+        Rule("footer") {
           "END"
         }
 
-        Production("padding") {
+        Rule("padding") {
           EmptyExpression()
         }
 
-        Production("g1__qualified") {
+        Rule("g1__qualified") {
           "qualified"
         }
       }.language
@@ -262,7 +262,7 @@ private enum WirthSnapshotSuite {
     WirthSnapshotCase(
       name: "json-grammar",
       language: Grammar(startingSymbol: "value") {
-        Production("value") {
+        Rule("value") {
           Choice {
             Ref("object")
             Ref("array")
@@ -274,7 +274,7 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("object") {
+        Rule("object") {
           "{"
           OptionalExpression {
             Ref("members")
@@ -282,7 +282,7 @@ private enum WirthSnapshotSuite {
           "}"
         }
 
-        Production("members") {
+        Rule("members") {
           Ref("pair")
           ZeroOrMore {
             Group {
@@ -292,13 +292,13 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("pair") {
+        Rule("pair") {
           Ref("string")
           ":"
           Ref("value")
         }
 
-        Production("array") {
+        Rule("array") {
           "["
           OptionalExpression {
             Ref("elements")
@@ -306,7 +306,7 @@ private enum WirthSnapshotSuite {
           "]"
         }
 
-        Production("elements") {
+        Rule("elements") {
           Ref("value")
           ZeroOrMore {
             Group {
@@ -316,11 +316,11 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("string") {
+        Rule("string") {
           "string"
         }
 
-        Production("number") {
+        Rule("number") {
           Ref("integer")
           OptionalExpression {
             Ref("fraction")
@@ -330,20 +330,20 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("integer") {
+        Rule("integer") {
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("fraction") {
+        Rule("fraction") {
           "."
           OneOrMore {
             Ref("digit")
           }
         }
 
-        Production("exponent") {
+        Rule("exponent") {
           Choice {
             "e"
             "E"
@@ -356,14 +356,14 @@ private enum WirthSnapshotSuite {
           }
         }
 
-        Production("sign") {
+        Rule("sign") {
           Choice {
             "+"
             "-"
           }
         }
 
-        Production("digit") {
+        Rule("digit") {
           Choice {
             "0"
             "1"
@@ -382,25 +382,25 @@ private enum WirthSnapshotSuite {
     WirthSnapshotCase(
       name: "character-group-grammar",
       language: Grammar(startingSymbol: "identifier") {
-        Production("identifier") {
+        Rule("identifier") {
           CharacterGroup("a-zA-Z_")
           ZeroOrMore {
             CharacterGroup("a-zA-Z0-9_")
           }
         }
-        Production("digit") {
+        Rule("digit") {
           CharacterGroup("\\d")
         }
-        Production("word") {
+        Rule("word") {
           CharacterGroup("\\w")
         }
-        Production("whitespace") {
+        Rule("whitespace") {
           CharacterGroup("\\s")
         }
-        Production("hexDigit") {
+        Rule("hexDigit") {
           CharacterGroup("0-9a-fA-F")
         }
-        Production("escaped") {
+        Rule("escaped") {
           CharacterGroup("\\n\\r\\t")
         }
       }.language
@@ -408,16 +408,16 @@ private enum WirthSnapshotSuite {
     WirthSnapshotCase(
       name: "range-grammar",
       language: Grammar(startingSymbol: "password") {
-        Production("password") {
+        Rule("password") {
           Repeat(2..., Terminal("x"))
         }
-        Production("code") {
+        Rule("code") {
           Repeat(4, Terminal("0"))
         }
-        Production("upto5") {
+        Rule("upto5") {
           Repeat(...5, Terminal("a"))
         }
-        Production("bounded") {
+        Rule("bounded") {
           Repeat(1...3, Terminal("b"))
         }
       }.language

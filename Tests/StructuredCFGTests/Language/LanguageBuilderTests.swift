@@ -15,14 +15,14 @@ struct `LanguageBuilder tests` {
   @Test
   func `Builder Accepts Single Grammar`() {
     let language = Language {
-      Grammar(Production("expression") { "value" })
+      Grammar(Rule("expression") { "value" })
     }
 
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") { "value" }
+        Rule(.root) { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
   }
@@ -32,7 +32,7 @@ struct `LanguageBuilder tests` {
     let includeGrammar = false
     let language = Language {
       if includeGrammar {
-        Grammar(Production("expression") { "value" })
+        Grammar(Rule("expression") { "value" })
       }
     }
 
@@ -44,17 +44,17 @@ struct `LanguageBuilder tests` {
     let usePrimary = true
     let language = Language {
       if usePrimary {
-        Grammar(Production("expression") { "value" })
+        Grammar(Rule("expression") { "value" })
       } else {
-        Grammar(Production("term") { "other" })
+        Grammar(Rule("term") { "other" })
       }
     }
 
     expectNoDifference(
       language.grammar(),
       Grammar(startingSymbol: .root) {
-        Production(.root) { Ref("expression") }
-        Production("expression") { "value" }
+        Rule(.root) { Ref("expression") }
+        Rule("expression") { "value" }
       }
     )
   }

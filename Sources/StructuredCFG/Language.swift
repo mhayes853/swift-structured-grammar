@@ -211,7 +211,7 @@ extension Language {
     guard entrySymbol != startingSymbol else { return resolved.grammar }
     return Grammar(
       startingSymbol: startingSymbol,
-      resolved.grammar.productions + [Production(startingSymbol) { Ref(entrySymbol) }]
+      resolved.grammar.rules + [Rule(startingSymbol) { Ref(entrySymbol) }]
     )
   }
 
@@ -246,7 +246,7 @@ extension Language {
       case .grammar(let grammar):
         return ResolvedLanguage(
           grammar: grammar,
-          entrySymbol: grammar.productions.first?.symbol,
+          entrySymbol: grammar.rules.first?.symbol,
           synthesizedEntry: false
         )
 
@@ -272,7 +272,7 @@ extension Language {
         }
         let entrySymbol = self.createNewSymbol()
         grammar.append(
-          Production(entrySymbol) {
+          Rule(entrySymbol) {
             for symbol in entrySymbols {
               Ref(symbol)
             }
@@ -302,10 +302,10 @@ extension Language {
         }
         let entrySymbol = self.createNewSymbol()
         if entrySymbols.count == 1 {
-          grammar.append(Production(entrySymbol) { Ref(entrySymbols[0]) })
+          grammar.append(Rule(entrySymbol) { Ref(entrySymbols[0]) })
         } else {
           grammar.append(
-            Production(entrySymbol, Expression.choice(entrySymbols.map(Expression.ref)))
+            Rule(entrySymbol, Expression.choice(entrySymbols.map(Expression.ref)))
           )
         }
         return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
@@ -319,7 +319,7 @@ extension Language {
         self.grammars = [grammar]
         let synthesizedSymbol = self.createNewSymbol()
         grammar.append(
-          Production(synthesizedSymbol) {
+          Rule(synthesizedSymbol) {
             ZeroOrMore {
               Ref(entrySymbol)
             }
@@ -349,7 +349,7 @@ extension Language {
       let context = GrammarNameResolutionContext(
         grammarIndex: self.nextLanguageNamespace,
         currentOperation: .grammar,
-        existingSymbols: Set(self.grammars.flatMap { $0.productions.map(\.symbol) }),
+        existingSymbols: Set(self.grammars.flatMap { $0.rules.map(\.symbol) }),
         grammars: self.grammars
       )
       let symbol = self.nameResolver.createNewSymbol(grammars: self.grammars, context: context)
@@ -364,7 +364,7 @@ extension Language {
       operation: GrammarOperation
     ) -> Grammar {
       var result = base
-      let existingSymbols = Set(base.productions.map(\.symbol))
+      let existingSymbols = Set(base.rules.map(\.symbol))
       var allGrammars = self.grammars
       allGrammars.append(incoming)
       let context = GrammarNameResolutionContext(
@@ -374,17 +374,17 @@ extension Language {
         grammars: allGrammars
       )
 
-      for production in incoming.productions {
+      for production in incoming.rules {
         if existingSymbols.contains(production.symbol) {
-          if let existingProduction = base.productions.first(where: {
+          if let existingRule = base.rules.first(where: {
             $0.symbol == production.symbol
           }) {
             let resolvedSymbol = self.nameResolver.resolveSymbolConflict(
               for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
-              against: ResolvableGrammarSymbol(symbol: existingProduction.symbol, grammar: base),
+              against: ResolvableGrammarSymbol(symbol: existingRule.symbol, grammar: base),
               context: context
             )
-            result.append(Production(resolvedSymbol, production.expression))
+            result.append(Rule(resolvedSymbol, production.expression))
           }
         } else {
           result.append(production)
