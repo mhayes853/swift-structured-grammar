@@ -56,14 +56,16 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Omits Empty Productions Entirely`() {
+  func `Formatting Empty Production Throws`() {
     let grammar = Grammar(startingSymbol: "padding") {
       Rule("padding") {
         EmptyExpression()
       }
     }
 
-    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
+    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
   }
 
   @Test
@@ -93,36 +95,42 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Optional Of Empty Disappears`() {
+  func `Formatting Optional Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
       OptionalExpression {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
+    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
   }
 
   @Test
-  func `Formatting Zero Or More Of Empty Disappears`() {
+  func `Formatting Zero Or More Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
       ZeroOrMore {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
+    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
   }
 
   @Test
-  func `Formatting Group Of Empty Disappears`() {
+  func `Formatting Group Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
       Group {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .w3cEbnf), "")
+    #expect(throws: Grammar.W3CEBNFFormatterError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
   }
 
   @Test

@@ -250,10 +250,6 @@ private enum LanguageSnapshotSuite {
           "END"
         }
 
-        Rule("padding") {
-          EmptyExpression()
-        }
-
         Rule("g1__qualified") {
           "qualified"
         }

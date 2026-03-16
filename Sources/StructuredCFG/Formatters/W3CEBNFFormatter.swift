@@ -1,13 +1,27 @@
 import Foundation
 
 extension Grammar {
+  public struct W3CEBNFFormatterError: Error, Hashable {
+    private enum Kind: Hashable {
+      case emptyExpression
+    }
+
+    private let kind: Kind
+
+    private init(kind: Kind) {
+      self.kind = kind
+    }
+
+    public static let emptyExpression = W3CEBNFFormatterError(kind: .emptyExpression)
+  }
+
   public struct W3CEBNFFormatter: Formatter {
     public init() {}
 
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if expression == .empty {
-        return ""
+        throw Grammar.W3CEBNFFormatterError.emptyExpression
       }
       let formatted = self.format(expression: expression)
       if formatted.isEmpty {
