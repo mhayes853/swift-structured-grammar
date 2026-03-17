@@ -18,7 +18,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     case (true, true):
       processedString = string
     default:
-      throw CharacterGroup.ParseError("Character groups must be fully bracketed or unbracketed")
+      throw ParseError.mustBeFullyBracketedOrUnbracketed
     }
 
     let parsed = try Self.parse(processedString)
@@ -84,7 +84,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
 
   private static func parse(_ string: String) throws -> (isNegated: Bool, members: [Member]) {
     guard string.hasPrefix("[") else {
-      throw CharacterGroup.ParseError("Character groups must start with '['")
+      throw ParseError.mustStartWithOpeningBracket
     }
 
     var isNegated = false
@@ -96,7 +96,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     }
 
     guard content.hasSuffix("]") else {
-      throw CharacterGroup.ParseError("Character groups must end with ']'")
+      throw ParseError.mustEndWithClosingBracket
     }
     content = String(content.dropLast())
 
@@ -154,7 +154,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     var members = [Member]()
 
     guard index + 1 < characters.count else {
-      throw CharacterGroup.ParseError("Character groups cannot end with an escape")
+      throw ParseError.cannotEndWithEscape
     }
 
     let escapedCharacter = characters[index + 1]
@@ -167,27 +167,21 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       members.append(contentsOf: Self.whitespaceMembers)
     case "D":
       guard !isNegated, existingMembers.isEmpty, index + 2 == characters.count else {
-        throw CharacterGroup.ParseError(
-          "Negated predefined classes are only supported as standalone groups"
-        )
+        throw ParseError.negatedPredefinedClassesMustBeStandalone
       }
       members.append(contentsOf: Self.digitMembers)
     case "W":
       guard !isNegated, existingMembers.isEmpty, index + 2 == characters.count else {
-        throw CharacterGroup.ParseError(
-          "Negated predefined classes are only supported as standalone groups"
-        )
+        throw ParseError.negatedPredefinedClassesMustBeStandalone
       }
       members.append(contentsOf: Self.wordMembers)
     case "S":
       guard !isNegated, existingMembers.isEmpty, index + 2 == characters.count else {
-        throw CharacterGroup.ParseError(
-          "Negated predefined classes are only supported as standalone groups"
-        )
+        throw ParseError.negatedPredefinedClassesMustBeStandalone
       }
       members.append(contentsOf: Self.whitespaceMembers)
     case "i", "I", "c", "C":
-      throw CharacterGroup.ParseError("XML name classes are not supported")
+      throw ParseError.xmlNameClassesAreNotSupported
     case "n":
       members.append(.escaped(.newline))
     case "r":
@@ -208,7 +202,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
 
   private static func parseHexEscape(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
     guard index + 2 < characters.count else {
-      throw CharacterGroup.ParseError("Incomplete hex escape")
+      throw ParseError.incompleteHexEscape
     }
     let hexStart = index + 2
     var hexEnd = hexStart
@@ -216,11 +210,11 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       hexEnd += 1
     }
     guard hexEnd > hexStart else {
-      throw CharacterGroup.ParseError("Invalid hex escape")
+      throw ParseError.invalidHexEscape
     }
     let hexString = String(characters[hexStart..<hexEnd])
     guard let codePoint = Self.parseHex(hexString) else {
-      throw CharacterGroup.ParseError("Invalid hex value: \(hexString)")
+      throw ParseError.invalidHexValue(hexString)
     }
     return ([.hex(codePoint)], hexEnd)
   }
@@ -232,7 +226,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       hexEnd += 1
     }
     guard hexEnd > hexStart else {
-      throw CharacterGroup.ParseError("Invalid hex character")
+      throw ParseError.invalidHexCharacter
     }
 
     if hexEnd + 1 < characters.count && characters[hexEnd] == "-" && 
@@ -240,7 +234,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
        characters[hexEnd + 2] == "x" {
       let rangeStartHex = String(characters[hexStart..<hexEnd])
       guard let rangeStart = Self.parseHex(rangeStartHex) else {
-        throw CharacterGroup.ParseError("Invalid hex value: \(rangeStartHex)")
+        throw ParseError.invalidHexValue(rangeStartHex)
       }
 
       let rangeHexStart = hexEnd + 3
@@ -249,23 +243,23 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
         rangeHexEnd += 1
       }
       guard rangeHexEnd > rangeHexStart else {
-        throw CharacterGroup.ParseError("Invalid hex character")
+        throw ParseError.invalidHexCharacter
       }
 
       let rangeEndHex = String(characters[rangeHexStart..<rangeHexEnd])
       guard let rangeEnd = Self.parseHex(rangeEndHex) else {
-        throw CharacterGroup.ParseError("Invalid hex value: \(rangeEndHex)")
+        throw ParseError.invalidHexValue(rangeEndHex)
       }
 
       guard rangeStart <= rangeEnd else {
-        throw CharacterGroup.ParseError("Invalid hex range: start > end")
+        throw ParseError.invalidHexRangeStartGreaterThanEnd
       }
 
       return ([.hexRange(rangeStart, rangeEnd)], rangeHexEnd)
     } else {
       let hexString = String(characters[hexStart..<hexEnd])
       guard let codePoint = Self.parseHex(hexString) else {
-        throw CharacterGroup.ParseError("Invalid hex value: \(hexString)")
+        throw ParseError.invalidHexValue(hexString)
       }
       return ([.hex(codePoint)], hexEnd)
     }
@@ -382,10 +376,108 @@ extension CharacterGroup.EscapeSequence {
 
 extension CharacterGroup {
   public struct ParseError: Error, Hashable, Sendable {
+    public struct Code: RawRepresentable, Hashable, Sendable {
+      public let rawValue: String
+
+      public init(rawValue: String) {
+        self.rawValue = rawValue
+      }
+
+      public static let mustBeFullyBracketedOrUnbracketed = Self(
+        rawValue: "must_be_fully_bracketed_or_unbracketed"
+      )
+
+      public static let mustStartWithOpeningBracket = Self(
+        rawValue: "must_start_with_opening_bracket"
+      )
+
+      public static let mustEndWithClosingBracket = Self(
+        rawValue: "must_end_with_closing_bracket"
+      )
+
+      public static let cannotEndWithEscape = Self(rawValue: "cannot_end_with_escape")
+
+      public static let negatedPredefinedClassesMustBeStandalone = Self(
+        rawValue: "negated_predefined_classes_must_be_standalone"
+      )
+
+      public static let xmlNameClassesAreNotSupported = Self(
+        rawValue: "xml_name_classes_are_not_supported"
+      )
+
+      public static let incompleteHexEscape = Self(rawValue: "incomplete_hex_escape")
+
+      public static let invalidHexEscape = Self(rawValue: "invalid_hex_escape")
+
+      public static let invalidHexCharacter = Self(rawValue: "invalid_hex_character")
+
+      public static let invalidHexRangeStartGreaterThanEnd = Self(
+        rawValue: "invalid_hex_range_start_greater_than_end"
+      )
+
+      public static let invalidHexValue = Self(rawValue: "invalid_hex_value")
+    }
+
+    public let code: Code
     public let message: String
 
-    public init(_ message: String) {
+    public init(code: Code, message: String) {
+      self.code = code
       self.message = message
+    }
+
+    public static let mustBeFullyBracketedOrUnbracketed = Self(
+      code: .mustBeFullyBracketedOrUnbracketed,
+      message: "Character groups must be fully bracketed or unbracketed"
+    )
+
+    public static let mustStartWithOpeningBracket = Self(
+      code: .mustStartWithOpeningBracket,
+      message: "Character groups must start with '['"
+    )
+
+    public static let mustEndWithClosingBracket = Self(
+      code: .mustEndWithClosingBracket,
+      message: "Character groups must end with ']'"
+    )
+
+    public static let cannotEndWithEscape = Self(
+      code: .cannotEndWithEscape,
+      message: "Character groups cannot end with an escape"
+    )
+
+    public static let negatedPredefinedClassesMustBeStandalone = Self(
+      code: .negatedPredefinedClassesMustBeStandalone,
+      message: "Negated predefined classes are only supported as standalone groups"
+    )
+
+    public static let xmlNameClassesAreNotSupported = Self(
+      code: .xmlNameClassesAreNotSupported,
+      message: "XML name classes are not supported"
+    )
+
+    public static let incompleteHexEscape = Self(
+      code: .incompleteHexEscape,
+      message: "Incomplete hex escape"
+    )
+
+    public static let invalidHexEscape = Self(
+      code: .invalidHexEscape,
+      message: "Invalid hex escape"
+    )
+
+    public static let invalidHexCharacter = Self(
+      code: .invalidHexCharacter,
+      message: "Invalid hex character"
+    )
+
+    public static let invalidHexRangeStartGreaterThanEnd = Self(
+      code: .invalidHexRangeStartGreaterThanEnd,
+      message: "Invalid hex range: start > end"
+    )
+
+    public static func invalidHexValue(_ value: String) -> Self {
+      Self(code: .invalidHexValue, message: "Invalid hex value: \(value)")
     }
   }
 }
