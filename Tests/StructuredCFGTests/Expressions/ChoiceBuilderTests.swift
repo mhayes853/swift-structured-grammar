@@ -11,7 +11,7 @@ struct `ChoiceBuilder tests` {
       Ref("identifier")
     }.expression
 
-    expectNoDifference(expression, Expression.choice([.terminal("value"), .ref("identifier")]))
+    expectNoDifference(expression, Expression.choice([.terminal("value"), .ref(Ref("identifier"))]))
   }
 
   @Test
@@ -44,6 +44,6 @@ struct `ChoiceBuilder tests` {
       }
     }.expression
 
-    expectNoDifference(expression, Expression.choice([.ref("identifier")]))
+    expectNoDifference(expression, Expression.choice([.ref(Ref("identifier"))]))
   }
 }

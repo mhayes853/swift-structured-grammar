@@ -8,7 +8,7 @@ public indirect enum Expression: Sendable, ExpressionComponent {
   case `repeat`(Repeat)
   case group(Expression)
   case characterGroup(CharacterGroup)
-  case ref(Symbol)
+  case ref(Ref)
   case terminal(Terminal)
   case custom(any Hashable & Sendable)
 
@@ -62,9 +62,9 @@ extension Expression: Hashable {
     case .characterGroup(let characterGroup):
       hasher.combine(6)
       hasher.combine(characterGroup)
-    case .ref(let symbol):
+    case .ref(let ref):
       hasher.combine(7)
-      hasher.combine(symbol)
+      hasher.combine(ref)
     case .terminal(let terminal):
       hasher.combine(8)
       hasher.combine(terminal)

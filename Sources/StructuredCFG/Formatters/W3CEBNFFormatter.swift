@@ -98,8 +98,8 @@ extension Grammar {
         return "(\(self.format(expression: expression)))"
       case .characterGroup(let characterGroup):
         return self.format(characterGroup: characterGroup)
-      case .ref(let symbol):
-        return symbol.rawValue
+      case .ref(let ref):
+        return ref.symbol.rawValue
       case .terminal(let terminal):
         return self.format(terminal: terminal)
       case .custom:

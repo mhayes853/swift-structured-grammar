@@ -44,8 +44,8 @@ extension Expression {
       return Expression.group(simplified)
     case .characterGroup(let characterGroup):
       return .characterGroup(characterGroup)
-    case .ref(let symbol):
-      return .ref(symbol)
+    case .ref(let ref):
+      return .ref(ref)
     case .terminal(let terminal):
       return .terminal(terminal)
     case .custom(let value):

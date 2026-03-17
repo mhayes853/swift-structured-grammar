@@ -1,11 +1,18 @@
 public struct ZeroOrMore: Hashable, Sendable, ExpressionComponent {
-  public let expression: Expression
+  public let innerExpression: Expression
 
+  @inlinable
   public init(_ expression: some ExpressionComponent) {
-    self.expression = Repeat(min: 0, max: nil, expression).expression
+    self.innerExpression = expression.expression
   }
 
+  @inlinable
   public init(@ExpressionBuilder _ content: () -> Expression) {
-    self.expression = Repeat(min: 0, max: nil, content()).expression
+    self.init(content())
+  }
+
+  @inlinable
+  public var expression: Expression {
+    Repeat(min: 0, max: nil, self.innerExpression).expression
   }
 }

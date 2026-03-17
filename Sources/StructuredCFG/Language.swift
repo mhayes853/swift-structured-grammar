@@ -305,7 +305,7 @@ extension Language {
           grammar.append(Rule(entrySymbol) { Ref(entrySymbols[0]) })
         } else {
           grammar.append(
-            Rule(entrySymbol, Expression.choice(entrySymbols.map(Expression.ref)))
+            Rule(entrySymbol, Expression.choice(entrySymbols.map { .ref(Ref($0)) }))
           )
         }
         return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)

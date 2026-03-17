@@ -270,8 +270,8 @@ extension Grammar {
       return .group(self.homomorphed(expression: expression, transform: transform))
     case .characterGroup(let characterGroup):
       return .characterGroup(characterGroup)
-    case .ref(let symbol):
-      return .ref(symbol)
+    case .ref(let ref):
+      return .ref(ref)
     case .terminal(let terminal):
       return transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
     case .custom(let value):
@@ -321,8 +321,8 @@ extension Grammar {
       self.referencedSymbols(in: repeatExpr.innerExpression)
     case .characterGroup:
       []
-    case .ref(let symbol):
-      [symbol]
+    case .ref(let ref):
+      [ref.symbol]
     case .terminal:
       []
     case .custom:
@@ -351,8 +351,8 @@ extension Grammar {
       return .group(self.reversed(expression: expr))
     case .characterGroup(let characterGroup):
       return .characterGroup(characterGroup)
-    case .ref(let symbol):
-      return .ref(symbol)
+    case .ref(let ref):
+      return .ref(ref)
     case .terminal(let terminal):
       return .terminal(terminal)
     case .custom(let value):

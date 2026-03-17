@@ -22,7 +22,7 @@ struct `ExpressionBuilder tests` {
       "value"
       Ref("identifier")
     }.expression
-    expectNoDifference(expression, .concat([.terminal("value"), .ref("identifier")]))
+    expectNoDifference(expression, .concat([.terminal("value"), .ref(Ref("identifier"))]))
   }
 
   @Test
@@ -48,6 +48,6 @@ struct `ExpressionBuilder tests` {
       }
     }.expression
 
-    expectNoDifference(expression, .ref("identifier"))
+    expectNoDifference(expression, .ref(Ref("identifier")))
   }
 }

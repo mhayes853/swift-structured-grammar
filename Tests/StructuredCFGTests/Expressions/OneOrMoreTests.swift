@@ -5,6 +5,13 @@ import StructuredCFG
 @Suite
 struct `OneOrMore tests` {
   @Test
+  func `Stores Inner Expression`() {
+    let expression = OneOrMore { "value" }
+
+    expectNoDifference(expression.innerExpression, Terminal("value").expression)
+  }
+
+  @Test
   func `Direct Initialization Builds One Or More Expression`() {
     let expression = OneOrMore { "value" }.expression
     let expected = Repeat(min: 1, max: nil, Terminal("value")).expression
