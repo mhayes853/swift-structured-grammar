@@ -201,4 +201,129 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(group.members, [.range("a", "z")])
   }
+
+  @Test
+  func `CharacterGroup Parses Hex Character`() {
+    let group = CharacterGroup("#x41")
+
+    expectNoDifference(group.members, [.hex(0x41)])
+  }
+
+  @Test
+  func `CharacterGroup Parses Hex Character Range`() {
+    let group = CharacterGroup("#x41-#x5A")
+
+    expectNoDifference(group.members, [.hexRange(0x41, 0x5A)])
+  }
+
+  @Test
+  func `CharacterGroup Parses Hex Character With Leading Zeros`() {
+    let group = CharacterGroup("#x0041")
+
+    expectNoDifference(group.members, [.hex(0x41)])
+  }
+
+  @Test
+  func `CharacterGroup Parses Hex Escape`() {
+    let group = CharacterGroup("\\x41")
+
+    expectNoDifference(group.members, [.hex(0x41)])
+  }
+
+  @Test
+  func `CharacterGroup Parses Mixed Characters And Hex`() {
+    let group = CharacterGroup("a-z#x41")
+
+    expectNoDifference(
+      group.members,
+      [.range("a", "z"), .hex(0x41)]
+    )
+  }
+
+  @Test
+  func `CharacterGroup Parses Mixed Characters And HexEscape`() {
+    let group = CharacterGroup("a-z\\x41")
+
+    expectNoDifference(
+      group.members,
+      [.range("a", "z"), .hex(0x41)]
+    )
+  }
+
+  @Test
+  func `CharacterGroup Rejects Invalid Hex Character`() {
+    #expect(throws: CharacterGroup.ParseError.self) {
+      try CharacterGroup(String("#xGG"))
+    }
+  }
+
+  @Test
+  func `CharacterGroup Rejects Invalid Hex Escape`() {
+    #expect(throws: CharacterGroup.ParseError.self) {
+      try CharacterGroup(String("\\xGG"))
+    }
+  }
+
+  @Test
+  func `CharacterGroup Rejects Invalid Hex Range Start Greater Than End`() {
+    #expect(throws: CharacterGroup.ParseError.self) {
+      try CharacterGroup(String("#x5A-#x41"))
+    }
+  }
+
+  @Test
+  func `Hex CharacterGroup Formats In W3C EBNF`() throws {
+    let group = CharacterGroup("#x41")
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    let formatted = try grammar.formatted(with: .w3cEbnf)
+    expectNoDifference(formatted, #"test ::= [#x41]"#)
+  }
+
+  @Test
+  func `Hex Range CharacterGroup Formats In W3C EBNF`() throws {
+    let group = CharacterGroup("#x41-#x5A")
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    let formatted = try grammar.formatted(with: .w3cEbnf)
+    expectNoDifference(formatted, #"test ::= [#x41-#x5a]"#)
+  }
+
+  @Test
+  func `Hex CharacterGroup Formats In GBNF`() throws {
+    let group = CharacterGroup("#x41")
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    let formatted = try grammar.formatted(with: .gbnf)
+    expectNoDifference(formatted, #"test ::= [\x41]"#)
+  }
+
+  @Test
+  func `Hex CharacterGroup Formats In Wirth EBNF`() throws {
+    let group = CharacterGroup("#x41")
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    let formatted = try grammar.formatted(with: .wirthEbnf)
+    expectNoDifference(formatted, #"test = 'A' ."#)
+  }
 }

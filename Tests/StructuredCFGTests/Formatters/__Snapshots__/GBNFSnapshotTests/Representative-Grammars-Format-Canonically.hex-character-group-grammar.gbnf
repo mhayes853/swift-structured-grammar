@@ -1,0 +1,5 @@
+root ::= hex-char
+hex-char ::= [\x41]
+hex-range ::= [\x30-\x39]
+hex-escape ::= [\x41]
+mixed-hex ::= [a-z\x41]

@@ -116,7 +116,8 @@ private enum LanguageSnapshotSuite {
             "2"
           }
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "unioned-grammar",
@@ -155,7 +156,8 @@ private enum LanguageSnapshotSuite {
             "identifier"
           }
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "namespaced-grammar",
@@ -182,7 +184,8 @@ private enum LanguageSnapshotSuite {
         Rule("g1__term") {
           "right"
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "helper-production-grammar",
@@ -195,7 +198,8 @@ private enum LanguageSnapshotSuite {
             }
           }
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "comprehensive-grammar",
@@ -269,7 +273,8 @@ private enum LanguageSnapshotSuite {
         Rule("g1__qualified") {
           "qualified"
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "json-grammar",
@@ -389,7 +394,8 @@ private enum LanguageSnapshotSuite {
             "9"
           }
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "character-group-grammar",
@@ -418,7 +424,8 @@ private enum LanguageSnapshotSuite {
         Rule("escaped") {
           CharacterGroup("\\n\\r\\t")
         }
-      }.language
+      }
+      .language
     ),
     LanguageSnapshotCase(
       name: "range-grammar",
@@ -435,7 +442,26 @@ private enum LanguageSnapshotSuite {
         Rule("bounded") {
           Repeat(1...3, Terminal("b"))
         }
-      }.language
+      }
+      .language
+    ),
+    LanguageSnapshotCase(
+      name: "hex-character-group-grammar",
+      language: Grammar(startingSymbol: "hexChar") {
+        Rule("hexChar") {
+          CharacterGroup("#x41")
+        }
+        Rule("hexRange") {
+          CharacterGroup("#x30-#x39")
+        }
+        Rule("hexEscape") {
+          CharacterGroup("\\x41")
+        }
+        Rule("mixedHex") {
+          CharacterGroup("a-z#x41")
+        }
+      }
+      .language
     )
   ]
 

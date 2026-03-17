@@ -98,6 +98,14 @@ extension Grammar {
           result.append(end)
         case .escaped(let escape):
           result += self.format(escape: escape)
+        case .hex(let codePoint):
+          result += "\\x"
+          result += String(codePoint, radix: 16)
+        case .hexRange(let start, let end):
+          result += "\\x"
+          result += String(start, radix: 16)
+          result += "-\\x"
+          result += String(end, radix: 16)
         }
       }
 

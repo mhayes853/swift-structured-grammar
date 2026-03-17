@@ -421,6 +421,23 @@ private enum WirthSnapshotSuite {
           Repeat(1...3, Terminal("b"))
         }
       }.language
+    ),
+    WirthSnapshotCase(
+      name: "hex-character-group-grammar",
+      language: Grammar(startingSymbol: "hex-char") {
+        Rule("hex-char") {
+          CharacterGroup("#x41")
+        }
+        Rule("hex-range") {
+          CharacterGroup("#x30-#x39")
+        }
+        Rule("hex-escape") {
+          CharacterGroup("\\x41")
+        }
+        Rule("mixed-hex") {
+          CharacterGroup("a-z#x41")
+        }
+      }.language
     )
   ]
 
