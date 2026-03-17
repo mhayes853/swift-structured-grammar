@@ -71,7 +71,23 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
-      let escaped = terminal.value.reduce(into: "") { result, character in
+      let escaped = terminal.parts.reduce(into: "") { result, part in
+        switch part {
+        case .string(let string):
+          result += self.escape(string)
+        case .hex(let scalars):
+          result += scalars.reduce(into: "") { hexResult, scalar in
+            hexResult += "\\x"
+            hexResult += String(scalar.value, radix: 16)
+          }
+        }
+      }
+
+      return "\"" + escaped + "\""
+    }
+
+    private func escape(_ string: String) -> String {
+      string.reduce(into: "") { result, character in
         switch character {
         case "\\":
           result += "\\\\"
@@ -81,8 +97,6 @@ extension Grammar {
           result.append(character)
         }
       }
-
-      return "\"" + escaped + "\""
     }
 
     private func format(characterGroup: CharacterGroup) -> String {
@@ -98,14 +112,14 @@ extension Grammar {
           result.append(end)
         case .escaped(let escape):
           result += self.format(escape: escape)
-        case .hex(let codePoint):
+        case .hex(let scalar):
           result += "\\x"
-          result += String(codePoint, radix: 16)
+          result += String(scalar.value, radix: 16)
         case .hexRange(let start, let end):
           result += "\\x"
-          result += String(start, radix: 16)
+          result += String(start.value, radix: 16)
           result += "-\\x"
-          result += String(end, radix: 16)
+          result += String(end.value, radix: 16)
         }
       }
 

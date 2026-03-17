@@ -213,10 +213,10 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       throw ParseError.invalidHexEscape
     }
     let hexString = String(characters[hexStart..<hexEnd])
-    guard let codePoint = Self.parseHex(hexString) else {
+    guard let scalar = Self.parseHex(hexString) else {
       throw ParseError.invalidHexValue(hexString)
     }
-    return ([.hex(codePoint)], hexEnd)
+    return ([.hex(scalar)], hexEnd)
   }
 
   private static func parseHexMember(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
@@ -251,17 +251,17 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
         throw ParseError.invalidHexValue(rangeEndHex)
       }
 
-      guard rangeStart <= rangeEnd else {
+      guard rangeStart.value <= rangeEnd.value else {
         throw ParseError.invalidHexRangeStartGreaterThanEnd
       }
 
       return ([.hexRange(rangeStart, rangeEnd)], rangeHexEnd)
     } else {
       let hexString = String(characters[hexStart..<hexEnd])
-      guard let codePoint = Self.parseHex(hexString) else {
+      guard let scalar = Self.parseHex(hexString) else {
         throw ParseError.invalidHexValue(hexString)
       }
-      return ([.hex(codePoint)], hexEnd)
+      return ([.hex(scalar)], hexEnd)
     }
   }
 
@@ -275,17 +275,18 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     }
   }
 
-  private static func parseHex(_ string: String) -> UInt32? {
+  private static func parseHex(_ string: String) -> Unicode.Scalar? {
     guard !string.isEmpty else { return nil }
-    return UInt32(string, radix: 16)
+    guard let value = UInt32(string, radix: 16) else { return nil }
+    return Unicode.Scalar(value)
   }
 
   public enum Member: Hashable, Sendable {
     case character(Character)
     case range(Character, Character)
     case escaped(EscapeSequence)
-    case hex(UInt32)
-    case hexRange(UInt32, UInt32)
+    case hex(Unicode.Scalar)
+    case hexRange(Unicode.Scalar, Unicode.Scalar)
   }
 
   public enum EscapeSequence: Hashable, Sendable {

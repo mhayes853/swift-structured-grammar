@@ -216,6 +216,24 @@ enum RepresentativeSnapshotLanguageSuite {
       }.language
     ),
     RepresentativeSnapshotLanguageCase(
+      name: "hex-terminal-grammar",
+      language: Grammar(startingSymbol: "hexOnly") {
+        Rule("hexOnly") {
+          Terminal(hex: ["A".unicodeScalars.first!, "\t".unicodeScalars.first!])
+        }
+        Rule("mixed") {
+          Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+        }
+        Rule("surrounded") {
+          Terminal(parts: [
+            .string("["),
+            .hex(["A".unicodeScalars.first!]),
+            .string("]")
+          ])
+        }
+      }.language
+    ),
+    RepresentativeSnapshotLanguageCase(
       name: "json-grammar",
       language: Grammar(startingSymbol: "value") {
         Rule("value") {

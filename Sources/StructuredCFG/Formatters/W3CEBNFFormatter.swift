@@ -116,10 +116,31 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
+      if terminal.parts.isEmpty {
+        let quote = self.quoting == .double ? "\"" : "'"
+        return quote + quote
+      }
+
+      return terminal.parts.map { self.format(terminalPart: $0) }.joined()
+    }
+
+    private func format(terminalPart: Terminal.Part) -> String {
+      switch terminalPart {
+      case .string(let string):
+        return self.quote(string)
+      case .hex(let scalars):
+        return scalars.reduce(into: "") { result, scalar in
+          result += "#x"
+          result += String(scalar.value, radix: 16)
+        }
+      }
+    }
+
+    private func quote(_ string: String) -> String {
       let escaped: String
       switch self.quoting {
       case .double:
-        escaped = terminal.value.reduce(into: "") { result, character in
+        escaped = string.reduce(into: "") { result, character in
           switch character {
           case "\\":
             result += "\\\\"
@@ -130,7 +151,7 @@ extension Grammar {
           }
         }
       case .single:
-        escaped = terminal.value.reduce(into: "") { result, character in
+        escaped = string.reduce(into: "") { result, character in
           switch character {
           case "\\":
             result += "\\\\"
@@ -175,14 +196,14 @@ extension Grammar {
           result.append(end)
         case .escaped(let escape):
           result += self.format(escape: escape)
-        case .hex(let codePoint):
+        case .hex(let scalar):
           result += "#x"
-          result += String(codePoint, radix: 16)
+          result += String(scalar.value, radix: 16)
         case .hexRange(let start, let end):
           result += "#x"
-          result += String(start, radix: 16)
+          result += String(start.value, radix: 16)
           result += "-#x"
-          result += String(end, radix: 16)
+          result += String(end.value, radix: 16)
         }
         memberIndex += 1
       }

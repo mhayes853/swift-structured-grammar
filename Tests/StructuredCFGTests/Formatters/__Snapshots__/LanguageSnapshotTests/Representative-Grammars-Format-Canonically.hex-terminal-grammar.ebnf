@@ -1,0 +1,4 @@
+root ::= hexOnly
+hexOnly ::= #x41#x9
+mixed ::= #x61"a"
+surrounded ::= "["#x41"]"

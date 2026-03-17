@@ -206,28 +206,28 @@ struct `CharacterGroup tests` {
   func `CharacterGroup Parses Hex Character`() {
     let group = CharacterGroup("#x41")
 
-    expectNoDifference(group.members, [.hex(0x41)])
+    expectNoDifference(group.members, [.hex("A".unicodeScalars.first!)])
   }
 
   @Test
   func `CharacterGroup Parses Hex Character Range`() {
     let group = CharacterGroup("#x41-#x5A")
 
-    expectNoDifference(group.members, [.hexRange(0x41, 0x5A)])
+    expectNoDifference(group.members, [.hexRange("A".unicodeScalars.first!, "Z".unicodeScalars.first!)])
   }
 
   @Test
   func `CharacterGroup Parses Hex Character With Leading Zeros`() {
     let group = CharacterGroup("#x0041")
 
-    expectNoDifference(group.members, [.hex(0x41)])
+    expectNoDifference(group.members, [.hex("A".unicodeScalars.first!)])
   }
 
   @Test
   func `CharacterGroup Parses Hex Escape`() {
     let group = CharacterGroup("\\x41")
 
-    expectNoDifference(group.members, [.hex(0x41)])
+    expectNoDifference(group.members, [.hex("A".unicodeScalars.first!)])
   }
 
   @Test
@@ -236,7 +236,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.range("a", "z"), .hex(0x41)]
+      [.range("a", "z"), .hex("A".unicodeScalars.first!)]
     )
   }
 
@@ -246,7 +246,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.range("a", "z"), .hex(0x41)]
+      [.range("a", "z"), .hex("A".unicodeScalars.first!)]
     )
   }
 

@@ -179,6 +179,15 @@ struct `WirthEBNFFormatter tests` {
   }
 
   @Test
+  func `Mixed Hex Terminal Decodes In Wirth`() throws {
+    let grammar = Grammar(Rule("start") {
+      Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+    })
+
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), #"start = 'aa' ."#)
+  }
+
+  @Test
   func `Negated Predefined Class Throws`() {
     let group = CharacterGroup("\\D")
 

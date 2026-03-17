@@ -107,7 +107,7 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
-      let escaped = terminal.value.reduce(into: "") { result, character in
+      let escaped = terminal.string.reduce(into: "") { result, character in
         switch character {
         case "\\":
           result += "\\\\"
@@ -143,14 +143,11 @@ extension Grammar {
         case .escaped(let escape):
           let escapedStr = self.escapedString(for: escape)
           terminals.append(self.format(terminal: Terminal(escapedStr)))
-        case .hex(let codePoint):
-          guard let scalar = UnicodeScalar(codePoint) else {
-            throw UnsupportedExpressionError("Invalid Unicode code point")
-          }
+        case .hex(let scalar):
           terminals.append(self.format(terminal: Terminal(String(Character(scalar)))))
         case .hexRange(let start, let end):
-          for code in start...end {
-            guard let scalar = UnicodeScalar(code) else {
+          for code in start.value...end.value {
+            guard let scalar = Unicode.Scalar(code) else {
               throw UnsupportedExpressionError("Invalid Unicode code point")
             }
             terminals.append(self.format(terminal: Terminal(String(Character(scalar)))))

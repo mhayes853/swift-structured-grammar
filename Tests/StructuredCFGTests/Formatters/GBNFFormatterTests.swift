@@ -158,6 +158,18 @@ struct `GBNFFormatter tests` {
   }
 
   @Test
+  func `Mixed Hex Terminal Uses Single GBNF Terminal`() throws {
+    let grammar = Grammar(Rule("start") {
+      Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .gbnf),
+      #"start ::= "\x61a""#
+    )
+  }
+
+  @Test
   func `Backslash In Terminal Is Escaped`() {
     let grammar = Grammar(Rule("start") {
       "path\\to\\file"

@@ -237,6 +237,18 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
+  func `Mixed Hex Terminal Uses Single W3C Terminal`() throws {
+    let grammar = Grammar(Rule("start") {
+      Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf),
+      #"start ::= #x61"a""#
+    )
+  }
+
+  @Test
   func `Formatting Custom Expression Throws`() {
     struct CustomExpr: Hashable, Sendable {
       let value: String
