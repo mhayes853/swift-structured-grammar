@@ -194,4 +194,11 @@ struct `CharacterGroup tests` {
     let formatted = try grammar.formatted(with: .w3cEbnf)
     expectNoDifference(formatted, #"test ::= [\w]"#)
   }
+
+  @Test
+  func `CharacterGroup Created From ClosedRange Has Correct Members`() {
+    let group = CharacterGroup("a"..."z")
+
+    expectNoDifference(group.members, [.range("a", "z")])
+  }
 }

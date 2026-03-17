@@ -34,6 +34,10 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     }
   }
 
+  public init(_ range: ClosedRange<Character>) {
+    self.init(isNegated: false, members: [.range(range.lowerBound, range.upperBound)])
+  }
+
   public var expression: Expression {
     Expression.characterGroup(self)
   }
