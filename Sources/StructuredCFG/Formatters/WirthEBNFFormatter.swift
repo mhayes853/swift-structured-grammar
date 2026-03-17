@@ -11,15 +11,15 @@ extension Grammar {
         throw UnsupportedExpressionError.customExpression
       }
       let formatted = try self.format(expression: expression)
-      if formatted.isEmpty {
-        return ""
-      }
-      return "\(rule.symbol.rawValue) = \(formatted) ."
+      let rightHandSide = formatted.isEmpty ? "" : " \(formatted)"
+      return "\(rule.symbol.rawValue) =\(rightHandSide) ."
     }
 
     private func format(expression: Expression) throws -> String {
       switch expression {
       case .empty:
+        return ""
+      case .emptySequence:
         return ""
       case .concat(let expressions):
         return
@@ -99,6 +99,8 @@ extension Grammar {
         return try self.format(characterGroup: characterGroup)
       case .ref(let ref):
         return ref.symbol.rawValue
+      case .special(let special):
+        return "? \(special.value) ?"
       case .terminal(let terminal):
         return self.format(terminal: terminal)
       case .custom:

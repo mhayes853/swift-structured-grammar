@@ -1,0 +1,5 @@
+root = password;
+password = 'x', 'x', {'x'};
+code = 4 * '0';
+upto5 =  | 'a' | 2 * 'a' | 3 * 'a' | 4 * 'a' | 5 * 'a';
+bounded = 'b', ['b' | 2 * 'b'];

@@ -16,53 +16,61 @@ extension Grammar {
       if expression == .empty {
         throw UnsupportedExpressionError("Empty expressions are not supported")
       }
+      if expression == .emptySequence {
+        throw UnsupportedExpressionError("Empty sequences are not supported")
+      }
+      if case .special = expression {
+        throw UnsupportedExpressionError("Special sequences are not supported")
+      }
       if case .custom = expression {
         throw UnsupportedExpressionError.customExpression
       }
-      let formatted = self.format(expression: expression)
+      let formatted = try self.format(expression: expression)
       if formatted.isEmpty {
         return ""
       }
       return "\(rule.symbol.rawValue) ::= \(formatted)"
     }
 
-    private func format(expression: Expression) -> String {
+    private func format(expression: Expression) throws -> String {
       switch expression {
       case .empty:
         return ""
+      case .emptySequence:
+        throw UnsupportedExpressionError("Empty sequences are not supported")
       case .concat(let expressions):
-        return
+        return try
           expressions
           .map { expression in
             if case .choice = expression {
-              "(\(self.format(expression: expression)))"
+              "(\(try self.format(expression: expression)))"
             } else {
-              self.format(expression: expression)
+              try self.format(expression: expression)
             }
           }
           .joined(separator: " ")
       case .choice(let expressions):
-        return expressions.map { self.format(expression: $0) }.joined(separator: " | ")
+        return try expressions.map { try self.format(expression: $0) }.joined(separator: " | ")
       case .optional(let expression):
-        return self.formatPrimary(expression: expression) + "?"
+        return try self.formatPrimary(expression: expression) + "?"
       case .`repeat`(let repeatExpr):
         if repeatExpr.isZeroOrMore {
-          return self.formatPrimary(expression: repeatExpr.innerExpression) + "*"
+          return try self.formatPrimary(expression: repeatExpr.innerExpression) + "*"
         }
         if repeatExpr.isOneOrMore {
-          return self.formatPrimary(expression: repeatExpr.innerExpression) + "+"
+          return try self.formatPrimary(expression: repeatExpr.innerExpression) + "+"
         }
         let innerExpression = repeatExpr.innerExpression
         switch (repeatExpr.min, repeatExpr.max) {
         case (let n?, nil):
           if n == 0 {
-            return self.formatPrimary(expression: innerExpression) + "*"
+            return try self.formatPrimary(expression: innerExpression) + "*"
           } else {
             let required = Expression.concat(Array(repeating: innerExpression, count: n))
             let expanded: Expression = .concat([
               required, Repeat(min: 0, max: nil, innerExpression).expression
             ])
-            return self.format(expression: expanded.simplified)
+            return try self.format(expression: expanded.simplified)
           }
         case (nil, let n?):
           if n == 0 {
@@ -73,14 +81,14 @@ extension Grammar {
               choices.append(Expression.concat(Array(repeating: innerExpression, count: i)))
             }
             let expanded: Expression = .choice(choices)
-            return self.format(expression: expanded.simplified)
+            return try self.format(expression: expanded.simplified)
           }
         case (let m?, let n?) where m == n:
           if m == 0 {
             return ""
           }
           let expanded = Expression.concat(Array(repeating: innerExpression, count: m))
-          return self.format(expression: expanded.simplified)
+          return try self.format(expression: expanded.simplified)
         case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m
@@ -90,16 +98,18 @@ extension Grammar {
           }
           let optionalAdditional = Expression.optional(Expression.choice(additionalChoices))
           let expanded: Expression = .concat([required, optionalAdditional])
-          return self.format(expression: expanded.simplified)
+          return try self.format(expression: expanded.simplified)
         default:
           return ""
         }
       case .group(let expression):
-        return "(\(self.format(expression: expression)))"
+        return "(\(try self.format(expression: expression)))"
       case .characterGroup(let characterGroup):
         return self.format(characterGroup: characterGroup)
       case .ref(let ref):
         return ref.symbol.rawValue
+      case .special:
+        throw UnsupportedExpressionError("Special sequences are not supported")
       case .terminal(let terminal):
         return self.format(terminal: terminal)
       case .custom:
@@ -107,11 +117,11 @@ extension Grammar {
       }
     }
 
-    private func formatPrimary(expression: Expression) -> String {
+    private func formatPrimary(expression: Expression) throws -> String {
       if expression.isPrimary {
-        self.format(expression: expression)
+        try self.format(expression: expression)
       } else {
-        "(\(self.format(expression: expression)))"
+        "(\(try self.format(expression: expression)))"
       }
     }
 

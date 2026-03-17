@@ -4,6 +4,9 @@ extension Grammar {
 
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
+      if case .special = expression {
+        throw UnsupportedExpressionError("Special sequences are not supported")
+      }
       if case .custom = expression {
         throw UnsupportedExpressionError.customExpression
       }
@@ -13,6 +16,8 @@ extension Grammar {
     private func format(expression: Expression) -> String {
       switch expression {
       case .empty:
+        return "\"\""
+      case .emptySequence:
         return "\"\""
       case .concat(let expressions):
         return
@@ -55,6 +60,8 @@ extension Grammar {
         return self.format(characterGroup: characterGroup)
       case .ref(let ref):
         return ref.symbol.rawValue
+      case .special:
+        return ""
       case .terminal(let terminal):
         return self.format(terminal: terminal)
       case .custom:

@@ -3,11 +3,15 @@ extension Expression {
     switch self {
     case .empty:
       return .empty
+    case .emptySequence:
+      return .emptySequence
     case .concat(let expressions):
-      let simplifiedExpressions = expressions.map { $0.simplified }.filter { $0 != .empty }
+      let simplifiedExpressions = expressions
+        .map { $0.simplified }
+        .filter { $0 != .empty && $0 != .emptySequence }
       switch simplifiedExpressions.count {
       case 0:
-        return .empty
+        return .emptySequence
       case 1:
         return simplifiedExpressions[0]
       default:
@@ -28,11 +32,17 @@ extension Expression {
       if simplified == .empty {
         return .empty
       }
+      if simplified == .emptySequence {
+        return .emptySequence
+      }
       return Expression.optional(simplified)
     case .`repeat`(let repeatExpr):
       let simplified = repeatExpr.innerExpression.simplified
       if simplified == .empty {
         return .empty
+      }
+      if simplified == .emptySequence {
+        return .emptySequence
       }
       let newRepeat = Repeat(min: repeatExpr.min, max: repeatExpr.max, simplified)
       return Expression.repeat(newRepeat)
@@ -41,11 +51,16 @@ extension Expression {
       if simplified == .empty {
         return .empty
       }
+      if simplified == .emptySequence {
+        return .emptySequence
+      }
       return Expression.group(simplified)
     case .characterGroup(let characterGroup):
       return .characterGroup(characterGroup)
     case .ref(let ref):
       return .ref(ref)
+    case .special(let special):
+      return .special(special)
     case .terminal(let terminal):
       return .terminal(terminal)
     case .custom(let value):

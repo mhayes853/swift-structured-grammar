@@ -56,14 +56,14 @@ struct `WirthEBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Omits Empty Productions Entirely`() {
+  func `Formatting Semantic Epsilon Uses Empty Right Hand Side`() {
     let grammar = Grammar(startingSymbol: "padding") {
       Rule("padding") {
         EmptyExpression()
       }
     }
 
-    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "padding = .")
   }
 
   @Test
@@ -80,7 +80,7 @@ struct `WirthEBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Choice Drops Empty Alternatives`() {
+  func `Formatting Choice Preserves Semantic Epsilon Alternatives`() {
     let grammar = Grammar(Rule("start") {
       Choice {
         EmptyExpression()
@@ -89,40 +89,49 @@ struct `WirthEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .wirthEbnf), #"start = 'a' | 'b' ."#)
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), #"start =  | 'a' | 'b' ."#)
   }
 
   @Test
-  func `Formatting Optional Of Empty Disappears`() {
+  func `Formatting Optional Of Empty Simplifies To Semantic Epsilon`() {
     let grammar = Grammar(Rule("start") {
       OptionalExpression {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "start = .")
   }
 
   @Test
-  func `Formatting Zero Or More Of Empty Disappears`() {
+  func `Formatting Zero Or More Of Empty Simplifies To Semantic Epsilon`() {
     let grammar = Grammar(Rule("start") {
       ZeroOrMore {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "start = .")
   }
 
   @Test
-  func `Formatting Group Of Empty Disappears`() {
+  func `Formatting Group Of Empty Simplifies To Semantic Epsilon`() {
     let grammar = Grammar(Rule("start") {
       Group {
         EmptyExpression()
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "")
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "start = .")
+  }
+
+  @Test
+  func `Formatting Special Sequence Uses Wirth Syntax`() throws {
+    let grammar = Grammar(Rule("space") {
+      Special("ASCII character 32")
+    })
+
+    expectNoDifference(try grammar.formatted(with: .wirthEbnf), "space = ? ASCII character 32 ? .")
   }
 
   @Test

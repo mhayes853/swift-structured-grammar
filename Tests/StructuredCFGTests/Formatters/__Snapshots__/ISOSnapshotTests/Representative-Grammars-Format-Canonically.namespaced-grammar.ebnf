@@ -1,0 +1,5 @@
+root = ga-expression | gb-expression;
+ga-expression = ga-term;
+ga-term = 'left';
+gb-expression = gb-term;
+gb-term = 'right';

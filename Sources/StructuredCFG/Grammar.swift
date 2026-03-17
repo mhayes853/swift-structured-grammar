@@ -253,6 +253,8 @@ extension Grammar {
     switch expression {
     case .empty:
       return .empty
+    case .emptySequence:
+      return .emptySequence
     case .concat(let expressions):
       return .concat(expressions.map { self.homomorphed(expression: $0, transform: transform) })
     case .choice(let expressions):
@@ -272,6 +274,8 @@ extension Grammar {
       return .characterGroup(characterGroup)
     case .ref(let ref):
       return .ref(ref)
+    case .special(let special):
+      return .special(special)
     case .terminal(let terminal):
       return transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
     case .custom(let value):
@@ -313,6 +317,8 @@ extension Grammar {
     switch expression {
     case .empty:
       []
+    case .emptySequence:
+      []
     case .concat(let expressions), .choice(let expressions):
       expressions.flatMap { self.referencedSymbols(in: $0) }
     case .optional(let expr), .group(let expr):
@@ -323,6 +329,8 @@ extension Grammar {
       []
     case .ref(let ref):
       [ref.symbol]
+    case .special:
+      []
     case .terminal:
       []
     case .custom:
@@ -334,6 +342,8 @@ extension Grammar {
     switch expression {
     case .empty:
       return .empty
+    case .emptySequence:
+      return .emptySequence
     case .concat(let expressions):
       return .concat(expressions.reversed().map { self.reversed(expression: $0) })
     case .choice(let expressions):
@@ -353,6 +363,8 @@ extension Grammar {
       return .characterGroup(characterGroup)
     case .ref(let ref):
       return .ref(ref)
+    case .special(let special):
+      return .special(special)
     case .terminal(let terminal):
       return .terminal(terminal)
     case .custom(let value):

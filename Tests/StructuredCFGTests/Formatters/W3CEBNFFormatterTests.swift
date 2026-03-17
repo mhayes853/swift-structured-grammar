@@ -82,7 +82,7 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Choice Drops Empty Alternatives`() {
+  func `Formatting Choice With Semantic Epsilon Throws`() {
     let grammar = Grammar(Rule("start") {
       Choice {
         EmptyExpression()
@@ -91,7 +91,9 @@ struct `W3CEBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= "a" | "b""#)
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
   }
 
   @Test
@@ -256,6 +258,17 @@ struct `W3CEBNFFormatter tests` {
 
     let grammar = Grammar(Rule("start") {
       Expression.custom(CustomExpr(value: "test"))
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
+  }
+
+  @Test
+  func `Formatting Special Sequence Throws`() {
+    let grammar = Grammar(Rule("space") {
+      Special("ASCII character 32")
     })
 
     #expect(throws: UnsupportedExpressionError.self) {

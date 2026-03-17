@@ -2,11 +2,12 @@ import { Grammars } from "ebnf";
 import GBNF from "gbnf";
 
 try {
-  const grammar = GBNF(
+  const grammar = new Grammars.W3C.Parser(
     `
-root ::= \x61 "a"
+root ::= first - second
+first ::= "a"
+second ::= "b"
 `,
-    "aa",
   );
   console.log("fine");
 } catch (e) {

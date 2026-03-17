@@ -1,0 +1,3 @@
+root = space;
+space = ? ASCII character 32 ?;
+line =  | space;

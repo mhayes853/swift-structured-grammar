@@ -80,7 +80,7 @@ struct `GBNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Choice Drops Empty Alternatives`() {
+  func `Formatting Choice Preserves Semantic Epsilon Alternatives`() {
     let grammar = Grammar(Rule("start") {
       Choice {
         EmptyExpression()
@@ -89,7 +89,7 @@ struct `GBNFFormatter tests` {
       }
     })
 
-    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "a" | "b""#)
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "" | "a" | "b""#)
   }
 
   @Test
@@ -244,6 +244,17 @@ struct `GBNFFormatter tests` {
 
     let grammar = Grammar(Rule("start") {
       Expression.custom(CustomExpr(value: "test"))
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .gbnf)
+    }
+  }
+
+  @Test
+  func `Formatting Special Sequence Throws`() {
+    let grammar = Grammar(Rule("space") {
+      Special("ASCII character 32")
     })
 
     #expect(throws: UnsupportedExpressionError.self) {

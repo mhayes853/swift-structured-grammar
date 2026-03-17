@@ -1,0 +1,4 @@
+root = hexOnly;
+hexOnly = 'A	';
+mixed = 'aa';
+surrounded = '[A]';

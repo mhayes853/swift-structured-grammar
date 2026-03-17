@@ -8,4 +8,5 @@ number = digit {digit} .
 digit = '0' | '1' | '2' .
 identifier = 'identifier' .
 footer = 'END' .
+padding = .
 g1__qualified = 'qualified' .
