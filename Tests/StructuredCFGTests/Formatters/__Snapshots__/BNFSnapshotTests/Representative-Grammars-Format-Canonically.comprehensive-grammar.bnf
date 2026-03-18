@@ -1,0 +1,15 @@
+<root> ::= <document>
+<document> ::= <header> <assignment> <document__bnf_1> [<footer>]
+<document__bnf_1> ::= "" | <assignment> <document__bnf_1>
+<header> ::= "BEGIN"
+<assignment> ::= <identifier> "=" <literal> | <identifier> "=" <tuple> | <identifier> "=" "computed"
+<tuple> ::= "(" <literal> <tuple__bnf_1> ")"
+<tuple__bnf_1> ::= "" | "," <literal> <tuple__bnf_1>
+<literal> ::= <number> | <ga-qualified> | "quoted"
+<number> ::= <digit> <number__bnf_1>
+<number__bnf_1> ::= "" | <digit> <number__bnf_1>
+<digit> ::= "0" | "1" | "2"
+<identifier> ::= "identifier"
+<footer> ::= "END"
+<padding> ::= ""
+<ga-qualified> ::= "qualified"

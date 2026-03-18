@@ -1,0 +1,8 @@
+<root> ::= <lastart>
+<expression> ::= <number>
+<number> ::= <digit> <number__bnf_1>
+<number__bnf_1> ::= "" | <digit> <number__bnf_1>
+<digit> ::= "0" | "1"
+<statement> ::= "pass" | "let" <identifier>
+<identifier> ::= "identifier"
+<lastart> ::= <expression> | <statement>

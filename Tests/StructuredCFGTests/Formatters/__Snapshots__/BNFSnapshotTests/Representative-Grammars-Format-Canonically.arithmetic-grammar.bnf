@@ -1,0 +1,9 @@
+<root> ::= <expression>
+<expression> ::= <term> <expression__bnf_1>
+<expression__bnf_1> ::= "" | "+" <term> <expression__bnf_1> | "-" <term> <expression__bnf_1>
+<term> ::= <factor> <term__bnf_1>
+<term__bnf_1> ::= "" | "*" <factor> <term__bnf_1> | "/" <factor> <term__bnf_1>
+<factor> ::= <number> | "(" <expression> ")"
+<number> ::= <digit> <number__bnf_1>
+<number__bnf_1> ::= "" | <digit> <number__bnf_1>
+<digit> ::= "0" | "1" | "2"

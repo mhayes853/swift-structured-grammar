@@ -1,0 +1,4 @@
+<root> ::= <lastart>
+<token> ::= "a" | "b"
+<lastart> ::= <lastart__bnf_1>
+<lastart__bnf_1> ::= "" | <token> <lastart__bnf_1>
