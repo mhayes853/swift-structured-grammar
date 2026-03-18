@@ -48,7 +48,7 @@ extension Grammar {
         case (let m?, nil):
           return inner + "{\(m),}"
         case (nil, let n?):
-          return inner + "{\(n)}"
+          return inner + "{0,\(n)}"
         case (let m?, let n?):
           return inner + "{\(m),\(n)}"
         default:

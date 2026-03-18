@@ -1,5 +1,5 @@
 root ::= password
 password ::= "x"{2,}
 code ::= "0"{4}
-upto5 ::= "a"{5}
+upto5 ::= "a"{0,5}
 bounded ::= "b"{1,3}

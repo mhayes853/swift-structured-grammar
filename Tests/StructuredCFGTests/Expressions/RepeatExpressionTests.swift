@@ -42,7 +42,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .gbnf),
-      #"start ::= "a"{4}"#
+      #"start ::= "a"{0,4}"#
     )
   }
 
@@ -237,7 +237,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .gbnf),
-      #"start ::= "a"{2}"#
+      #"start ::= "a"{0,2}"#
     )
   }
 
