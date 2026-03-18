@@ -98,7 +98,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .w3cEbnf),
-      #"start ::= "a" | "a" "a" | "a" "a" "a""#
+      #"start ::= "a"? | "a" "a" | "a" "a" "a""#
     )
   }
 
@@ -113,6 +113,18 @@ struct `RepeatExpressionTests` {
     expectNoDifference(
       try! grammar.formatted(with: .w3cEbnf),
       #"start ::= "a" ("a" | "a" "a")?"#
+    )
+  }
+
+  @Test
+  func `Repeat With Partial Range Up To Expands In W3C EBNF`() {
+    let grammar = Grammar(Rule("start") {
+      Repeat(..<3) { "a" }
+    })
+
+    expectNoDifference(
+      try! grammar.formatted(with: .w3cEbnf),
+      #"start ::= "a"? | "a" "a""#
     )
   }
 
