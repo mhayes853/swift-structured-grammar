@@ -24,11 +24,11 @@ private func assertISOEBNFSnapshot(
   function: StaticString = #function,
   line: UInt = #line,
   column: UInt = #column,
-  formatter: Grammar.ISOEBNFFormatter = .isoEbnf
+  formatter: Grammar.ISOIECEBNFFormatter = .isoIecEbnf
 ) {
   let failure = verifySnapshot(
     of: value(),
-    as: .isoEbnf(formatter: formatter),
+    as: .isoIecEbnf(formatter: formatter),
     named: name,
     record: isRecordingISOSnapshots,
     fileID: fileID,

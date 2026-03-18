@@ -3,14 +3,14 @@ import Testing
 import StructuredCFG
 
 @Suite
-struct `ISOEBNFFormatter tests` {
+struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Formats Semantic Epsilon As Empty Right Hand Side`() throws {
     let grammar = Grammar(Rule("start") {
       EmptyExpression()
     })
 
-    expectNoDifference(try grammar.formatted(with: .isoEbnf), "start = ;")
+    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), "start = ;")
   }
 
   @Test
@@ -19,7 +19,7 @@ struct `ISOEBNFFormatter tests` {
       Special("ASCII character 32")
     })
 
-    expectNoDifference(try grammar.formatted(with: .isoEbnf), "space = ? ASCII character 32 ?;")
+    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), "space = ? ASCII character 32 ?;")
   }
 
   @Test
@@ -32,7 +32,7 @@ struct `ISOEBNFFormatter tests` {
     })
 
     expectNoDifference(
-      try grammar.formatted(with: .isoEbnf(definitionSeparator: .slash, terminator: .period, quoting: .double)),
+      try grammar.formatted(with: .isoIecEbnf(definitionSeparator: .slash, terminator: .period, quoting: .double)),
       #"start =  / "a"."#
     )
   }
@@ -43,7 +43,7 @@ struct `ISOEBNFFormatter tests` {
       Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
     })
 
-    expectNoDifference(try grammar.formatted(with: .isoEbnf), #"start = 'aa';"#)
+    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), #"start = 'aa';"#)
   }
 
   @Test
@@ -58,7 +58,7 @@ struct `ISOEBNFFormatter tests` {
     })
 
     expectNoDifference(
-      try grammar.formatted(with: .isoEbnf),
+      try grammar.formatted(with: .isoIecEbnf),
       #"start = [('a' | 'b') | 2 * ('a' | 'b')];"#
     )
   }
@@ -72,7 +72,7 @@ struct `ISOEBNFFormatter tests` {
     })
 
     expectNoDifference(
-      try grammar.formatted(with: .isoEbnf),
+      try grammar.formatted(with: .isoIecEbnf),
       #"start = 'b', ['b' | 2 * 'b'];"#
     )
   }

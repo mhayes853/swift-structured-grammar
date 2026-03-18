@@ -1,5 +1,5 @@
 extension Grammar {
-  public struct ISOEBNFFormatter: Formatter {
+  public struct ISOIECEBNFFormatter: Formatter {
     public enum Quoting: Sendable {
       case single
       case double
@@ -262,17 +262,17 @@ extension Grammar {
   }
 }
 
-extension Grammar.Formatter where Self == Grammar.ISOEBNFFormatter {
-  public static var isoEbnf: Grammar.ISOEBNFFormatter {
-    Grammar.ISOEBNFFormatter()
+extension Grammar.Formatter where Self == Grammar.ISOIECEBNFFormatter {
+  public static var isoIecEbnf: Grammar.ISOIECEBNFFormatter {
+    Grammar.ISOIECEBNFFormatter()
   }
 
-  public static func isoEbnf(
-    definitionSeparator: Grammar.ISOEBNFFormatter.DefinitionSeparator = .pipe,
-    terminator: Grammar.ISOEBNFFormatter.Terminator = .semicolon,
-    quoting: Grammar.ISOEBNFFormatter.Quoting = .single
-  ) -> Grammar.ISOEBNFFormatter {
-    Grammar.ISOEBNFFormatter(
+  public static func isoIecEbnf(
+    definitionSeparator: Grammar.ISOIECEBNFFormatter.DefinitionSeparator = .pipe,
+    terminator: Grammar.ISOIECEBNFFormatter.Terminator = .semicolon,
+    quoting: Grammar.ISOIECEBNFFormatter.Quoting = .single
+  ) -> Grammar.ISOIECEBNFFormatter {
+    Grammar.ISOIECEBNFFormatter(
       definitionSeparator: definitionSeparator,
       terminator: terminator,
       quoting: quoting

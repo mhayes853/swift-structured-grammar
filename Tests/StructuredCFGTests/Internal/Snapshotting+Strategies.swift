@@ -14,7 +14,7 @@ extension Snapshotting where Value == Grammar, Format == String {
     }
   }
 
-  static func isoEbnf(formatter: Grammar.ISOEBNFFormatter = .isoEbnf) -> Self {
+  static func isoIecEbnf(formatter: Grammar.ISOIECEBNFFormatter = .isoIecEbnf) -> Self {
     Self(pathExtension: "ebnf", diffing: .lines) { grammar in
       try! grammar.formatted(with: formatter)
     }
