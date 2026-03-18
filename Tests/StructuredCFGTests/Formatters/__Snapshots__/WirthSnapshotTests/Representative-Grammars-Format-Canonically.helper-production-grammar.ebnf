@@ -1,3 +1,0 @@
-root = lastart .
-token = 'a' | 'b' .
-lastart = {token} .

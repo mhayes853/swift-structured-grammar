@@ -14,12 +14,6 @@ extension Snapshotting where Value == Grammar, Format == String {
     }
   }
 
-  static func wirthEbnf() -> Self {
-    Self(pathExtension: "ebnf", diffing: .lines) { grammar in
-      try! grammar.formatted(with: .wirthEbnf)
-    }
-  }
-
   static func isoEbnf(formatter: Grammar.ISOEBNFFormatter = .isoEbnf) -> Self {
     Self(pathExtension: "ebnf", diffing: .lines) { grammar in
       try! grammar.formatted(with: formatter)

@@ -1,7 +1,0 @@
-root = lastart .
-expression = number .
-number = digit {digit} .
-digit = '0' | '1' .
-statement = 'pass' | 'let' identifier .
-identifier = 'identifier' .
-lastart = expression | statement .

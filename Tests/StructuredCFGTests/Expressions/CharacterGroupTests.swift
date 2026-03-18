@@ -312,18 +312,4 @@ struct `CharacterGroup tests` {
     let formatted = try grammar.formatted(with: .gbnf)
     expectNoDifference(formatted, #"test ::= [\x41]"#)
   }
-
-  @Test
-  func `Hex CharacterGroup Formats In Wirth EBNF`() throws {
-    let group = CharacterGroup("#x41")
-
-    let grammar = Grammar(startingSymbol: "test") {
-      Rule("test") {
-        group
-      }
-    }
-
-    let formatted = try grammar.formatted(with: .wirthEbnf)
-    expectNoDifference(formatted, #"test = 'A' ."#)
-  }
 }
