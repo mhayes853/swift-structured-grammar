@@ -11,7 +11,7 @@ struct `SpecialExpression tests` {
 
   @Test
   func `Special Supports String Literal`() {
-    let special: Special = "ASCII character 32"
+    let special = Special("ASCII character 32")
 
     expectNoDifference(special, Special("ASCII character 32"))
   }
