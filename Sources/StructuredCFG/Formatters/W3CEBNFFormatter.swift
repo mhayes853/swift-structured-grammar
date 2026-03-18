@@ -1,11 +1,11 @@
 extension Grammar {
-  public enum Quoting: Sendable {
-    case single
-    case double
-  }
-
   public struct W3CEBNFFormatter: Formatter {
-    public var quoting: Quoting = .double
+    public enum Quoting: Sendable {
+      case single
+      case double
+    }
+
+    public var quoting = Quoting.double
 
     public init(quoting: Quoting = .double) {
       self.quoting = quoting
@@ -39,8 +39,8 @@ extension Grammar {
       case .emptySequence:
         throw UnsupportedExpressionError("Empty sequences are not supported")
       case .concat(let expressions):
-        return try
-          expressions
+        return
+          try expressions
           .map { expression in
             if case .choice = expression {
               "(\(try self.format(expression: expression)))"
@@ -325,7 +325,9 @@ extension Grammar.Formatter where Self == Grammar.W3CEBNFFormatter {
     Grammar.W3CEBNFFormatter()
   }
 
-  public static func w3cEbnf(quoting: Grammar.Quoting = .double) -> Grammar.W3CEBNFFormatter {
+  public static func w3cEbnf(
+    quoting: Grammar.W3CEBNFFormatter.Quoting = .double
+  ) -> Grammar.W3CEBNFFormatter {
     Grammar.W3CEBNFFormatter(quoting: quoting)
   }
 }

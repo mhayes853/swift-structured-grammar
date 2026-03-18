@@ -1,19 +1,24 @@
 extension Grammar {
-  public enum DefinitionSeparator: String, Sendable {
-    case pipe = "|"
-    case slash = "/"
-    case bang = "!"
-  }
-
-  public enum Terminator: String, Sendable {
-    case semicolon = ";"
-    case period = "."
-  }
-
   public struct ISOEBNFFormatter: Formatter {
-    public var definitionSeparator: DefinitionSeparator = .pipe
-    public var terminator: Terminator = .semicolon
-    public var quoting: Quoting = .single
+    public enum Quoting: Sendable {
+      case single
+      case double
+    }
+
+    public enum DefinitionSeparator: String, Sendable {
+      case pipe = "|"
+      case slash = "/"
+      case bang = "!"
+    }
+
+    public enum Terminator: String, Sendable {
+      case semicolon = ";"
+      case period = "."
+    }
+
+    public var definitionSeparator = DefinitionSeparator.pipe
+    public var terminator = Terminator.semicolon
+    public var quoting = Quoting.single
 
     public init(
       definitionSeparator: DefinitionSeparator = .pipe,
@@ -43,15 +48,16 @@ extension Grammar {
       case .empty, .emptySequence:
         return ""
       case .concat(let expressions):
-        return try expressions.map { expression in
-          switch expression {
-          case .choice:
-            "(\(try self.format(expression: expression)))"
-          default:
-            try self.format(expression: expression)
+        return
+          try expressions.map { expression in
+            switch expression {
+            case .choice:
+              "(\(try self.format(expression: expression)))"
+            default:
+              try self.format(expression: expression)
+            }
           }
-        }
-        .joined(separator: ", ")
+          .joined(separator: ", ")
       case .choice(let expressions):
         let separator = " \(self.definitionSeparator.rawValue) "
         return try expressions.map { try self.format(expression: $0) }.joined(separator: separator)
@@ -79,7 +85,9 @@ extension Grammar {
             return "{\(try self.format(expression: innerExpression))}"
           }
           let required = Expression.concat(Array(repeating: innerExpression, count: n))
-          let expanded: Expression = .concat([required, Repeat(min: 0, max: nil, innerExpression).expression])
+          let expanded: Expression = .concat([
+            required, Repeat(min: 0, max: nil, innerExpression).expression
+          ])
           return try self.format(expression: expanded.simplified)
         case (nil, let n?):
           return try (0...n)
@@ -258,9 +266,9 @@ extension Grammar.Formatter where Self == Grammar.ISOEBNFFormatter {
   }
 
   public static func isoEbnf(
-    definitionSeparator: Grammar.DefinitionSeparator = .pipe,
-    terminator: Grammar.Terminator = .semicolon,
-    quoting: Grammar.Quoting = .single
+    definitionSeparator: Grammar.ISOEBNFFormatter.DefinitionSeparator = .pipe,
+    terminator: Grammar.ISOEBNFFormatter.Terminator = .semicolon,
+    quoting: Grammar.ISOEBNFFormatter.Quoting = .single
   ) -> Grammar.ISOEBNFFormatter {
     Grammar.ISOEBNFFormatter(
       definitionSeparator: definitionSeparator,
