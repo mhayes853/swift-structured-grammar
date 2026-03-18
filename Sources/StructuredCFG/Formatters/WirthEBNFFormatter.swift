@@ -18,7 +18,7 @@ extension Grammar {
     private func format(expression: Expression) throws -> String {
       switch expression {
       case .empty:
-        return ""
+        return "''"
       case .emptySequence:
         return ""
       case .concat(let expressions):
@@ -72,7 +72,7 @@ extension Grammar {
               choices.append(Expression.concat(Array(repeating: innerExpression, count: i)))
             }
             let expanded: Expression = .choice(choices)
-            return try self.format(expression: expanded.simplified)
+            return try self.format(expression: expanded)
           }
         case (let m?, let n?) where m == n:
           if m == 0 {

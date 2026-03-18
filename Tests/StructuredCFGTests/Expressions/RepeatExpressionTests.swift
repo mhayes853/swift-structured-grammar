@@ -154,7 +154,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .wirthEbnf),
-      #"start = 'a' | 'a' 'a' | 'a' 'a' 'a' ."#
+      #"start = '' | 'a' | 'a' 'a' | 'a' 'a' 'a' ."#
     )
   }
 
@@ -220,14 +220,24 @@ struct `RepeatExpressionTests` {
   @Test
   func `Repeat With Partial Range Up To`() {
     let grammar = Grammar(Rule("start") {
-      Repeat(..<3) {
-        "a"
-      }
+      Repeat(..<3) { "a" }
     })
 
     expectNoDifference(
       try! grammar.formatted(with: .gbnf),
       #"start ::= "a"{2}"#
+    )
+  }
+
+  @Test
+  func `Repeat With Partial Range Up To Expands In Wirth EBNF`() {
+    let grammar = Grammar(Rule("start") {
+      Repeat(..<3) { "a" }
+    })
+
+    expectNoDifference(
+      try! grammar.formatted(with: .wirthEbnf),
+      #"start = '' | 'a' | 'a' 'a' ."#
     )
   }
 }
