@@ -5,7 +5,7 @@ import StructuredCFG
 import Testing
 
 @Suite
-struct `LanguageSnapshot tests` {
+struct `W3CEBNFSnapshot tests` {
   @Test(arguments: LanguageSnapshotSuite.cases.map(\.name))
   func `Representative Grammars Format Canonically`(snapshotName: String) {
     let snapshotCase = LanguageSnapshotSuite.snapshotCase(named: snapshotName)

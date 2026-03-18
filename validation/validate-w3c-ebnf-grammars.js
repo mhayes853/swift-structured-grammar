@@ -12,7 +12,7 @@ const snapshotDir = join(
   "StructuredCFGTests",
   "Formatters",
   "__Snapshots__",
-  "LanguageSnapshotTests"
+  "W3CEBNFSnapshotTests",
 );
 
 function getEbnfFiles(dir) {
