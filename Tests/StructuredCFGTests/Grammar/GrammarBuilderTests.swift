@@ -8,7 +8,7 @@ struct `GrammarBuilder tests` {
   func `Builds Empty Grammar`() {
     let grammar = Grammar()
     expectNoDifference(grammar.startingSymbol, .root)
-    expectNoDifference(grammar, Grammar(Rule(.root) { EmptyExpression() }))
+    expectNoDifference(grammar, Grammar(Rule(.root) { Epsilon() }))
   }
 
   @Test

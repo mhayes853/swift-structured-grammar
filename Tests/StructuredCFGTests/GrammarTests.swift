@@ -99,7 +99,7 @@ struct `Grammar tests` {
         Rule("term") { Ref("expression") }
       }
     )
-    expectNoDifference(grammar["factor"], Rule("factor") { EmptyExpression() })
+    expectNoDifference(grammar["factor"], Rule("factor") { Epsilon() })
   }
 
   @Test
@@ -149,7 +149,7 @@ struct `Grammar tests` {
 
     grammar.removeAll()
 
-    expectNoDifference(grammar, Grammar(startingSymbol: "expression", [Rule("expression") { EmptyExpression() }]))
+    expectNoDifference(grammar, Grammar(startingSymbol: "expression", [Rule("expression") { Epsilon() }]))
     expectNoDifference(grammar.containsRule(for: "expression"), true)
     expectNoDifference(grammar.containsRule(for: "term"), false)
   }
@@ -169,7 +169,7 @@ struct `Grammar tests` {
     expectNoDifference(
       grammar,
       Grammar(startingSymbol: "expression") {
-        Rule("expression") { EmptyExpression() }
+        Rule("expression") { Epsilon() }
         Rule("term") { Ref("expression") }
       }
     )
@@ -234,7 +234,7 @@ struct `Grammar tests` {
     expectNoDifference(
       replaced,
       Grammar(startingSymbol: .root) {
-        Rule(.root) { EmptyExpression() }
+        Rule(.root) { Epsilon() }
         Rule("factor") { "value" }
       }
     )
@@ -481,7 +481,7 @@ struct `Grammar tests` {
   func `Homomorph Map Handles Empty ConcatanateExpressions Ref And Terminal Cases`() {
     let grammar = Grammar(startingSymbol: "epsilon") {
       Rule("epsilon") {
-        EmptyExpression()
+        Epsilon()
       }
       Rule("expression") {
         ConcatenateExpressions {
@@ -504,7 +504,7 @@ struct `Grammar tests` {
       homomorphed,
       Grammar(startingSymbol: "epsilon") {
         Rule("epsilon") {
-          EmptyExpression()
+          Epsilon()
         }
         Rule("expression") {
           ConcatenateExpressions {

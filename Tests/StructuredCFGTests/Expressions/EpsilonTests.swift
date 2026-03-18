@@ -3,17 +3,17 @@ import Testing
 import StructuredCFG
 
 @Suite
-struct `EmptyExpression tests` {
+struct `Epsilon tests` {
   @Test
-  func `EmptyExpression Is Semantic Epsilon`() {
-    expectNoDifference(EmptyExpression().expression, Expression.emptySequence)
+  func `Epsilon Produces Epsilon Expression`() {
+    expectNoDifference(Epsilon().expression, Expression.epsilon)
   }
 
   @Test
-  func `Semantic Epsilon Is Preserved In Choice`() {
+  func `Epsilon Is Preserved In Choice`() {
     let grammar = Grammar(Rule("start") {
       Choice {
-        EmptyExpression()
+        Epsilon()
         "a"
       }
     })

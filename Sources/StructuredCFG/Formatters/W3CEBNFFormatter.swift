@@ -13,11 +13,8 @@ extension Grammar {
 
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
-      if expression == .empty {
-        throw UnsupportedExpressionError("Empty expressions are not supported")
-      }
-      if expression == .emptySequence {
-        throw UnsupportedExpressionError("Empty sequences are not supported")
+      if expression == .epsilon {
+        throw UnsupportedExpressionError("Epsilon expressions are not supported")
       }
       if case .special = expression {
         throw UnsupportedExpressionError("Special sequences are not supported")
@@ -34,10 +31,8 @@ extension Grammar {
 
     private func format(expression: Expression) throws -> String {
       switch expression {
-      case .empty:
-        return ""
-      case .emptySequence:
-        throw UnsupportedExpressionError("Empty sequences are not supported")
+      case .epsilon:
+        throw UnsupportedExpressionError("Epsilon expressions are not supported")
       case .concat(let expressions):
         return
           try expressions
@@ -93,11 +88,18 @@ extension Grammar {
         case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m
-          var additionalChoices: [Expression] = [.empty]
+          var additionalChoices: [Expression] = []
           for i in 1...additionalMax {
             additionalChoices.append(Expression.concat(Array(repeating: innerExpression, count: i)))
           }
-          let optionalAdditional = Expression.optional(Expression.choice(additionalChoices))
+          let optionalAdditional: Expression
+          if additionalChoices.isEmpty {
+            optionalAdditional = .epsilon
+          } else if additionalChoices.count == 1 {
+            optionalAdditional = .optional(additionalChoices[0])
+          } else {
+            optionalAdditional = .optional(Expression.choice(additionalChoices))
+          }
           let expanded: Expression = .concat([required, optionalAdditional])
           return try self.format(expression: expanded.simplified)
         default:

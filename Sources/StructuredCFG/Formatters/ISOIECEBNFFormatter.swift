@@ -32,9 +32,6 @@ extension Grammar {
 
     public func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
-      if expression == .empty {
-        return ""
-      }
       if case .custom = expression {
         throw UnsupportedExpressionError.customExpression
       }
@@ -45,7 +42,7 @@ extension Grammar {
 
     private func format(expression: Expression) throws -> String {
       switch expression {
-      case .empty, .emptySequence:
+      case .epsilon:
         return ""
       case .concat(let expressions):
         return

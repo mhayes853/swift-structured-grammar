@@ -7,7 +7,7 @@ struct `ExpressionBuilder tests` {
   @Test
   func `ConcatanateExpressions Builder Uses Empty Expression For Empty Body`() {
     let expression = ConcatenateExpressions {}.expression
-    expectNoDifference(expression, .empty)
+    expectNoDifference(expression, .epsilon)
   }
 
   @Test
@@ -34,7 +34,7 @@ struct `ExpressionBuilder tests` {
       }
     }.expression
 
-    expectNoDifference(expression, .empty)
+    expectNoDifference(expression, .epsilon)
   }
 
   @Test

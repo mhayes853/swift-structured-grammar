@@ -13,7 +13,7 @@ public enum ExpressionBuilder {
   }
 
   public static func buildBlock() -> Expression {
-    .empty
+    .epsilon
   }
 
   public static func buildBlock(_ component: Expression) -> Expression {
@@ -38,7 +38,7 @@ public enum ExpressionBuilder {
 
   public static func buildArray(_ components: [Expression]) -> Expression {
     switch components.count {
-    case 0: .empty
+    case 0: .epsilon
     case 1: components[0]
     default: .concat(components)
     }

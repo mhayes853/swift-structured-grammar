@@ -207,7 +207,7 @@ enum RepresentativeSnapshotLanguageSuite {
         }
 
         Rule("padding") {
-          EmptyExpression()
+          Epsilon()
         }
 
         Rule("ga-qualified") {

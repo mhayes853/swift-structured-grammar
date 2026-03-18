@@ -7,7 +7,7 @@ struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Formats Semantic Epsilon As Empty Right Hand Side`() throws {
     let grammar = Grammar(Rule("start") {
-      EmptyExpression()
+      Epsilon()
     })
 
     expectNoDifference(try grammar.formatted(with: .isoIecEbnf), "start = ;")
@@ -26,7 +26,7 @@ struct `ISOIECEBNFFormatter tests` {
   func `Uses Configurable Definition Separator Terminator And Quoting`() throws {
     let grammar = Grammar(Rule("start") {
       Choice {
-        EmptyExpression()
+        Epsilon()
         "a"
       }
     })

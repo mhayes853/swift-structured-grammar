@@ -59,7 +59,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Empty Productions Outputs Empty Terminal String`() {
     let grammar = Grammar(startingSymbol: "padding") {
       Rule("padding") {
-        EmptyExpression()
+        Epsilon()
       }
     }
 
@@ -70,7 +70,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Concatenation Drops Empty Members`() {
     let grammar = Grammar(Rule("start") {
       ConcatenateExpressions {
-        EmptyExpression()
+        Epsilon()
         "a"
         Ref("target")
       }
@@ -83,7 +83,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Choice Preserves Semantic Epsilon Alternatives`() {
     let grammar = Grammar(Rule("start") {
       Choice {
-        EmptyExpression()
+        Epsilon()
         "a"
         "b"
       }
@@ -96,7 +96,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Optional Of Empty Outputs Empty Terminal String`() {
     let grammar = Grammar(Rule("start") {
       OptionalExpression {
-        EmptyExpression()
+        Epsilon()
       }
     })
 
@@ -107,7 +107,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Zero Or More Of Empty Outputs Empty Terminal String`() {
     let grammar = Grammar(Rule("start") {
       ZeroOrMore {
-        EmptyExpression()
+        Epsilon()
       }
     })
 
@@ -118,7 +118,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Group Of Empty Outputs Empty Terminal String`() {
     let grammar = Grammar(Rule("start") {
       Group {
-        EmptyExpression()
+        Epsilon()
       }
     })
 

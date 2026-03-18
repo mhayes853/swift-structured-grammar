@@ -59,7 +59,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting Empty Production Throws`() {
     let grammar = Grammar(startingSymbol: "padding") {
       Rule("padding") {
-        EmptyExpression()
+        Epsilon()
       }
     }
 
@@ -72,7 +72,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting Concatenation Drops Empty Members`() {
     let grammar = Grammar(Rule("start") {
       ConcatenateExpressions {
-        EmptyExpression()
+        Epsilon()
         "a"
         Ref("target")
       }
@@ -85,7 +85,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting Choice With Semantic Epsilon Throws`() {
     let grammar = Grammar(Rule("start") {
       Choice {
-        EmptyExpression()
+        Epsilon()
         "a"
         "b"
       }
@@ -100,7 +100,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting Optional Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
       OptionalExpression {
-        EmptyExpression()
+        Epsilon()
       }
     })
 
@@ -113,7 +113,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting Zero Or More Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
       ZeroOrMore {
-        EmptyExpression()
+        Epsilon()
       }
     })
 
@@ -126,7 +126,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting Group Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
       Group {
-        EmptyExpression()
+        Epsilon()
       }
     })
 

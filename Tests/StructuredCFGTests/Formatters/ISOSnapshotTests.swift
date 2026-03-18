@@ -55,7 +55,7 @@ private enum ISOSnapshotSuite {
         }
         Rule("line") {
           Choice {
-            EmptyExpression()
+            Epsilon()
             Ref("space")
           }
         }

@@ -82,7 +82,7 @@ extension Grammar {
 
       mutating func lower(expression: Expression) throws -> [[Atom]] {
         switch expression {
-        case .empty, .emptySequence:
+        case .epsilon:
           return [[]]
         case .concat(let expressions):
           return try expressions.reduce(into: [[]]) { partialResult, expression in

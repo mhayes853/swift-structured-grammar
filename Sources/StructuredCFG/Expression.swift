@@ -1,8 +1,7 @@
 // MARK: - Expression
 
 public indirect enum Expression: Sendable, ExpressionComponent {
-  case empty
-  case emptySequence
+  case epsilon
   case concat([Expression])
   case choice([Expression])
   case optional(Expression)
@@ -24,8 +23,7 @@ public indirect enum Expression: Sendable, ExpressionComponent {
 extension Expression: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
-    case (.empty, .empty): true
-    case (.emptySequence, .emptySequence): true
+    case (.epsilon, .epsilon): true
     case (.concat(let l1), .concat(let l2)): l1 == l2
     case (.choice(let l1), .choice(let l2)): l1 == l2
     case (.optional(let l1), .optional(let r1)): l1 == r1
@@ -46,39 +44,37 @@ extension Expression: Equatable {
 extension Expression: Hashable {
   public func hash(into hasher: inout Hasher) {
     switch self {
-    case .empty:
+    case .epsilon:
       hasher.combine(0)
-    case .emptySequence:
-      hasher.combine(1)
     case .concat(let expressions):
-      hasher.combine(2)
+      hasher.combine(1)
       hasher.combine(expressions)
     case .choice(let expressions):
-      hasher.combine(3)
+      hasher.combine(2)
       hasher.combine(expressions)
     case .optional(let expression):
-      hasher.combine(4)
+      hasher.combine(3)
       hasher.combine(expression)
     case .repeat(let repeatExpr):
-      hasher.combine(5)
+      hasher.combine(4)
       hasher.combine(repeatExpr)
     case .group(let expression):
-      hasher.combine(6)
+      hasher.combine(5)
       hasher.combine(expression)
     case .characterGroup(let characterGroup):
-      hasher.combine(7)
+      hasher.combine(6)
       hasher.combine(characterGroup)
     case .ref(let ref):
-      hasher.combine(8)
+      hasher.combine(7)
       hasher.combine(ref)
     case .special(let special):
-      hasher.combine(9)
+      hasher.combine(8)
       hasher.combine(special)
     case .terminal(let terminal):
-      hasher.combine(10)
+      hasher.combine(9)
       hasher.combine(terminal)
     case .custom(let value):
-      hasher.combine(11)
+      hasher.combine(10)
       value.hash(into: &hasher)
     }
   }

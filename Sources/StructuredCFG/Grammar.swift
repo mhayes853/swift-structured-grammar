@@ -26,7 +26,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   }
 
   public init() {
-    self.init(Rule(.root) { EmptyExpression() })
+    self.init(Rule(.root) { Epsilon() })
   }
 
   public init(_ rule: Rule) {
@@ -36,7 +36,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   public init(startingSymbol: Symbol, _ rules: some Sequence<Rule>) {
     self.startingSymbol = startingSymbol
     self.orderedSymbols = [startingSymbol]
-    self.rulesBySymbol = [startingSymbol: Rule(startingSymbol) { EmptyExpression() }]
+    self.rulesBySymbol = [startingSymbol: Rule(startingSymbol) { Epsilon() }]
     for rule in rules {
       self.append(rule)
     }
@@ -96,7 +96,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
 
   public mutating func removeRule(for symbol: Symbol) {
     if symbol == self.startingSymbol {
-      self.rulesBySymbol[symbol] = Rule(symbol) { EmptyExpression() }
+      self.rulesBySymbol[symbol] = Rule(symbol) { Epsilon() }
       return
     }
     self.orderedSymbols.removeAll { $0 == symbol }
@@ -106,7 +106,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   public mutating func removeAll() {
     self.orderedSymbols = [self.startingSymbol]
     self.rulesBySymbol = [
-      self.startingSymbol: Rule(self.startingSymbol) { EmptyExpression() }
+      self.startingSymbol: Rule(self.startingSymbol) { Epsilon() }
     ]
   }
 
@@ -122,7 +122,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.rulesBySymbol = self.rulesBySymbol.filter { !removedSymbols.contains($0.key) }
     if removedSymbols.contains(self.startingSymbol) {
       self.rulesBySymbol[self.startingSymbol] = Rule(self.startingSymbol) {
-        EmptyExpression()
+        Epsilon()
       }
       if !self.orderedSymbols.contains(self.startingSymbol) {
         self.orderedSymbols.insert(self.startingSymbol, at: 0)
@@ -210,7 +210,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     guard self.startingSymbol != oldValue else { return }
     if self.rulesBySymbol[self.startingSymbol] == nil {
       self.rulesBySymbol[self.startingSymbol] = Rule(self.startingSymbol) {
-        EmptyExpression()
+        Epsilon()
       }
     }
     self.orderedSymbols.removeAll { $0 == self.startingSymbol }
@@ -251,10 +251,8 @@ extension Grammar {
   private func homomorphed(expression: Expression, transform: (Terminal) -> Terminal?) -> Expression
   {
     switch expression {
-    case .empty:
-      return .empty
-    case .emptySequence:
-      return .emptySequence
+    case .epsilon:
+      return .epsilon
     case .concat(let expressions):
       return .concat(expressions.map { self.homomorphed(expression: $0, transform: transform) })
     case .choice(let expressions):
@@ -315,9 +313,7 @@ extension Grammar {
 
   private func referencedSymbols(in expression: Expression) -> [Symbol] {
     switch expression {
-    case .empty:
-      []
-    case .emptySequence:
+    case .epsilon:
       []
     case .concat(let expressions), .choice(let expressions):
       expressions.flatMap { self.referencedSymbols(in: $0) }
@@ -340,10 +336,8 @@ extension Grammar {
 
   private func reversed(expression: Expression) -> Expression {
     switch expression {
-    case .empty:
-      return .empty
-    case .emptySequence:
-      return .emptySequence
+    case .epsilon:
+      return .epsilon
     case .concat(let expressions):
       return .concat(expressions.reversed().map { self.reversed(expression: $0) })
     case .choice(let expressions):

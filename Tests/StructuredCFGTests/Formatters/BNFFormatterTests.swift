@@ -143,7 +143,7 @@ struct `BNFFormatter tests` {
   @Test
   func `Formatting Empty Productions Outputs Empty Terminal String`() throws {
     let grammar = Grammar(Rule("padding") {
-      EmptyExpression()
+      Epsilon()
     })
 
     expectNoDifference(try grammar.formatted(with: .bnf), #"<padding> ::= """#)

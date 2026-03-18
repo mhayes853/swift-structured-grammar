@@ -15,9 +15,7 @@ extension Grammar {
 
     private func format(expression: Expression) -> String {
       switch expression {
-      case .empty:
-        return "\"\""
-      case .emptySequence:
+      case .epsilon:
         return "\"\""
       case .concat(let expressions):
         return
