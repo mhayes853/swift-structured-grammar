@@ -90,19 +90,21 @@ extension Grammar {
           ])
           return try self.format(expression: expanded.simplified)
         case (nil, let n?):
-          return try (0...n)
-            .map { count in
-              let formatted = try self.formatPrimary(expression: innerExpression)
+          if n == 0 {
+            return ""
+          } else {
+            let innerFormatted = try self.formatPrimary(expression: innerExpression)
+            let choices: [String] = (1...n).map { count in
               switch count {
-              case 0:
-                return ""
               case 1:
-                return formatted
+                return innerFormatted
               default:
-                return "\(count) * \(formatted)"
+                return "\(count) * \(innerFormatted)"
               }
             }
-            .joined(separator: " \(self.definitionSeparator.rawValue) ")
+            let unionFormatted = choices.joined(separator: " \(self.definitionSeparator.rawValue) ")
+            return "[\(unionFormatted)]"
+          }
         case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m

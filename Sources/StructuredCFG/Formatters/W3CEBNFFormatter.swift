@@ -76,12 +76,12 @@ extension Grammar {
           if n == 0 {
             return ""
           } else {
-            let optionalFirst = Expression.optional(innerExpression)
-            var choices: [Expression] = [optionalFirst]
-            for i in 2...n {
+            var choices: [Expression] = []
+            for i in 1...n {
               choices.append(Expression.concat(Array(repeating: innerExpression, count: i)))
             }
-            let expanded: Expression = .choice(choices)
+            let union = Expression.choice(choices)
+            let expanded = Expression.optional(union)
             return try self.format(expression: expanded)
           }
         case (let m?, let n?) where m == n:

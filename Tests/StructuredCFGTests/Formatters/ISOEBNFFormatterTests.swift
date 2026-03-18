@@ -59,7 +59,7 @@ struct `ISOEBNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: .isoEbnf),
-      #"start =  | ('a' | 'b') | 2 * ('a' | 'b');"#
+      #"start = [('a' | 'b') | 2 * ('a' | 'b')];"#
     )
   }
 

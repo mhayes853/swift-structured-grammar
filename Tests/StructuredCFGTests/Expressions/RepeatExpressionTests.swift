@@ -98,7 +98,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .w3cEbnf),
-      #"start ::= "a"? | "a" "a" | "a" "a" "a""#
+      #"start ::= ("a" | "a" "a" | "a" "a" "a")?"#
     )
   }
 
@@ -124,7 +124,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .w3cEbnf),
-      #"start ::= "a"? | "a" "a""#
+      #"start ::= ("a" | "a" "a")?"#
     )
   }
 
@@ -166,7 +166,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .wirthEbnf),
-      #"start = '' | 'a' | 'a' 'a' | 'a' 'a' 'a' ."#
+      #"start = ['a' | 'a' 'a' | 'a' 'a' 'a'] ."#
     )
   }
 
@@ -249,7 +249,7 @@ struct `RepeatExpressionTests` {
 
     expectNoDifference(
       try! grammar.formatted(with: .wirthEbnf),
-      #"start = '' | 'a' | 'a' 'a' ."#
+      #"start = ['a' | 'a' 'a'] ."#
     )
   }
 }
