@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `GBNFFormatter tests` {
@@ -19,7 +19,7 @@ struct `GBNFFormatter tests` {
       Rule("term") {
         Choice {
           Ref("number")
-          Group {
+          GroupExpression {
             "("
             Ref("expression")
             ")"
@@ -33,7 +33,7 @@ struct `GBNFFormatter tests` {
         Ref("term")
         ZeroOrMore {
           ConcatenateExpressions {
-            Group {
+            GroupExpression {
               Choice {
                 "+"
                 "-"
@@ -68,100 +68,118 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Concatenation Drops Empty Members`() {
-    let grammar = Grammar(Rule("start") {
-      ConcatenateExpressions {
-        Epsilon()
-        "a"
-        Ref("target")
+    let grammar = Grammar(
+      Rule("start") {
+        ConcatenateExpressions {
+          Epsilon()
+          "a"
+          Ref("target")
+        }
       }
-    })
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "a" target"#)
   }
 
   @Test
   func `Formatting Choice Preserves Semantic Epsilon Alternatives`() {
-    let grammar = Grammar(Rule("start") {
-      Choice {
-        Epsilon()
-        "a"
-        "b"
+    let grammar = Grammar(
+      Rule("start") {
+        Choice {
+          Epsilon()
+          "a"
+          "b"
+        }
       }
-    })
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "" | "a" | "b""#)
   }
 
   @Test
   func `Formatting Optional Of Empty Outputs Empty Terminal String`() {
-    let grammar = Grammar(Rule("start") {
-      OptionalExpression {
-        Epsilon()
+    let grammar = Grammar(
+      Rule("start") {
+        OptionalExpression {
+          Epsilon()
+        }
       }
-    })
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= """#)
   }
 
   @Test
   func `Formatting Zero Or More Of Empty Outputs Empty Terminal String`() {
-    let grammar = Grammar(Rule("start") {
-      ZeroOrMore {
-        Epsilon()
+    let grammar = Grammar(
+      Rule("start") {
+        ZeroOrMore {
+          Epsilon()
+        }
       }
-    })
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= """#)
   }
 
   @Test
   func `Formatting Group Of Empty Outputs Empty Terminal String`() {
-    let grammar = Grammar(Rule("start") {
-      Group {
-        Epsilon()
+    let grammar = Grammar(
+      Rule("start") {
+        GroupExpression {
+          Epsilon()
+        }
       }
-    })
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= """#)
   }
 
   @Test
   func `Formatting One Or More Uses GBNF Syntax`() {
-    let grammar = Grammar(Rule("start") {
-      OneOrMore {
-        Choice {
-          "a"
-          "b"
+    let grammar = Grammar(
+      Rule("start") {
+        OneOrMore {
+          Choice {
+            "a"
+            "b"
+          }
         }
       }
-    })
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= ("a" | "b")+"#)
   }
 
   @Test
   func `Terminals Are Quoted With Double Quotes`() {
-    let grammar = Grammar(Rule("start") {
-      "hello"
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        "hello"
+      }
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "hello""#)
   }
 
   @Test
   func `Double Quotes In Terminal Are Escaped`() {
-    let grammar = Grammar(Rule("start") {
-      "say \"hello\""
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        "say \"hello\""
+      }
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "say \"hello\"""#)
   }
 
   @Test
   func `Mixed Hex Terminal Uses Single GBNF Terminal`() throws {
-    let grammar = Grammar(Rule("start") {
-      Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+      }
+    )
 
     expectNoDifference(
       try grammar.formatted(with: .gbnf),
@@ -171,27 +189,33 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Backslash In Terminal Is Escaped`() {
-    let grammar = Grammar(Rule("start") {
-      "path\\to\\file"
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        "path\\to\\file"
+      }
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= "path\\to\\file""#)
   }
 
   @Test
   func `Negated Character Groups Use GBNF Syntax`() {
-    let grammar = Grammar(Rule("start") {
-      CharacterGroup("^abc")
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        CharacterGroup("^abc")
+      }
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [^abc]"#)
   }
 
   @Test
   func `Character Group Ranges Use GBNF Syntax`() {
-    let grammar = Grammar(Rule("start") {
-      CharacterGroup("a-z")
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        CharacterGroup("a-z")
+      }
+    )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [a-z]"#)
   }
@@ -242,9 +266,11 @@ struct `GBNFFormatter tests` {
       let value: String
     }
 
-    let grammar = Grammar(Rule("start") {
-      Expression.custom(CustomExpr(value: "test"))
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        Expression.custom(CustomExpr(value: "test"))
+      }
+    )
 
     #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .gbnf)
@@ -253,9 +279,11 @@ struct `GBNFFormatter tests` {
 
   @Test
   func `Formatting Special Sequence Throws`() {
-    let grammar = Grammar(Rule("space") {
-      Special("ASCII character 32")
-    })
+    let grammar = Grammar(
+      Rule("space") {
+        Special("ASCII character 32")
+      }
+    )
 
     #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .gbnf)

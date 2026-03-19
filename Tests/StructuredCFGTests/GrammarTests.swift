@@ -443,7 +443,7 @@ struct `Grammar tests` {
         "+"
       }
       ZeroOrMore {
-        Group {
+        GroupExpression {
           Choice {
             "+"
             "*"
@@ -465,7 +465,7 @@ struct `Grammar tests` {
         "-"
       }
       ZeroOrMore {
-        Group {
+        GroupExpression {
           Choice {
             "-"
             "*"
@@ -647,7 +647,7 @@ struct `Grammar tests` {
   func `Reversed Reverses Group Expression Contents`() {
     let grammar = Grammar(startingSymbol: "expression") {
       Rule("expression") {
-        Group {
+        GroupExpression {
           ConcatenateExpressions {
             "a"
             "b"
@@ -662,7 +662,7 @@ struct `Grammar tests` {
       reversed,
       Grammar(startingSymbol: "expression") {
         Rule("expression") {
-          Group {
+          GroupExpression {
             ConcatenateExpressions {
               "b"
               "a"

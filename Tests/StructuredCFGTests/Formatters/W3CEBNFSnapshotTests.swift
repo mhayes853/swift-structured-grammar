@@ -95,7 +95,7 @@ private enum LanguageSnapshotSuite {
         Rule("factor") {
           Choice {
             Ref("number")
-            Group {
+            GroupExpression {
               "("
               Ref("expression")
               ")"
@@ -232,7 +232,7 @@ private enum LanguageSnapshotSuite {
           "("
           Ref("literal")
           ZeroOrMore {
-            Group {
+            GroupExpression {
               ","
               Ref("literal")
             }
@@ -302,7 +302,7 @@ private enum LanguageSnapshotSuite {
         Rule("members") {
           Ref("pair")
           ZeroOrMore {
-            Group {
+            GroupExpression {
               ","
               Ref("pair")
             }
@@ -326,7 +326,7 @@ private enum LanguageSnapshotSuite {
         Rule("elements") {
           Ref("value")
           ZeroOrMore {
-            Group {
+            GroupExpression {
               ","
               Ref("value")
             }

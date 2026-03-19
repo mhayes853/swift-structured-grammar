@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `BNFFormatter tests` {
@@ -30,14 +30,16 @@ struct `BNFFormatter tests` {
 
   @Test
   func `Formats Optional Using Brackets`() throws {
-    let grammar = Grammar(Rule("sign") {
-      OptionalExpression {
-        Choice {
-          "+"
-          "-"
+    let grammar = Grammar(
+      Rule("sign") {
+        OptionalExpression {
+          Choice {
+            "+"
+            "-"
+          }
         }
       }
-    })
+    )
 
     expectNoDifference(
       try grammar.formatted(with: .bnf),
@@ -60,7 +62,7 @@ struct `BNFFormatter tests` {
       Rule("term") {
         Choice {
           Ref("number")
-          Group {
+          GroupExpression {
             "("
             Ref("expression")
             ")"
@@ -74,7 +76,7 @@ struct `BNFFormatter tests` {
         Ref("term")
         ZeroOrMore {
           ConcatenateExpressions {
-            Group {
+            GroupExpression {
               Choice {
                 "+"
                 "-"
@@ -99,9 +101,11 @@ struct `BNFFormatter tests` {
 
   @Test
   func `Character Groups Expand Into Alternation`() throws {
-    let grammar = Grammar(Rule("start") {
-      CharacterGroup("a-c")
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        CharacterGroup("a-c")
+      }
+    )
 
     expectNoDifference(
       try grammar.formatted(with: .bnf),
@@ -111,11 +115,13 @@ struct `BNFFormatter tests` {
 
   @Test
   func `One Or More Lowers Into Right Recursive Helper`() throws {
-    let grammar = Grammar(Rule("digits") {
-      OneOrMore {
-        "a"
+    let grammar = Grammar(
+      Rule("digits") {
+        OneOrMore {
+          "a"
+        }
       }
-    })
+    )
 
     expectNoDifference(
       try grammar.formatted(with: .bnf),
@@ -128,11 +134,13 @@ struct `BNFFormatter tests` {
 
   @Test
   func `At Most Repeat Uses Optional Wrapped Union`() throws {
-    let grammar = Grammar(Rule("upto5") {
-      Repeat(...3) {
-        "a"
+    let grammar = Grammar(
+      Rule("upto5") {
+        Repeat(...3) {
+          "a"
+        }
       }
-    })
+    )
 
     expectNoDifference(
       try grammar.formatted(with: .bnf),
@@ -142,18 +150,22 @@ struct `BNFFormatter tests` {
 
   @Test
   func `Formatting Empty Productions Outputs Empty Terminal String`() throws {
-    let grammar = Grammar(Rule("padding") {
-      Epsilon()
-    })
+    let grammar = Grammar(
+      Rule("padding") {
+        Epsilon()
+      }
+    )
 
     expectNoDifference(try grammar.formatted(with: .bnf), #"<padding> ::= """#)
   }
 
   @Test
   func `Formatting Special Sequence Throws`() {
-    let grammar = Grammar(Rule("space") {
-      Special("ASCII character 32")
-    })
+    let grammar = Grammar(
+      Rule("space") {
+        Special("ASCII character 32")
+      }
+    )
 
     #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .bnf)
@@ -166,9 +178,11 @@ struct `BNFFormatter tests` {
       let value: String
     }
 
-    let grammar = Grammar(Rule("start") {
-      Expression.custom(CustomExpr(value: "test"))
-    })
+    let grammar = Grammar(
+      Rule("start") {
+        Expression.custom(CustomExpr(value: "test"))
+      }
+    )
 
     #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .bnf)

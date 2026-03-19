@@ -7,7 +7,7 @@ struct `Group tests` {
   @Test
   func `Formats As Parenthesized Expression`() {
     let production = Rule("start") {
-      Group {
+      GroupExpression {
         "a"
         Ref("target")
       }

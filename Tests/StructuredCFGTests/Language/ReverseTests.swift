@@ -62,7 +62,7 @@ struct `Reverse tests` {
         Rule("factor") {
           Choice {
             "c"
-            Group {
+            GroupExpression {
               "d"
               "e"
             }
@@ -93,7 +93,7 @@ struct `Reverse tests` {
         Rule("factor") {
           Choice {
             "c"
-            Group {
+            GroupExpression {
               "e"
               "d"
             }

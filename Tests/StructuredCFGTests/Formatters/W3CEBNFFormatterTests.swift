@@ -19,7 +19,7 @@ struct `W3CEBNFFormatter tests` {
       Rule("term") {
         Choice {
           Ref("number")
-          Group {
+          GroupExpression {
             "("
             Ref("expression")
             ")"
@@ -33,7 +33,7 @@ struct `W3CEBNFFormatter tests` {
         Ref("term")
         ZeroOrMore {
           ConcatenateExpressions {
-            Group {
+            GroupExpression {
               Choice {
                 "+"
                 "-"
@@ -125,7 +125,7 @@ struct `W3CEBNFFormatter tests` {
   @Test
   func `Formatting Group Of Empty Throws`() {
     let grammar = Grammar(Rule("start") {
-      Group {
+      GroupExpression {
         Epsilon()
       }
     })

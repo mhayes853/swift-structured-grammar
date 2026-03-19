@@ -1,4 +1,4 @@
-public struct Group: Hashable, Sendable, ExpressionComponent {
+public struct GroupExpression: Hashable, Sendable, ExpressionComponent {
   public let expression: Expression
 
   @inlinable

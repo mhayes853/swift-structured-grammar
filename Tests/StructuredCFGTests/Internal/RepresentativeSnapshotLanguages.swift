@@ -35,7 +35,7 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("factor") {
           Choice {
             Ref("number")
-            Group {
+            GroupExpression {
               "("
               Ref("expression")
               ")"
@@ -168,7 +168,7 @@ enum RepresentativeSnapshotLanguageSuite {
           "("
           Ref("literal")
           ZeroOrMore {
-            Group {
+            GroupExpression {
               ","
               Ref("literal")
             }
@@ -259,7 +259,7 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("members") {
           Ref("pair")
           ZeroOrMore {
-            Group {
+            GroupExpression {
               ","
               Ref("pair")
             }
@@ -283,7 +283,7 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("elements") {
           Ref("value")
           ZeroOrMore {
-            Group {
+            GroupExpression {
               ","
               Ref("value")
             }
