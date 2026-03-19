@@ -1,5 +1,5 @@
 extension Grammar {
-  public struct W3CEBNFFormatter: Formatter {
+  public struct W3CEBNFFormatter: RuleFormatter {
     public enum Quoting: Sendable {
       case single
       case double
@@ -323,7 +323,7 @@ extension Grammar {
   }
 }
 
-extension Grammar.Formatter where Self == Grammar.W3CEBNFFormatter {
+extension Grammar.RuleFormatter where Self == Grammar.W3CEBNFFormatter {
   public static var w3cEbnf: Grammar.W3CEBNFFormatter {
     Grammar.W3CEBNFFormatter()
   }

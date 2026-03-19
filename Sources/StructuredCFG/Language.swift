@@ -215,7 +215,7 @@ extension Language {
     )
   }
 
-  public func formatted(with formatter: some Grammar.Formatter) throws -> String {
+  public func formatted(with formatter: some Grammar.RuleFormatter) throws -> String {
     try self.grammar().formatted(with: formatter)
   }
 }

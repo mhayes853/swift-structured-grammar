@@ -1,5 +1,5 @@
 extension Grammar {
-  public struct BNFFormatter: Formatter {
+  public struct BNFFormatter: RuleFormatter {
     public init() {}
 
     public func format(rule: Rule) throws -> String {
@@ -273,7 +273,7 @@ extension Grammar {
   }
 }
 
-extension Grammar.Formatter where Self == Grammar.BNFFormatter {
+extension Grammar.RuleFormatter where Self == Grammar.BNFFormatter {
   public static var bnf: Grammar.BNFFormatter {
     Grammar.BNFFormatter()
   }

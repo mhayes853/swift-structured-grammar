@@ -367,17 +367,6 @@ extension Grammar {
   }
 }
 
-// MARK: - Formatting
-
-extension Grammar {
-  public func formatted(with formatter: some Formatter) throws -> String {
-    try self.rules
-      .map { try formatter.format(rule: $0) }
-      .filter { !$0.isEmpty }
-      .joined(separator: "\n")
-  }
-}
-
 // MARK: - Rules
 
 extension Grammar {

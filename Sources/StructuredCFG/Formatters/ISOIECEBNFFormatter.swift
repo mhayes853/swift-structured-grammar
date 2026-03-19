@@ -1,5 +1,5 @@
 extension Grammar {
-  public struct ISOIECEBNFFormatter: Formatter {
+  public struct ISOIECEBNFFormatter: RuleFormatter {
     public enum Quoting: Sendable {
       case single
       case double
@@ -91,14 +91,15 @@ extension Grammar {
             return ""
           } else {
             let innerFormatted = try self.formatPrimary(expression: innerExpression)
-            let choices: [String] = (1...n).map { count in
-              switch count {
-              case 1:
-                return innerFormatted
-              default:
-                return "\(count) * \(innerFormatted)"
+            let choices: [String] = (1...n)
+              .map { count in
+                switch count {
+                case 1:
+                  return innerFormatted
+                default:
+                  return "\(count) * \(innerFormatted)"
+                }
               }
-            }
             let unionFormatted = choices.joined(separator: " \(self.definitionSeparator.rawValue) ")
             return "[\(unionFormatted)]"
           }
@@ -259,7 +260,7 @@ extension Grammar {
   }
 }
 
-extension Grammar.Formatter where Self == Grammar.ISOIECEBNFFormatter {
+extension Grammar.RuleFormatter where Self == Grammar.ISOIECEBNFFormatter {
   public static var isoIecEbnf: Grammar.ISOIECEBNFFormatter {
     Grammar.ISOIECEBNFFormatter()
   }
