@@ -71,10 +71,7 @@ extension Grammar {
           if n == 0 {
             return ""
           } else {
-            var choices: [Expression] = []
-            for i in 1...n {
-              choices.append(Expression.concat(Array(repeating: innerExpression, count: i)))
-            }
+            let choices = (1...n).map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
             let union = Expression.choice(choices)
             let expanded = Expression.optional(union)
             return try self.format(expression: expanded)
@@ -88,10 +85,7 @@ extension Grammar {
         case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m
-          var additionalChoices: [Expression] = []
-          for i in 1...additionalMax {
-            additionalChoices.append(Expression.concat(Array(repeating: innerExpression, count: i)))
-          }
+          let additionalChoices = (1...additionalMax).map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
           let optionalAdditional: Expression
           if additionalChoices.isEmpty {
             optionalAdditional = .epsilon

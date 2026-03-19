@@ -13,7 +13,7 @@ extension CharacterGroup {
 
   func formatted(options: FormatOptions = FormatOptions()) -> String {
     if options.useShorthands {
-      if let shorthand = Self.shorthand(for: self) {
+      if let shorthand = self.shorthand(for: self) {
         return shorthand
       }
     }
@@ -23,7 +23,7 @@ extension CharacterGroup {
     var memberIndex = 0
     while memberIndex < self.members.count {
       if options.useShorthands {
-        if let shorthand = Self.shorthand(
+        if let shorthand = self.shorthand(
           in: self.members,
           startingAt: memberIndex,
           isNegated: self.isNegated
@@ -35,7 +35,7 @@ extension CharacterGroup {
       }
 
       let member = self.members[memberIndex]
-      result += Self.format(member: member, hexFormat: options.hexFormat)
+      result += self.format(member: member, hexFormat: options.hexFormat)
       memberIndex += 1
     }
 
@@ -43,7 +43,7 @@ extension CharacterGroup {
     return result
   }
 
-  private static func shorthand(for characterGroup: CharacterGroup) -> String? {
+  private func shorthand(for characterGroup: CharacterGroup) -> String? {
     if characterGroup.isDigit {
       return "[\\d]"
     }
@@ -65,7 +65,7 @@ extension CharacterGroup {
     return nil
   }
 
-  private static func shorthand(
+  private func shorthand(
     in members: [Member],
     startingAt startIndex: Int,
     isNegated: Bool
@@ -100,14 +100,14 @@ extension CharacterGroup {
     .escaped(.carriageReturn)
   ]
 
-  private static func format(member: Member, hexFormat: HexFormat) -> String {
+  private func format(member: Member, hexFormat: HexFormat) -> String {
     switch member {
     case .character(let char):
       String(char)
     case .range(let start, let end):
       String(start) + "-" + String(end)
     case .escaped(let escape):
-      Self.format(escape: escape)
+      self.format(escape: escape)
     case .hex(let scalar):
       switch hexFormat {
       case .none:
@@ -129,7 +129,7 @@ extension CharacterGroup {
     }
   }
 
-  private static func format(escape: EscapeSequence) -> String {
+  private func format(escape: EscapeSequence) -> String {
     switch escape {
     case .backslash:
       "\\\\"

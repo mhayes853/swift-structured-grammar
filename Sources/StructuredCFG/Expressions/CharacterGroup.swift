@@ -326,7 +326,13 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   ]
 
   private func matches(isNegated: Bool, members: [Member]) -> Bool {
-    self.isNegated == isNegated && Self.memberCounts(self.members) == Self.memberCounts(members)
+    self.isNegated == isNegated && self.memberCounts == Self.memberCounts(members)
+  }
+
+  private var memberCounts: [Member: Int] {
+    self.members.reduce(into: [Member: Int]()) { counts, member in
+      counts[member, default: 0] += 1
+    }
   }
 
   private static func memberCounts(_ members: [Member]) -> [Member: Int] {

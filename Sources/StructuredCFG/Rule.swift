@@ -14,7 +14,6 @@ public struct Rule: Hashable, Sendable {
     _ symbol: Symbol,
     _ expression: some ExpressionComponent
   ) {
-    self.symbol = symbol
-    self.expression = expression.expression
+    self.init(symbol) { expression.expression }
   }
 }

@@ -8,7 +8,7 @@ public struct Symbol: Hashable, Sendable, RawRepresentable, ExpressibleByStringL
   }
 
   public init(rawValue: String) {
-    self.rawValue = rawValue
+    self.init(rawValue)
   }
 
   public init(stringLiteral value: String) {

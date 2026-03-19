@@ -11,11 +11,11 @@ extension Expression {
   }
 
   func formatted(options: FormatOptions = FormatOptions()) throws -> String {
-    try Self.format(expression: self, options: options)
+    try self.format(options: options)
   }
 
-  private static func format(expression: Expression, options: FormatOptions) throws -> String {
-    switch expression {
+  private func format(options: FormatOptions) throws -> String {
+    switch self {
     case .epsilon:
       return ""
 
@@ -29,23 +29,23 @@ extension Expression {
       return options.refFormatter(ref)
 
     case .group(let inner):
-      let innerFormatted = try Self.format(expression: inner, options: options)
+      let innerFormatted = try inner.format(options: options)
       return options.groupWrapper(innerFormatted)
 
     case .optional(let inner):
-      let innerFormatted = try Self.format(expression: inner, options: options)
+      let innerFormatted = try inner.format(options: options)
       return options.optionalWrapper(innerFormatted)
 
     case .concat(let expressions):
-      let formatted = try expressions.map { try Self.format(expression: $0, options: options) }
+      let formatted = try expressions.map { try $0.format(options: options) }
       return formatted.joined(separator: options.concatSeparator)
 
     case .choice(let expressions):
-      let formatted = try expressions.map { try Self.format(expression: $0, options: options) }
+      let formatted = try expressions.map { try $0.format(options: options) }
       return formatted.joined(separator: options.choiceSeparator)
 
     case .repeat(let repeatExpr):
-      let innerFormatted = try Self.format(expression: repeatExpr.innerExpression, options: options)
+      let innerFormatted = try repeatExpr.innerExpression.format(options: options)
       if let result = options.repeatWrapper((innerFormatted, repeatExpr)) {
         return result
       }
