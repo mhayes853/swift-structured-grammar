@@ -76,99 +76,23 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
-      let escaped = terminal.parts.reduce(into: "") { result, part in
-        switch part {
-        case .string(let string):
-          result += self.escape(string)
-        case .hex(let scalars):
-          result += scalars.reduce(into: "") { hexResult, scalar in
-            hexResult += "\\x"
-            hexResult += String(scalar.value, radix: 16)
-          }
-        }
-      }
-
-      return "\"" + escaped + "\""
-    }
-
-    private func escape(_ string: String) -> String {
-      string.reduce(into: "") { result, character in
-        switch character {
-        case "\\":
-          result += "\\\\"
-        case "\"":
-          result += "\\\""
-        default:
-          result.append(character)
-        }
-      }
+      terminal.formatted(
+        options: Terminal.FormatOptions(
+          quote: "\"",
+          escapeSequences: true,
+          hexFormat: .gbnf
+        )
+      )
     }
 
     private func format(characterGroup: CharacterGroup) -> String {
-      var result = characterGroup.isNegated ? "[^" : "["
-
-      for member in characterGroup.members {
-        switch member {
-        case .character(let char):
-          result.append(char)
-        case .range(let start, let end):
-          result.append(start)
-          result.append("-")
-          result.append(end)
-        case .escaped(let escape):
-          result += self.format(escape: escape)
-        case .hex(let scalar):
-          result += "\\x"
-          result += String(scalar.value, radix: 16)
-        case .hexRange(let start, let end):
-          result += "\\x"
-          result += String(start.value, radix: 16)
-          result += "-\\x"
-          result += String(end.value, radix: 16)
-        }
-      }
-
-      result.append("]")
-      return result
-    }
-
-    private func format(escape: CharacterGroup.EscapeSequence) -> String {
-      switch escape {
-      case .backslash:
-        "\\\\"
-      case .pipe:
-        "\\|"
-      case .period:
-        "\\."
-      case .hyphen:
-        "\\-"
-      case .caret:
-        "\\^"
-      case .question:
-        "\\?"
-      case .asterisk:
-        "\\*"
-      case .plus:
-        "\\+"
-      case .leftBrace:
-        "\\{"
-      case .rightBrace:
-        "\\}"
-      case .leftParen:
-        "\\("
-      case .rightParen:
-        "\\)"
-      case .leftBracket:
-        "\\["
-      case .rightBracket:
-        "\\]"
-      case .newline:
-        "\\n"
-      case .carriageReturn:
-        "\\r"
-      case .tab:
-        "\\t"
-      }
+      characterGroup.formatted(
+        options: CharacterGroup.FormatOptions(
+          hexFormat: .gbnf,
+          useShorthands: false,
+          expandRanges: true
+        )
+      )
     }
   }
 }

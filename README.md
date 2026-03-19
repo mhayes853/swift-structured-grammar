@@ -6,7 +6,7 @@ Type-Safe EBNF grammar creation.
 
 ```swift
 let grammar = Grammar(startingIdentifier: "num") {
-    Production("num") {
+    Rule("num") {
         OptionalExpression {
             Choice {
                 "-"
@@ -28,7 +28,7 @@ let grammar = Grammar(startingIdentifier: "num") {
             }
         }
     }
-    Production("literal case") {
+    Rule("literal case") {
         "literal value"
     }
 }
