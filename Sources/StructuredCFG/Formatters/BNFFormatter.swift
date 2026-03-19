@@ -3,39 +3,246 @@ extension Grammar {
     public init() {}
 
     public func format(rule: Rule) throws -> String {
-      var builder = Builder(rootSymbol: rule.symbol)
-      let alternatives = try builder.lower(expression: rule.expression.simplified)
+      let rootSymbol = rule.symbol
+      let (alternatives, helperLines) = try self.expand(
+        expression: rule.expression.simplified,
+        rootSymbol: rootSymbol
+      )
 
       var lines = [String]()
-      lines.append("\(self.format(symbol: rule.symbol)) ::= \(self.format(alternatives: alternatives))")
-      lines.append(contentsOf: builder.helperLines)
+      lines.append("<\(rootSymbol.rawValue)> ::= \(self.formatAlternatives(alternatives))")
+      lines.append(contentsOf: helperLines)
       return lines.joined(separator: "\n")
     }
 
-    private func format(symbol: Symbol) -> String {
-      "<\(symbol.rawValue)>"
+    private enum Element: Hashable, Sendable {
+      case symbol(Symbol)
+      case terminal(Terminal)
+      case optional([[Element]])
     }
 
-    private func format(alternatives: [[Atom]]) -> String {
+    private struct ExpansionContext {
+      var helperCounter = 0
+      var helperRules = [String]()
+      let rootSymbol: Symbol
+    }
+
+    private func expand(
+      expression: Expression,
+      rootSymbol: Symbol
+    ) throws -> ([[Element]], [String]) {
+      var context = ExpansionContext(rootSymbol: rootSymbol)
+      let elements = try self.expand(expression: expression, context: &context)
+      return (elements, context.helperRules)
+    }
+
+    private func expand(
+      expression: Expression,
+      context: inout ExpansionContext
+    ) throws -> [[Element]] {
+      switch expression {
+      case .epsilon:
+        return [[]]
+      case .concat(let expressions):
+        return try expressions.reduce(into: [[]]) { partialResult, expression in
+          let next = try self.expand(expression: expression, context: &context)
+          partialResult = self.concatenate(partialResult, next)
+        }
+      case .choice(let expressions):
+        return try expressions.flatMap { try self.expand(expression: $0, context: &context) }
+      case .optional(let expression):
+        return [[.optional(try self.expand(expression: expression, context: &context))]]
+      case .repeat(let repeatExpression):
+        return try self.expand(repeatExpression: repeatExpression, context: &context)
+      case .group(let expression):
+        return try self.expand(expression: expression, context: &context)
+      case .characterGroup(let group):
+        return try self.expand(characterGroup: group, context: &context)
+      case .ref(let ref):
+        return [[.symbol(ref.symbol)]]
+      case .terminal(let terminal):
+        return [[.terminal(terminal)]]
+      case .special:
+        throw UnsupportedExpressionError("Special sequences are not supported")
+      case .custom:
+        throw UnsupportedExpressionError.customExpression
+      }
+    }
+
+    private func expand(
+      repeatExpression: Repeat,
+      context: inout ExpansionContext
+    ) throws -> [[Element]] {
+      let inner = try self.expand(expression: repeatExpression.innerExpression, context: &context)
+
+      switch (repeatExpression.min, repeatExpression.max) {
+      case (nil, nil):
+        throw UnsupportedExpressionError("Repeat ranges must have at least one bound")
+      case (let min?, let max?) where min == max:
+        return self.repeated(inner, count: min)
+      case (let min?, nil):
+        if min == 0 {
+          let symbol = self.nextHelperSymbol(context: &context)
+          let recursiveAlternatives = [[]] + self.concatenate(inner, [[.symbol(symbol)]])
+          context.helperRules.append(
+            "<\(symbol.rawValue)> ::= \(self.formatAlternatives(recursiveAlternatives))"
+          )
+          return [[.symbol(symbol)]]
+        }
+
+        let zeroOrMore = try self.expand(
+          repeatExpression: Repeat(min: 0, max: nil, repeatExpression.innerExpression),
+          context: &context
+        )
+        return self.concatenate(self.repeated(inner, count: min), zeroOrMore)
+      case (nil, let max?):
+        return self.expandAtMost(inner: inner, max: max, context: &context)
+      case (let min?, let max?):
+        let required = self.repeated(inner, count: min)
+        let optionalTail = self.expandAtMost(inner: inner, max: max - min, context: &context)
+        return self.concatenate(required, optionalTail)
+      }
+    }
+
+    private func expandAtMost(
+      inner: [[Element]],
+      max: Int,
+      context: inout ExpansionContext
+    ) -> [[Element]] {
+      guard max > 0 else {
+        return [[]]
+      }
+
+      let alternatives = (1...max).flatMap { self.repeated(inner, count: $0) }
+      return [[.optional(alternatives)]]
+    }
+
+    private func expand(
+      characterGroup: CharacterGroup,
+      context: inout ExpansionContext
+    ) throws -> [[Element]] {
+      if characterGroup.isNegated {
+        throw UnsupportedExpressionError("Negated character groups are not supported")
+      }
+
+      return try characterGroup.members.flatMap { member in
+        try self.expand(characterGroupMember: member, context: &context)
+      }
+    }
+
+    private func expand(
+      characterGroupMember member: CharacterGroup.Member,
+      context: inout ExpansionContext
+    ) throws -> [[Element]] {
+      switch member {
+      case .character(let character):
+        return [[.terminal(Terminal(character))]]
+      case .range(let start, let end):
+        guard let startValue = start.asciiValue, let endValue = end.asciiValue else {
+          throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
+        }
+        return (startValue...endValue)
+          .map { value in
+            [.terminal(Terminal(Character(UnicodeScalar(value))))]
+          }
+      case .escaped(let escape):
+        return [[.terminal(Terminal(self.string(for: escape)))]]
+      case .hex(let scalar):
+        return [[.terminal(Terminal(Character(scalar)))]]
+      case .hexRange(let start, let end):
+        guard start.isASCII, end.isASCII else {
+          throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
+        }
+        return (start.value...end.value)
+          .compactMap { value in
+            Unicode.Scalar(value).map { [.terminal(Terminal(Character($0)))] }
+          }
+      }
+    }
+
+    private func nextHelperSymbol(context: inout ExpansionContext) -> Symbol {
+      context.helperCounter += 1
+      return Symbol("\(context.rootSymbol.rawValue)__bnf_\(context.helperCounter)")
+    }
+
+    private func repeated(_ alternatives: [[Element]], count: Int) -> [[Element]] {
+      if count == 0 {
+        return [[]]
+      }
+
+      return (0..<count)
+        .reduce([[]]) { partialResult, _ in
+          self.concatenate(partialResult, alternatives)
+        }
+    }
+
+    private func concatenate(_ lhs: [[Element]], _ rhs: [[Element]]) -> [[Element]] {
+      lhs.flatMap { left in
+        rhs.map { right in
+          left + right
+        }
+      }
+    }
+
+    private func string(for escape: CharacterGroup.EscapeSequence) -> String {
+      switch escape {
+      case .backslash:
+        "\\"
+      case .pipe:
+        "|"
+      case .period:
+        "."
+      case .hyphen:
+        "-"
+      case .caret:
+        "^"
+      case .question:
+        "?"
+      case .asterisk:
+        "*"
+      case .plus:
+        "+"
+      case .leftBrace:
+        "{"
+      case .rightBrace:
+        "}"
+      case .leftParen:
+        "("
+      case .rightParen:
+        ")"
+      case .leftBracket:
+        "["
+      case .rightBracket:
+        "]"
+      case .newline:
+        "\n"
+      case .carriageReturn:
+        "\r"
+      case .tab:
+        "\t"
+      }
+    }
+
+    private func formatAlternatives(_ alternatives: [[Element]]) -> String {
       alternatives
         .map { sequence in
           if sequence.isEmpty {
-            self.quote("")
+            "\"\""
           } else {
-            sequence.map { self.format(atom: $0) }.joined(separator: " ")
+            sequence.map { self.format(element: $0) }.joined(separator: " ")
           }
         }
         .joined(separator: " | ")
     }
 
-    private func format(atom: Atom) -> String {
-      switch atom {
+    private func format(element: Element) -> String {
+      switch element {
       case .symbol(let symbol):
-        self.format(symbol: symbol)
+        "<\(symbol.rawValue)>"
       case .terminal(let terminal):
         self.format(terminal: terminal)
       case .optional(let alternatives):
-        "[\(self.format(alternatives: alternatives))]"
+        "[\(self.formatAlternatives(alternatives))]"
       }
     }
 
@@ -48,12 +255,7 @@ extension Grammar {
           result += self.escape(String(String.UnicodeScalarView(scalars)))
         }
       }
-      return self.quote(escaped, isEscaped: true)
-    }
-
-    private func quote(_ string: String, isEscaped: Bool = false) -> String {
-      let body = isEscaped ? string : self.escape(string)
-      return "\"" + body + "\""
+      return "\"" + escaped + "\""
     }
 
     private func escape(_ string: String) -> String {
@@ -65,191 +267,6 @@ extension Grammar {
           result += "\\\""
         default:
           result.append(character)
-        }
-      }
-    }
-
-    private enum Atom: Hashable, Sendable {
-      case symbol(Symbol)
-      case terminal(Terminal)
-      case optional([[Atom]])
-    }
-
-    private struct Builder {
-      let rootSymbol: Symbol
-      var helperCounter = 0
-      var helperLines = [String]()
-
-      mutating func lower(expression: Expression) throws -> [[Atom]] {
-        switch expression {
-        case .epsilon:
-          return [[]]
-        case .concat(let expressions):
-          return try expressions.reduce(into: [[]]) { partialResult, expression in
-            let next = try self.lower(expression: expression)
-            partialResult = self.concatenate(partialResult, next)
-          }
-        case .choice(let expressions):
-          return try expressions.flatMap { try self.lower(expression: $0) }
-        case .optional(let expression):
-          return [[.optional(try self.lower(expression: expression))]]
-        case .repeat(let repeatExpression):
-          return try self.lower(repeatExpression: repeatExpression)
-        case .group(let expression):
-          return try self.lower(expression: expression)
-        case .characterGroup(let group):
-          return try self.lower(characterGroup: group)
-        case .ref(let ref):
-          return [[.symbol(ref.symbol)]]
-        case .terminal(let terminal):
-          return [[.terminal(terminal)]]
-        case .special:
-          throw UnsupportedExpressionError("Special sequences are not supported")
-        case .custom:
-          throw UnsupportedExpressionError.customExpression
-        }
-      }
-
-      private mutating func lower(repeatExpression: Repeat) throws -> [[Atom]] {
-        let inner = try self.lower(expression: repeatExpression.innerExpression)
-
-        switch (repeatExpression.min, repeatExpression.max) {
-        case (nil, nil):
-          throw UnsupportedExpressionError("Repeat ranges must have at least one bound")
-        case (let min?, let max?) where min == max:
-          return self.repeated(inner, count: min)
-        case (let min?, nil):
-          if min == 0 {
-            let symbol = self.nextHelperSymbol()
-            let recursiveAlternatives = [[]] + self.concatenate(inner, [[.symbol(symbol)]])
-            self.helperLines.append(
-              "<\(symbol.rawValue)> ::= \(BNFFormatter().format(alternatives: recursiveAlternatives))"
-            )
-            return [[.symbol(symbol)]]
-          }
-
-          let zeroOrMore = try self.lower(
-            repeatExpression: Repeat(min: 0, max: nil, repeatExpression.innerExpression)
-          )
-          return self.concatenate(self.repeated(inner, count: min), zeroOrMore)
-        case (nil, let max?):
-          return self.lowerAtMost(inner: inner, max: max)
-        case (let min?, let max?):
-          let required = self.repeated(inner, count: min)
-          let optionalTail = self.lowerAtMost(inner: inner, max: max - min)
-          return self.concatenate(required, optionalTail)
-        }
-      }
-
-      private mutating func lowerAtMost(inner: [[Atom]], max: Int) -> [[Atom]] {
-        guard max > 0 else {
-          return [[]]
-        }
-
-        let alternatives = (1...max).flatMap { self.repeated(inner, count: $0) }
-        return [[.optional(alternatives)]]
-      }
-
-      private mutating func lower(characterGroup: CharacterGroup) throws -> [[Atom]] {
-        if characterGroup.isNegated {
-          throw UnsupportedExpressionError("Negated character groups are not supported")
-        }
-
-        return try characterGroup.members.flatMap { member in
-          try self.lower(characterGroupMember: member)
-        }
-      }
-
-      private func lower(characterGroupMember member: CharacterGroup.Member) throws -> [[Atom]] {
-        switch member {
-        case .character(let character):
-          return [[.terminal(Terminal(character))]]
-        case .range(let start, let end):
-          guard let startValue = start.asciiValue, let endValue = end.asciiValue else {
-            throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
-          }
-          return (startValue...endValue).map { value in
-            [.terminal(Terminal(Character(UnicodeScalar(value))))]
-          }
-        case .escaped(let escape):
-          return [[.terminal(Terminal(self.string(for: escape)))]]
-        case .hex(let scalar):
-          return [[.terminal(Terminal(Character(scalar)))]]
-        case .hexRange(let start, let end):
-          guard start.isASCII, end.isASCII else {
-            throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
-          }
-          return (start.value...end.value).compactMap { value in
-            Unicode.Scalar(value).map { [.terminal(Terminal(Character($0)))] }
-          }
-        }
-      }
-
-      private mutating func makeHelper(alternatives: [[Atom]]) -> Symbol {
-        let symbol = self.nextHelperSymbol()
-        self.helperLines.append("<\(symbol.rawValue)> ::= \(BNFFormatter().format(alternatives: alternatives))")
-        return symbol
-      }
-
-      private mutating func nextHelperSymbol() -> Symbol {
-        self.helperCounter += 1
-        return Symbol("\(self.rootSymbol.rawValue)__bnf_\(self.helperCounter)")
-      }
-
-      private func repeated(_ alternatives: [[Atom]], count: Int) -> [[Atom]] {
-        if count == 0 {
-          return [[]]
-        }
-
-        return (0..<count).reduce([[]]) { partialResult, _ in
-          self.concatenate(partialResult, alternatives)
-        }
-      }
-
-      private func concatenate(_ lhs: [[Atom]], _ rhs: [[Atom]]) -> [[Atom]] {
-        lhs.flatMap { left in
-          rhs.map { right in
-            left + right
-          }
-        }
-      }
-
-      private func string(for escape: CharacterGroup.EscapeSequence) -> String {
-        switch escape {
-        case .backslash:
-          "\\"
-        case .pipe:
-          "|"
-        case .period:
-          "."
-        case .hyphen:
-          "-"
-        case .caret:
-          "^"
-        case .question:
-          "?"
-        case .asterisk:
-          "*"
-        case .plus:
-          "+"
-        case .leftBrace:
-          "{"
-        case .rightBrace:
-          "}"
-        case .leftParen:
-          "("
-        case .rightParen:
-          ")"
-        case .leftBracket:
-          "["
-        case .rightBracket:
-          "]"
-        case .newline:
-          "\n"
-        case .carriageReturn:
-          "\r"
-        case .tab:
-          "\t"
         }
       }
     }
