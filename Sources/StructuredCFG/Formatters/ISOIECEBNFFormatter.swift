@@ -191,34 +191,42 @@ extension Grammar {
 
       for member in characterGroup.members {
         switch member {
-        case .character(let char):
-          terminals.append(self.format(terminal: Terminal(String(char))))
+        case .character(let character):
+          terminals.append(self.format(terminal: self.terminal(from: character)))
         case .range(let start, let end):
-          guard let startInt = start.asciiValue, let endInt = end.asciiValue else {
+          guard let startInt = self.asciiValue(for: start), let endInt = self.asciiValue(for: end) else {
             throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
           }
           for code in startInt...endInt {
-            let char = Character(UnicodeScalar(code))
+            let char = Character(Unicode.Scalar(code)!)
             terminals.append(self.format(terminal: Terminal(String(char))))
           }
         case .escaped(let escape):
           terminals.append(self.format(terminal: Terminal(self.escapedString(for: escape))))
-        case .hex(let scalar):
-          terminals.append(self.format(terminal: Terminal(String(Character(scalar)))))
-        case .hexRange(let start, let end):
-          for code in start.value...end.value {
-            guard let scalar = Unicode.Scalar(code) else {
-              throw UnsupportedExpressionError("Invalid Unicode code point")
-            }
-            terminals.append(self.format(terminal: Terminal(String(Character(scalar)))))
-          }
-        case .unicodeScalarRange:
-          throw UnsupportedExpressionError("Unicode scalar ranges are not supported")
         }
       }
 
       let separator = " \(self.definitionSeparator.rawValue) "
       return terminals.joined(separator: separator)
+    }
+
+    private func terminal(from character: Terminal.Character) -> Terminal {
+      switch character {
+      case .character(let character):
+        return Terminal(character)
+      case .hex(let scalar), .unicode(let scalar):
+        return Terminal(Character(scalar))
+      }
+    }
+
+    private func asciiValue(for character: Terminal.Character) -> UInt32? {
+      switch character {
+      case .character(let character):
+        return character.asciiValue.map(UInt32.init)
+      case .hex(let scalar), .unicode(let scalar):
+        guard scalar.isASCII else { return nil }
+        return scalar.value
+      }
     }
 
     private func escapedString(for escape: CharacterGroup.EscapeSequence) -> String {

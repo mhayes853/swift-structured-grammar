@@ -35,7 +35,10 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   }
 
   public init(_ range: ClosedRange<Character>) {
-    self.init(isNegated: false, members: [.range(range.lowerBound, range.upperBound)])
+    self.init(
+      isNegated: false,
+      members: [.range(.character(range.lowerBound), .character(range.upperBound))]
+    )
   }
 
   public var expression: Expression {
@@ -59,11 +62,16 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   }
 
   public static var all: Self {
-    Self(
-      isNegated: false,
-      members: [.unicodeScalarRange(Unicode.Scalar(UInt32(0))!, Unicode.Scalar(UInt32(0x10FFFF))!)]
-    )
-  }
+      Self(
+        isNegated: false,
+        members: [
+          .range(
+            .unicode(Unicode.Scalar(UInt32(0))!),
+            .unicode(Unicode.Scalar(UInt32(0x10FFFF))!)
+          )
+        ]
+      )
+    }
 
   public var isDigit: Bool {
     self.matches(isNegated: false, members: Self.digitMembers)
@@ -144,7 +152,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
         members.append(contentsOf: newMembers)
         i = newIndex
       } else {
-        members.append(.character(character))
+        members.append(.character(.character(character)))
         i += 1
       }
     }
@@ -203,7 +211,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       if let escape = EscapeSequence(escapedCharacter: escapedCharacter) {
         members.append(.escaped(escape))
       } else {
-        members.append(.character(escapedCharacter))
+        members.append(.character(.character(escapedCharacter)))
       }
     }
     return (members, index + 2)
@@ -225,7 +233,15 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     guard let scalar = Self.parseHex(hexString) else {
       throw ParseError.invalidHexValue(hexString)
     }
-    return ([.hex(scalar)], hexEnd)
+    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+      characters: characters,
+      index: hexEnd,
+      allowedEscapes: ["x", "u", "U"]
+    ) {
+      try Self.validateRange(start: .hex(scalar), end: endCharacter)
+      return ([.range(.hex(scalar), endCharacter)], rangeEnd)
+    }
+    return ([.character(.hex(scalar))], hexEnd)
   }
 
   private static func parseUnicodeEscape(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
@@ -248,32 +264,16 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       throw ParseError.invalidHexValue(hexString)
     }
 
-    if hexEnd + 1 < characters.count && characters[hexEnd] == "-" {
-      let secondBackslashPos = hexEnd + 1
-      if secondBackslashPos < characters.count && characters[secondBackslashPos] == "\\" {
-        let secondEscapePos = secondBackslashPos + 1
-        if secondEscapePos < characters.count {
-          let secondChar = characters[secondEscapePos]
-          let secondExpectedDigits = secondChar == "u" ? 4 : (secondChar == "U" ? 8 : 0)
-          if secondExpectedDigits > 0 && secondEscapePos + 1 + secondExpectedDigits <= characters.count {
-            let secondHexEnd = secondEscapePos + 1 + secondExpectedDigits
-            let secondHexString = String(characters[secondEscapePos + 1..<secondHexEnd])
-            guard secondHexString.allSatisfy({ $0.isHexDigit }) else {
-              throw ParseError.invalidHexEscape
-            }
-            guard let endScalar = Self.parseHex(secondHexString) else {
-              throw ParseError.invalidHexValue(secondHexString)
-            }
-            guard startScalar.value <= endScalar.value else {
-              throw ParseError.invalidHexRangeStartGreaterThanEnd
-            }
-            return ([.unicodeScalarRange(startScalar, endScalar)], secondHexEnd)
-          }
-        }
-      }
+    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+      characters: characters,
+      index: hexEnd,
+      allowedEscapes: ["x", "u", "U"]
+    ) {
+      try Self.validateRange(start: .unicode(startScalar), end: endCharacter)
+      return ([.range(.unicode(startScalar), endCharacter)], rangeEnd)
     }
 
-    return ([.unicodeScalarRange(startScalar, startScalar)], hexEnd)
+    return ([.character(.unicode(startScalar))], hexEnd)
   }
 
   private static func parseHexMember(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
@@ -286,50 +286,41 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       throw ParseError.invalidHexCharacter
     }
 
-    if hexEnd + 1 < characters.count && characters[hexEnd] == "-" && 
-       characters[hexEnd + 1] == "#" && hexEnd + 2 < characters.count && 
-       characters[hexEnd + 2] == "x" {
-      let rangeStartHex = String(characters[hexStart..<hexEnd])
-      guard let rangeStart = Self.parseHex(rangeStartHex) else {
-        throw ParseError.invalidHexValue(rangeStartHex)
-      }
-
-      let rangeHexStart = hexEnd + 3
-      var rangeHexEnd = rangeHexStart
-      while rangeHexEnd < characters.count && characters[rangeHexEnd].isHexDigit {
-        rangeHexEnd += 1
-      }
-      guard rangeHexEnd > rangeHexStart else {
-        throw ParseError.invalidHexCharacter
-      }
-
-      let rangeEndHex = String(characters[rangeHexStart..<rangeHexEnd])
-      guard let rangeEnd = Self.parseHex(rangeEndHex) else {
-        throw ParseError.invalidHexValue(rangeEndHex)
-      }
-
-      guard rangeStart.value <= rangeEnd.value else {
-        throw ParseError.invalidHexRangeStartGreaterThanEnd
-      }
-
-      return ([.hexRange(rangeStart, rangeEnd)], rangeHexEnd)
-    } else {
-      let hexString = String(characters[hexStart..<hexEnd])
-      guard let scalar = Self.parseHex(hexString) else {
-        throw ParseError.invalidHexValue(hexString)
-      }
-      return ([.hex(scalar)], hexEnd)
+    let hexString = String(characters[hexStart..<hexEnd])
+    guard let scalar = Self.parseHex(hexString) else {
+      throw ParseError.invalidHexValue(hexString)
     }
+
+    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+      characters: characters,
+      index: hexEnd,
+      allowedHexMember: true,
+      allowedEscapes: ["x", "u", "U"]
+    ) {
+      try Self.validateRange(start: .hex(scalar), end: endCharacter)
+      return ([.range(.hex(scalar), endCharacter)], rangeEnd)
+    }
+
+    return ([.character(.hex(scalar))], hexEnd)
   }
 
   private static func parseCharacterRange(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
     let startCharacter = characters[index]
-    let endCharacter = characters[index + 2]
-    if startCharacter != "-" && endCharacter != "-" {
-      return ([.range(startCharacter, endCharacter)], index + 3)
-    } else {
-      return ([.character(characters[index])], index + 1)
+    if startCharacter == "-" {
+      return ([.character(.character(characters[index]))], index + 1)
     }
+    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+      characters: characters,
+      index: index + 1,
+      allowedHexMember: true,
+      allowedEscapes: ["x", "u", "U"]
+    ) {
+      if case .character("-") = endCharacter {
+        return ([.character(.character(characters[index]))], index + 1)
+      }
+      return ([.range(.character(startCharacter), endCharacter)], rangeEnd)
+    }
+    return ([.character(.character(characters[index]))], index + 1)
   }
 
   private static func parseHex(_ string: String) -> Unicode.Scalar? {
@@ -338,13 +329,114 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     return Unicode.Scalar(value)
   }
 
+  private static func parseRangeEndpoint(
+    characters: [Character],
+    index: Int,
+    allowedHexMember: Bool = false,
+    allowedEscapes: Set<Character>
+  ) throws -> (Terminal.Character, Int)? {
+    guard index < characters.count, characters[index] == "-" else {
+      return nil
+    }
+
+    let start = index + 1
+    guard start < characters.count else {
+      return nil
+    }
+
+    let character = characters[start]
+    if character == "#" {
+      guard allowedHexMember, start + 1 < characters.count, characters[start + 1] == "x" else {
+        return nil
+      }
+      let hexStart = start + 2
+      var hexEnd = hexStart
+      while hexEnd < characters.count && characters[hexEnd].isHexDigit {
+        hexEnd += 1
+      }
+      guard hexEnd > hexStart else {
+        throw ParseError.invalidHexCharacter
+      }
+      let hexString = String(characters[hexStart..<hexEnd])
+      guard let scalar = Self.parseHex(hexString) else {
+        throw ParseError.invalidHexValue(hexString)
+      }
+      return (.hex(scalar), hexEnd)
+    }
+
+    if character == "\\" {
+      guard start + 1 < characters.count else {
+        throw ParseError.cannotEndWithEscape
+      }
+      let escape = characters[start + 1]
+      guard allowedEscapes.contains(escape) else {
+        return nil
+      }
+      switch escape {
+      case "x":
+        let hexStart = start + 2
+        var hexEnd = hexStart
+        while hexEnd < characters.count && characters[hexEnd].isHexDigit {
+          hexEnd += 1
+        }
+        guard hexEnd > hexStart else {
+          throw ParseError.invalidHexEscape
+        }
+        let hexString = String(characters[hexStart..<hexEnd])
+        guard let scalar = Self.parseHex(hexString) else {
+          throw ParseError.invalidHexValue(hexString)
+        }
+        return (.hex(scalar), hexEnd)
+      case "u", "U":
+        let expectedDigits = escape == "u" ? 4 : 8
+        guard start + 1 + expectedDigits < characters.count else {
+          throw ParseError.incompleteHexEscape
+        }
+        let hexStart = start + 2
+        let hexEnd = hexStart + expectedDigits
+        let hexString = String(characters[hexStart..<hexEnd])
+        guard hexString.allSatisfy({ $0.isHexDigit }) else {
+          throw ParseError.invalidHexEscape
+        }
+        guard let scalar = Self.parseHex(hexString) else {
+          throw ParseError.invalidHexValue(hexString)
+        }
+        return (.unicode(scalar), hexEnd)
+      default:
+        return nil
+      }
+    }
+
+    return (.character(character), start + 1)
+  }
+
+  private static func validateRange(start: Terminal.Character, end: Terminal.Character) throws {
+    guard case .character = start else {
+      guard let startValue = Self.scalarValue(for: start), let endValue = Self.scalarValue(for: end) else {
+        return
+      }
+      guard startValue <= endValue else {
+        throw ParseError.invalidHexRangeStartGreaterThanEnd
+      }
+      return
+    }
+  }
+
+  private static func scalarValue(for character: Terminal.Character) -> UInt32? {
+    switch character {
+    case .character(let character):
+      let unicodeScalars = String(character).unicodeScalars
+      guard unicodeScalars.count == 1 else { return nil }
+      return unicodeScalars.first?.value
+    case .hex(let scalar), .unicode(let scalar):
+      return scalar.value
+    }
+  }
+
   public enum Member: Hashable, Sendable {
-    case character(Character)
-    case range(Character, Character)
+    case character(Terminal.Character)
+    case range(Terminal.Character, Terminal.Character)
     case escaped(EscapeSequence)
-    case hex(Unicode.Scalar)
-    case hexRange(Unicode.Scalar, Unicode.Scalar)
-    case unicodeScalarRange(Unicode.Scalar, Unicode.Scalar)
   }
 
   public enum EscapeSequence: Hashable, Sendable {
@@ -367,17 +459,17 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     case tab
   }
 
-  private static let digitMembers: [Member] = [.range("0", "9")]
+  private static let digitMembers: [Member] = [.range(.character("0"), .character("9"))]
 
   private static let wordMembers: [Member] = [
-    .range("a", "z"),
-    .range("A", "Z"),
-    .range("0", "9"),
-    .character("_")
+    .range(.character("a"), .character("z")),
+    .range(.character("A"), .character("Z")),
+    .range(.character("0"), .character("9")),
+    .character(.character("_"))
   ]
 
   private static let whitespaceMembers: [Member] = [
-    .character(" "),
+    .character(.character(" ")),
     .escaped(.tab),
     .escaped(.newline),
     .escaped(.carriageReturn)

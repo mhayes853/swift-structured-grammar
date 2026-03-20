@@ -470,13 +470,13 @@ private enum LanguageSnapshotSuite {
           Terminal(hex: ["A".unicodeScalars.first!, "\t".unicodeScalars.first!])
         }
         Rule("mixed") {
-          Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+          Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])
         }
         Rule("surrounded") {
-          Terminal(parts: [
-            .string("["),
-            .hex(["A".unicodeScalars.first!]),
-            .string("]")
+          Terminal(characters: [
+            .character("["),
+            .hex("A".unicodeScalars.first!),
+            .character("]")
           ])
         }
       }

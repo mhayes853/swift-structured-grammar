@@ -1,20 +1,21 @@
 public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, ExpressionComponent {
-  public enum Part: Hashable, Sendable {
-    case string(String)
-    case hex([Unicode.Scalar])
+  public enum Character: Hashable, Sendable {
+    case character(Swift.Character)
+    case hex(Unicode.Scalar)
+    case unicode(Unicode.Scalar)
   }
 
-  public let parts: [Part]
+  public let characters: [Character]
 
-  public init(parts: [Part]) {
-    self.parts = Self.normalized(parts: parts)
+  public init(characters: [Character]) {
+    self.characters = characters
   }
 
   public init(_ value: String) {
-    self.init(parts: [.string(value)])
+    self.init(characters: value.map { .character($0) })
   }
 
-  public init(_ value: Character) {
+  public init(_ value: Swift.Character) {
     self.init(String(value))
   }
 
@@ -23,7 +24,15 @@ public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Expressi
   }
 
   public init(hex value: [Unicode.Scalar]) {
-    self.init(parts: [.hex(value)])
+    self.init(characters: value.map { .hex($0) })
+  }
+
+  public init(unicode value: Unicode.Scalar) {
+    self.init(unicode: [value])
+  }
+
+  public init(unicode value: [Unicode.Scalar]) {
+    self.init(characters: value.map { .unicode($0) })
   }
 
   public init(stringLiteral value: String) {
@@ -31,43 +40,17 @@ public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Expressi
   }
 
   public var string: String {
-    self.parts.reduce(into: "") { result, part in
-      switch part {
-      case .string(let string):
-        result += string
-      case .hex(let scalars):
-        result += String(String.UnicodeScalarView(scalars))
+    self.characters.reduce(into: "") { result, character in
+      switch character {
+      case .character(let character):
+        result.append(character)
+      case .hex(let scalar), .unicode(let scalar):
+        result.unicodeScalars.append(scalar)
       }
     }
   }
 
   public var expression: Expression {
     Expression.terminal(self)
-  }
-
-  public var character: Character? {
-    guard self.string.count == 1 else { return nil }
-    return self.string.first
-  }
-
-  private static func normalized(parts: [Part]) -> [Part] {
-    parts.reduce(into: [Part]()) { normalized, part in
-      switch part {
-      case .string(let string):
-        guard !string.isEmpty else { return }
-        if case .string(let previous)? = normalized.last {
-          normalized[normalized.count - 1] = .string(previous + string)
-        } else {
-          normalized.append(.string(string))
-        }
-      case .hex(let scalars):
-        guard !scalars.isEmpty else { return }
-        if case .hex(let previous)? = normalized.last {
-          normalized[normalized.count - 1] = .hex(previous + scalars)
-        } else {
-          normalized.append(.hex(scalars))
-        }
-      }
-    }
   }
 }

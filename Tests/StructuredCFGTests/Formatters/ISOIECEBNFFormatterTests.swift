@@ -40,7 +40,7 @@ struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Hex Terminals Decode To Ordinary ISO Terminals`() throws {
     let grammar = Grammar(Rule("start") {
-      Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+      Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])
     })
 
     expectNoDifference(try grammar.formatted(with: .isoIecEbnf), #"start = 'aa';"#)

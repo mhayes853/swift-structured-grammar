@@ -136,29 +136,38 @@ extension Grammar {
     ) throws -> [[Element]] {
       switch member {
       case .character(let character):
-        return [[.terminal(Terminal(character))]]
+        return [[.terminal(self.terminal(from: character))]]
       case .range(let start, let end):
-        guard let startValue = start.asciiValue, let endValue = end.asciiValue else {
+        guard let startValue = self.asciiValue(for: start), let endValue = self.asciiValue(for: end) else {
           throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
         }
         return (startValue...endValue)
           .map { value in
-            [.terminal(Terminal(Character(UnicodeScalar(value))))]
+            [.terminal(Terminal(Character(Unicode.Scalar(value)!)))]
           }
       case .escaped(let escape):
         return [[.terminal(Terminal(self.string(for: escape)))]]
+      }
+    }
+
+    private func terminal(from character: Terminal.Character) -> Terminal {
+      switch character {
+      case .character(let character):
+        return Terminal(character)
       case .hex(let scalar):
-        return [[.terminal(Terminal(Character(scalar)))]]
-      case .hexRange(let start, let end):
-        guard start.isASCII, end.isASCII else {
-          throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
-        }
-        return (start.value...end.value)
-          .compactMap { value in
-            Unicode.Scalar(value).map { [.terminal(Terminal(Character($0)))] }
-          }
-      case .unicodeScalarRange:
-        throw UnsupportedExpressionError("Unicode scalar ranges are not supported")
+        return Terminal(Character(scalar))
+      case .unicode(let scalar):
+        return Terminal(Character(scalar))
+      }
+    }
+
+    private func asciiValue(for character: Terminal.Character) -> UInt32? {
+      switch character {
+      case .character(let character):
+        return character.asciiValue.map(UInt32.init)
+      case .hex(let scalar), .unicode(let scalar):
+        guard scalar.isASCII else { return nil }
+        return scalar.value
       }
     }
 
@@ -249,12 +258,12 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
-      let escaped = terminal.parts.reduce(into: "") { result, part in
-        switch part {
-        case .string(let string):
-          result += self.escape(string)
-        case .hex(let scalars):
-          result += self.escape(String(String.UnicodeScalarView(scalars)))
+      let escaped = terminal.characters.reduce(into: "") { result, character in
+        switch character {
+        case .character(let character):
+          result += self.escape(String(character))
+        case .hex(let scalar), .unicode(let scalar):
+          result += self.escape(String(scalar))
         }
       }
       return "\"" + escaped + "\""

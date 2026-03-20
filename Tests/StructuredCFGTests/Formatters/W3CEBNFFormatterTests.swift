@@ -241,13 +241,31 @@ struct `W3CEBNFFormatter tests` {
   @Test
   func `Mixed Hex Terminal Uses Single W3C Terminal`() throws {
     let grammar = Grammar(Rule("start") {
-      Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+      Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])
     })
 
     expectNoDifference(
       try grammar.formatted(with: .w3cEbnf),
       #"start ::= #x61"a""#
     )
+  }
+
+  @Test
+  func `Unicode Terminal Decodes In W3C Formatter`() throws {
+    let grammar = Grammar(Rule("start") {
+      Terminal(unicode: Unicode.Scalar(UInt32(0x1F600))!)
+    })
+
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= "😀""#)
+  }
+
+  @Test
+  func `Unicode Character Group Decodes In W3C Formatter`() throws {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup("\\U0001F600")
+    })
+
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= [😀]"#)
   }
 
   @Test

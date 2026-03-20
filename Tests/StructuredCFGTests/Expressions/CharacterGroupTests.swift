@@ -12,9 +12,9 @@ struct `CharacterGroup tests` {
     expectNoDifference(
       group.members,
       [
-        .range("a", "z"),
-        .range("A", "Z"),
-        .range("0", "9")
+        .range(.character("a"), .character("z")),
+        .range(.character("A"), .character("Z")),
+        .range(.character("0"), .character("9"))
       ]
     )
   }
@@ -51,14 +51,14 @@ struct `CharacterGroup tests` {
   @Test
   func `CharacterGroup Parses Character Range`() {
     let group = CharacterGroup("a-z")
-    expectNoDifference(group.members, [.range("a", "z")])
+    expectNoDifference(group.members, [.range(.character("a"), .character("z"))])
   }
 
   @Test
   func `CharacterGroup Parses Negated Character Class`() {
     let group = CharacterGroup("^0-9")
     expectNoDifference(group.isNegated, true)
-    expectNoDifference(group.members, [.range("0", "9")])
+    expectNoDifference(group.members, [.range(.character("0"), .character("9"))])
   }
 
   @Test
@@ -66,7 +66,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("\\d")
 
     expectNoDifference(group.isDigit, true)
-    expectNoDifference(group.members, [.range("0", "9")])
+    expectNoDifference(group.members, [.range(.character("0"), .character("9"))])
   }
 
   @Test
@@ -77,10 +77,10 @@ struct `CharacterGroup tests` {
     expectNoDifference(
       group.members,
       [
-        .range("a", "z"),
-        .range("A", "Z"),
-        .range("0", "9"),
-        .character("_")
+        .range(.character("a"), .character("z")),
+        .range(.character("A"), .character("Z")),
+        .range(.character("0"), .character("9")),
+        .character(.character("_"))
       ]
     )
   }
@@ -92,11 +92,11 @@ struct `CharacterGroup tests` {
     expectNoDifference(
       group.members,
       [
-        .range("a", "z"),
-        .range("A", "Z"),
-        .range("0", "9"),
-        .character("_"),
-        .range("0", "9")
+        .range(.character("a"), .character("z")),
+        .range(.character("A"), .character("Z")),
+        .range(.character("0"), .character("9")),
+        .character(.character("_")),
+        .range(.character("0"), .character("9"))
       ]
     )
   }
@@ -109,7 +109,7 @@ struct `CharacterGroup tests` {
     expectNoDifference(
       group.members,
       [
-        .character(" "),
+        .character(.character(" ")),
         .escaped(.tab),
         .escaped(.newline),
         .escaped(.carriageReturn)
@@ -123,7 +123,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(group.isNonDigit, true)
     expectNoDifference(group.isNegated, true)
-    expectNoDifference(group.members, [.range("0", "9")])
+    expectNoDifference(group.members, [.range(.character("0"), .character("9"))])
   }
 
   @Test
@@ -199,14 +199,14 @@ struct `CharacterGroup tests` {
   func `CharacterGroup Created From ClosedRange Has Correct Members`() {
     let group = CharacterGroup("a"..."z")
 
-    expectNoDifference(group.members, [.range("a", "z")])
+    expectNoDifference(group.members, [.range(.character("a"), .character("z"))])
   }
 
   @Test
   func `CharacterGroup Parses Hex Character`() {
     let group = CharacterGroup("#x41")
 
-    expectNoDifference(group.members, [.hex("A".unicodeScalars.first!)])
+    expectNoDifference(group.members, [.character(.hex("A".unicodeScalars.first!))])
   }
 
   @Test
@@ -215,7 +215,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.hexRange("A".unicodeScalars.first!, "Z".unicodeScalars.first!)]
+      [.range(.hex("A".unicodeScalars.first!), .hex("Z".unicodeScalars.first!))]
     )
   }
 
@@ -223,14 +223,14 @@ struct `CharacterGroup tests` {
   func `CharacterGroup Parses Hex Character With Leading Zeros`() {
     let group = CharacterGroup("#x0041")
 
-    expectNoDifference(group.members, [.hex("A".unicodeScalars.first!)])
+    expectNoDifference(group.members, [.character(.hex("A".unicodeScalars.first!))])
   }
 
   @Test
   func `CharacterGroup Parses Hex Escape`() {
     let group = CharacterGroup("\\x41")
 
-    expectNoDifference(group.members, [.hex("A".unicodeScalars.first!)])
+    expectNoDifference(group.members, [.character(.hex("A".unicodeScalars.first!))])
   }
 
   @Test
@@ -239,7 +239,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.range("a", "z"), .hex("A".unicodeScalars.first!)]
+      [.range(.character("a"), .character("z")), .character(.hex("A".unicodeScalars.first!))]
     )
   }
 
@@ -249,7 +249,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.range("a", "z"), .hex("A".unicodeScalars.first!)]
+      [.range(.character("a"), .character("z")), .character(.hex("A".unicodeScalars.first!))]
     )
   }
 
@@ -327,7 +327,7 @@ struct `CharacterGroup tests` {
     }
 
     let formatted = try grammar.formatted(with: .gbnf)
-    expectNoDifference(formatted, #"test ::= [\U00000000-\U0010FFFF]"#)
+    expectNoDifference(formatted, #"test ::= [\u0000-\U0010FFFF]"#)
   }
 
   @Test
@@ -336,7 +336,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.unicodeScalarRange("A".unicodeScalars.first!, "A".unicodeScalars.first!)]
+      [.character(.unicode("A".unicodeScalars.first!))]
     )
   }
 
@@ -346,7 +346,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.unicodeScalarRange("A".unicodeScalars.first!, "A".unicodeScalars.first!)]
+      [.character(.unicode("A".unicodeScalars.first!))]
     )
   }
 
@@ -356,7 +356,27 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(
       group.members,
-      [.unicodeScalarRange("A".unicodeScalars.first!, "Z".unicodeScalars.first!)]
+      [
+        .range(
+          .unicode("A".unicodeScalars.first!),
+          .unicode("Z".unicodeScalars.first!)
+        )
+      ]
+    )
+  }
+
+  @Test
+  func `CharacterGroup Parses Mixed Hex And Unicode Range`() {
+    let group = CharacterGroup("\\x00-\\U0001FFFF")
+
+    expectNoDifference(
+      group.members,
+      [
+        .range(
+          .hex(Unicode.Scalar(UInt32(0))!),
+          .unicode(Unicode.Scalar(UInt32(0x1FFFF))!)
+        )
+      ]
     )
   }
 }

@@ -8,7 +8,7 @@ struct `Terminal tests` {
   func `String Terminal Stores String Part`() {
     let terminal = Terminal("ab")
 
-    expectNoDifference(terminal.parts, [.string("ab")])
+    expectNoDifference(terminal.characters, [.character("a"), .character("b")])
   }
 
   @Test
@@ -24,41 +24,35 @@ struct `Terminal tests` {
 
   @Test
   func `Mixed Terminal Decodes To Value`() {
-    let terminal = Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+    let terminal = Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])
 
     expectNoDifference(terminal.string, "aa")
   }
 
   @Test
-  func `Adjacent Parts Are Normalized`() {
-    let terminal = Terminal(parts: [
-      .string("a"),
-      .string("b"),
-      .hex(["c".unicodeScalars.first!]),
-      .hex(["d".unicodeScalars.first!])
+  func `Terminal Stores Explicit Characters`() {
+    let terminal = Terminal(characters: [
+      .character("a"),
+      .character("b"),
+      .hex("c".unicodeScalars.first!),
+      .unicode("d".unicodeScalars.first!)
     ])
 
     expectNoDifference(
-      terminal.parts,
-      [.string("ab"), .hex(["c".unicodeScalars.first!, "d".unicodeScalars.first!])]
+      terminal.characters,
+      [
+        .character("a"),
+        .character("b"),
+        .hex("c".unicodeScalars.first!),
+        .unicode("d".unicodeScalars.first!)
+      ]
     )
   }
 
   @Test
-  func `character returns character when single character`() {
-    let terminal = Terminal("a")
-    #expect(terminal.character == "a")
-  }
+  func `Unicode Terminal Decodes To Value`() {
+    let terminal = Terminal(unicode: ["A".unicodeScalars.first!])
 
-  @Test
-  func `character returns nil when multiple characters`() {
-    let terminal = Terminal("ab")
-    #expect(terminal.character == nil)
-  }
-
-  @Test
-  func `character returns nil when empty`() {
-    let terminal = Terminal("")
-    #expect(terminal.character == nil)
+    expectNoDifference(terminal.string, "A")
   }
 }

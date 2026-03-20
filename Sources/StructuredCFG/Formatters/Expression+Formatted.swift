@@ -20,10 +20,10 @@ extension Expression {
       return ""
 
     case .terminal(let terminal):
-      return terminal.formatted(options: options.terminalOptions)
+      return try terminal.formatted(options: options.terminalOptions)
 
     case .characterGroup(let characterGroup):
-      return characterGroup.formatted(options: options.characterGroupOptions)
+      return try characterGroup.formatted(options: options.characterGroupOptions)
 
     case .ref(let ref):
       return options.refFormatter(ref)

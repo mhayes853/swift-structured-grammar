@@ -177,7 +177,7 @@ struct `GBNFFormatter tests` {
   func `Mixed Hex Terminal Uses Single GBNF Terminal`() throws {
     let grammar = Grammar(
       Rule("start") {
-        Terminal(parts: [.hex(["a".unicodeScalars.first!]), .string("a")])
+        Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])
       }
     )
 
@@ -218,6 +218,28 @@ struct `GBNFFormatter tests` {
     )
 
     expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [a-z]"#)
+  }
+
+  @Test
+  func `Mixed Hex And Unicode Character Group Range Uses GBNF Syntax`() throws {
+    let grammar = Grammar(
+      Rule("start") {
+        CharacterGroup("\\x00-\\U0001FFFF")
+      }
+    )
+
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [\x0-\U0001FFFF]"#)
+  }
+
+  @Test
+  func `Unicode Character Group Uses Short GBNF Unicode Escape When Possible`() throws {
+    let grammar = Grammar(
+      Rule("start") {
+        CharacterGroup("\\u0041-\\U0000005A")
+      }
+    )
+
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [\u0041-\u005A]"#)
   }
 
   @Test

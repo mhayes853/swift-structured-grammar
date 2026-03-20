@@ -1,5 +1,5 @@
 unicode-char ::= unicode-4digit
-unicode-4digit ::= [\U00000041-\U00000041]
-unicode-8digit ::= [\U00000041-\U00000041]
-unicode-range ::= [\U00000041-\U0000005A]
-all-chars ::= [\U00000000-\U0010FFFF]
+unicode-4digit ::= [\u0041]
+unicode-8digit ::= [\u0041]
+unicode-range ::= [\u0041-\u005A]
+all-chars ::= [\u0000-\U0010FFFF]

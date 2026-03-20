@@ -102,13 +102,13 @@ extension Grammar {
       case .group(let expression):
         return "(\(try self.format(expression: expression)))"
       case .characterGroup(let characterGroup):
-        return characterGroup.formatted(options: CharacterGroup.FormatOptions(hexFormat: .w3c))
+        return try characterGroup.formatted(options: CharacterGroup.FormatOptions(hexFormat: .w3c))
       case .ref(let ref):
         return ref.symbol.rawValue
       case .special:
         throw UnsupportedExpressionError("Special sequences are not supported")
       case .terminal(let terminal):
-        return self.format(terminal: terminal)
+        return try self.format(terminal: terminal)
       case .custom:
         return ""
       }
@@ -122,24 +122,43 @@ extension Grammar {
       }
     }
 
-    private func format(terminal: Terminal) -> String {
-      if terminal.parts.isEmpty {
+    private func format(terminal: Terminal) throws -> String {
+      if terminal.characters.isEmpty {
         let quote = self.quoting == .double ? "\"" : "'"
         return quote + quote
       }
 
-      return terminal.parts.map { self.format(terminalPart: $0) }.joined()
+      var result = ""
+      var pendingLiteral = ""
+
+      func flushLiteral() {
+        guard !pendingLiteral.isEmpty else { return }
+        result += self.quote(pendingLiteral)
+        pendingLiteral = ""
+      }
+
+      for character in terminal.characters {
+        switch character {
+        case .character(let character):
+          pendingLiteral.append(character)
+        case .hex, .unicode:
+          flushLiteral()
+          result += try self.format(terminalCharacter: character)
+        }
+      }
+
+      flushLiteral()
+      return result
     }
 
-    private func format(terminalPart: Terminal.Part) -> String {
-      switch terminalPart {
-      case .string(let string):
-        return self.quote(string)
-      case .hex(let scalars):
-        return scalars.reduce(into: "") { result, scalar in
-          result += "#x"
-          result += String(scalar.value, radix: 16)
-        }
+    private func format(terminalCharacter: Terminal.Character) throws -> String {
+      switch terminalCharacter {
+      case .character(let character):
+        return self.quote(String(character))
+      case .hex(let scalar):
+        return "#x" + String(scalar.value, radix: 16)
+      case .unicode(let scalar):
+        return self.quote(String(scalar))
       }
     }
 
