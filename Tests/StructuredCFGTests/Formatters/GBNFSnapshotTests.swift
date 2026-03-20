@@ -11,6 +11,28 @@ struct `GBNF Snapshot tests` {
     let snapshotCase = RepresentativeSnapshotLanguageSuite.snapshotCase(named: snapshotName)
     assertGBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
   }
+
+  @Test
+  func `Unicode Ranges Format Canonically`() {
+    let grammar = Grammar(startingSymbol: "unicode-char") {
+      Rule("unicode-char") {
+        Ref("unicode-4digit")
+      }
+      Rule("unicode-4digit") {
+        CharacterGroup("\\u0041")
+      }
+      Rule("unicode-8digit") {
+        CharacterGroup("\\U00000041")
+      }
+      Rule("unicode-range") {
+        CharacterGroup("\\u0041-\\U0000005A")
+      }
+      Rule("all-chars") {
+        CharacterGroup.all
+      }
+    }
+    assertGBNFSnapshot(grammar, named: "unicode-range-grammar")
+  }
 }
 
 private let isRecordingSnapshots = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"

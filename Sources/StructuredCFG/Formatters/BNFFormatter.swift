@@ -157,6 +157,8 @@ extension Grammar {
           .compactMap { value in
             Unicode.Scalar(value).map { [.terminal(Terminal(Character($0)))] }
           }
+      case .unicodeScalarRange:
+        throw UnsupportedExpressionError("Unicode scalar ranges are not supported")
       }
     }
 

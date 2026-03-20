@@ -212,6 +212,8 @@ extension Grammar {
             }
             terminals.append(self.format(terminal: Terminal(String(Character(scalar)))))
           }
+        case .unicodeScalarRange:
+          throw UnsupportedExpressionError("Unicode scalar ranges are not supported")
         }
       }
 

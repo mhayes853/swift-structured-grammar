@@ -213,7 +213,10 @@ struct `CharacterGroup tests` {
   func `CharacterGroup Parses Hex Character Range`() {
     let group = CharacterGroup("#x41-#x5A")
 
-    expectNoDifference(group.members, [.hexRange("A".unicodeScalars.first!, "Z".unicodeScalars.first!)])
+    expectNoDifference(
+      group.members,
+      [.hexRange("A".unicodeScalars.first!, "Z".unicodeScalars.first!)]
+    )
   }
 
   @Test
@@ -311,5 +314,49 @@ struct `CharacterGroup tests` {
 
     let formatted = try grammar.formatted(with: .gbnf)
     expectNoDifference(formatted, #"test ::= [\x41]"#)
+  }
+
+  @Test
+  func `CharacterGroup All Formats In GBNF`() throws {
+    let group = CharacterGroup.all
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    let formatted = try grammar.formatted(with: .gbnf)
+    expectNoDifference(formatted, #"test ::= [\U00000000-\U0010FFFF]"#)
+  }
+
+  @Test
+  func `CharacterGroup Parses Unicode 4Digit Escape`() {
+    let group = CharacterGroup("\\u0041")
+
+    expectNoDifference(
+      group.members,
+      [.unicodeScalarRange("A".unicodeScalars.first!, "A".unicodeScalars.first!)]
+    )
+  }
+
+  @Test
+  func `CharacterGroup Parses Unicode 8Digit Escape`() {
+    let group = CharacterGroup("\\U00000041")
+
+    expectNoDifference(
+      group.members,
+      [.unicodeScalarRange("A".unicodeScalars.first!, "A".unicodeScalars.first!)]
+    )
+  }
+
+  @Test
+  func `CharacterGroup Parses Unicode Range`() {
+    let group = CharacterGroup("\\u0041-\\U0000005A")
+
+    expectNoDifference(
+      group.members,
+      [.unicodeScalarRange("A".unicodeScalars.first!, "Z".unicodeScalars.first!)]
+    )
   }
 }

@@ -58,6 +58,13 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     Self(isNegated: false, members: Self.whitespaceMembers)
   }
 
+  public static var all: Self {
+    Self(
+      isNegated: false,
+      members: [.unicodeScalarRange(Unicode.Scalar(UInt32(0))!, Unicode.Scalar(UInt32(0x10FFFF))!)]
+    )
+  }
+
   public var isDigit: Bool {
     self.matches(isNegated: false, members: Self.digitMembers)
   }
@@ -190,6 +197,8 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       members.append(.escaped(.tab))
     case "x":
       return try parseHexEscape(characters: characters, index: index)
+    case "u", "U":
+      return try parseUnicodeEscape(characters: characters, index: index)
     default:
       if let escape = EscapeSequence(escapedCharacter: escapedCharacter) {
         members.append(.escaped(escape))
@@ -217,6 +226,54 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
       throw ParseError.invalidHexValue(hexString)
     }
     return ([.hex(scalar)], hexEnd)
+  }
+
+  private static func parseUnicodeEscape(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
+    let escapedCharacter = characters[index + 1]
+    let expectedDigits = escapedCharacter == "u" ? 4 : 8
+
+    guard index + 1 + expectedDigits < characters.count else {
+      throw ParseError.incompleteHexEscape
+    }
+
+    let hexStart = index + 2
+    let hexEnd = hexStart + expectedDigits
+    let hexString = String(characters[hexStart..<hexEnd])
+
+    guard hexString.allSatisfy({ $0.isHexDigit }) else {
+      throw ParseError.invalidHexEscape
+    }
+
+    guard let startScalar = Self.parseHex(hexString) else {
+      throw ParseError.invalidHexValue(hexString)
+    }
+
+    if hexEnd + 1 < characters.count && characters[hexEnd] == "-" {
+      let secondBackslashPos = hexEnd + 1
+      if secondBackslashPos < characters.count && characters[secondBackslashPos] == "\\" {
+        let secondEscapePos = secondBackslashPos + 1
+        if secondEscapePos < characters.count {
+          let secondChar = characters[secondEscapePos]
+          let secondExpectedDigits = secondChar == "u" ? 4 : (secondChar == "U" ? 8 : 0)
+          if secondExpectedDigits > 0 && secondEscapePos + 1 + secondExpectedDigits <= characters.count {
+            let secondHexEnd = secondEscapePos + 1 + secondExpectedDigits
+            let secondHexString = String(characters[secondEscapePos + 1..<secondHexEnd])
+            guard secondHexString.allSatisfy({ $0.isHexDigit }) else {
+              throw ParseError.invalidHexEscape
+            }
+            guard let endScalar = Self.parseHex(secondHexString) else {
+              throw ParseError.invalidHexValue(secondHexString)
+            }
+            guard startScalar.value <= endScalar.value else {
+              throw ParseError.invalidHexRangeStartGreaterThanEnd
+            }
+            return ([.unicodeScalarRange(startScalar, endScalar)], secondHexEnd)
+          }
+        }
+      }
+    }
+
+    return ([.unicodeScalarRange(startScalar, startScalar)], hexEnd)
   }
 
   private static func parseHexMember(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
@@ -287,6 +344,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     case escaped(EscapeSequence)
     case hex(Unicode.Scalar)
     case hexRange(Unicode.Scalar, Unicode.Scalar)
+    case unicodeScalarRange(Unicode.Scalar, Unicode.Scalar)
   }
 
   public enum EscapeSequence: Hashable, Sendable {

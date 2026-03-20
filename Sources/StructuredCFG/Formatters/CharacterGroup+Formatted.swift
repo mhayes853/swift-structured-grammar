@@ -103,30 +103,47 @@ extension CharacterGroup {
   private func format(member: Member, hexFormat: HexFormat) -> String {
     switch member {
     case .character(let char):
-      String(char)
+      return String(char)
     case .range(let start, let end):
-      String(start) + "-" + String(end)
+      return String(start) + "-" + String(end)
     case .escaped(let escape):
-      self.format(escape: escape)
+      return self.format(escape: escape)
     case .hex(let scalar):
       switch hexFormat {
       case .none:
-        String(Character(scalar))
+        return String(Character(scalar))
       case .gbnf:
-        "\\x" + String(scalar.value, radix: 16)
+        return "\\x" + String(scalar.value, radix: 16)
       case .w3c:
-        "#x" + String(scalar.value, radix: 16)
+        return "#x" + String(scalar.value, radix: 16)
       }
     case .hexRange(let start, let end):
       switch hexFormat {
       case .none:
-        String(Character(start)) + "-" + String(Character(end))
+        return String(Character(start)) + "-" + String(Character(end))
       case .gbnf:
-        "\\x" + String(start.value, radix: 16) + "-\\x" + String(end.value, radix: 16)
+        return "\\x" + String(start.value, radix: 16) + "-\\x" + String(end.value, radix: 16)
       case .w3c:
-        "#x" + String(start.value, radix: 16) + "-#x" + String(end.value, radix: 16)
+        return "#x" + String(start.value, radix: 16) + "-#x" + String(end.value, radix: 16)
+      }
+    case .unicodeScalarRange(let start, let end):
+      switch hexFormat {
+      case .none, .w3c:
+        return String(Character(start)) + "-" + String(Character(end))
+      case .gbnf:
+        let s = start.value
+        let e = end.value
+        let sHex = String(repeating: "0", count: 8 - String(s, radix: 16).count) + String(s, radix: 16)
+        let eHex = String(repeating: "0", count: 8 - String(e, radix: 16).count) + String(e, radix: 16)
+        return "\\U" + sHex.uppercased() + "-\\U" + eHex.uppercased()
       }
     }
+  }
+
+  private static func paddedHexString(_ value: UInt32) -> String {
+    let hex = String(value, radix: 16).uppercased()
+    let padding = String(repeating: "0", count: 8 - hex.count)
+    return padding + hex
   }
 
   private func format(escape: EscapeSequence) -> String {
