@@ -241,108 +241,109 @@ extension Language {
     mutating func resolve(_ language: Language, operation: GrammarOperation) -> ResolvedLanguage {
       switch language.operation {
       case .empty:
-        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
-
+        return self.resolveEmptyOperation()
       case .grammar(let grammar):
-        return ResolvedLanguage(
-          grammar: grammar,
-          entrySymbol: grammar.rules.first?.symbol,
-          synthesizedEntry: false
-        )
-
+        return self.resolveGrammarOperation(grammar)
       case .concatenate(let languages):
-        let resolved = languages.map { self.resolve($0, operation: .concatenate) }
-        let entrySymbols = resolved.compactMap(\.entrySymbol)
-        guard !entrySymbols.isEmpty else {
-          return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
-        }
-        var iterator = resolved.makeIterator()
-        var grammar = iterator.next()!.grammar
-        self.grammars = [grammar]
-        var index = 1
-        while let language = iterator.next() {
-          grammar = self.mergeWithConflictResolution(
-            grammar,
-            language.grammar,
-            index: index,
-            operation: .concatenate
-          )
-          self.grammars.append(language.grammar)
-          index += 1
-        }
-        let entrySymbol = self.createNewSymbol()
-        grammar.append(
+        return self.resolveMultipleLanguages(languages, operation: .concatenate) { entrySymbol, entrySymbols in
           Rule(entrySymbol) {
             for symbol in entrySymbols {
               Ref(symbol)
             }
           }
-        )
-        return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
-
+        }
       case .union(let languages):
-        let resolved = languages.map { self.resolve($0, operation: .union) }
-        let entrySymbols = resolved.compactMap(\.entrySymbol)
-        guard !entrySymbols.isEmpty else {
-          return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
-        }
-        var iterator = resolved.makeIterator()
-        var grammar = iterator.next()!.grammar
-        self.grammars = [grammar]
-        var index = 1
-        while let language = iterator.next() {
-          grammar = self.mergeWithConflictResolution(
-            grammar,
-            language.grammar,
-            index: index,
-            operation: .union
-          )
-          self.grammars.append(language.grammar)
-          index += 1
-        }
-        let entrySymbol = self.createNewSymbol()
-        if entrySymbols.count == 1 {
-          grammar.append(Rule(entrySymbol) { Ref(entrySymbols[0]) })
-        } else {
-          grammar.append(
+        return self.resolveMultipleLanguages(languages, operation: .union) { entrySymbol, entrySymbols in
+          if entrySymbols.count == 1 {
+            Rule(entrySymbol) { Ref(entrySymbols[0]) }
+          } else {
             Rule(entrySymbol, Expression.choice(entrySymbols.map { .ref(Ref($0)) }))
-          )
-        }
-        return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
-
-      case .kleeneStar(let language):
-        let resolved = self.resolve(language, operation: .kleeneStar)
-        guard let entrySymbol = resolved.entrySymbol else {
-          return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
-        }
-        var grammar = resolved.grammar
-        self.grammars = [grammar]
-        let synthesizedSymbol = self.createNewSymbol()
-        grammar.append(
-          Rule(synthesizedSymbol) {
-            ZeroOrMore {
-              Ref(entrySymbol)
-            }
           }
-        )
-        return ResolvedLanguage(
-          grammar: grammar,
-          entrySymbol: synthesizedSymbol,
-          synthesizedEntry: true
-        )
-
-      case .reverse(let language):
-        let resolved = self.resolve(language, operation: .reverse)
-        guard let entrySymbol = resolved.entrySymbol else {
-          return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
         }
-        let grammar = resolved.grammar.reversed()
-        return ResolvedLanguage(
-          grammar: grammar,
-          entrySymbol: entrySymbol,
-          synthesizedEntry: true
-        )
+      case .kleeneStar(let language):
+        return self.resolveKleeneStarOperation(language)
+      case .reverse(let language):
+        return self.resolveReverseOperation(language)
       }
+    }
+
+    private func resolveEmptyOperation() -> ResolvedLanguage {
+      ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
+    }
+
+    private func resolveGrammarOperation(_ grammar: Grammar) -> ResolvedLanguage {
+      ResolvedLanguage(
+        grammar: grammar,
+        entrySymbol: grammar.rules.first?.symbol,
+        synthesizedEntry: false
+      )
+    }
+
+    private mutating func resolveMultipleLanguages(
+      _ languages: [Language],
+      operation: GrammarOperation,
+      ruleBuilder: (Symbol, [Symbol]) -> Rule
+    ) -> ResolvedLanguage {
+      let resolved = languages.map { self.resolve($0, operation: operation) }
+      let entrySymbols = resolved.compactMap(\.entrySymbol)
+      guard !entrySymbols.isEmpty else {
+        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
+      }
+      var iterator = resolved.makeIterator()
+      guard let first = iterator.next() else {
+        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
+      }
+      var grammar = first.grammar
+      self.grammars = [grammar]
+      var index = 1
+      while let language = iterator.next() {
+        grammar = self.mergeWithConflictResolution(
+          grammar,
+          language.grammar,
+          index: index,
+          operation: operation
+        )
+        self.grammars.append(language.grammar)
+        index += 1
+      }
+      let entrySymbol = self.createNewSymbol()
+      grammar.append(ruleBuilder(entrySymbol, entrySymbols))
+      return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
+    }
+
+    private mutating func resolveKleeneStarOperation(_ language: Language) -> ResolvedLanguage {
+      let resolved = self.resolve(language, operation: .kleeneStar)
+      guard let entrySymbol = resolved.entrySymbol else {
+        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
+      }
+      var grammar = resolved.grammar
+      self.grammars = [grammar]
+      let synthesizedSymbol = self.createNewSymbol()
+      grammar.append(
+        Rule(synthesizedSymbol) {
+          ZeroOrMore {
+            Ref(entrySymbol)
+          }
+        }
+      )
+      return ResolvedLanguage(
+        grammar: grammar,
+        entrySymbol: synthesizedSymbol,
+        synthesizedEntry: true
+      )
+    }
+
+    private mutating func resolveReverseOperation(_ language: Language) -> ResolvedLanguage {
+      let resolved = self.resolve(language, operation: .reverse)
+      guard let entrySymbol = resolved.entrySymbol else {
+        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
+      }
+      let grammar = resolved.grammar.reversed()
+      return ResolvedLanguage(
+        grammar: grammar,
+        entrySymbol: entrySymbol,
+        synthesizedEntry: true
+      )
     }
 
     private mutating func createNewSymbol() -> Symbol {
