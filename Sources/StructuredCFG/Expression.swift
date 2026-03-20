@@ -1,5 +1,6 @@
 // MARK: - Expression
 
+@nonexhaustive
 public indirect enum Expression: Sendable, ExpressionComponent {
   case epsilon
   case concat([Expression])
