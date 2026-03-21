@@ -11,7 +11,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   private var rulesBySymbol: [Symbol: Rule]
 
   public var rules: Rules {
-    Rules(
+    return Rules(
       orderedSymbols: self.orderedSymbols,
       rulesBySymbol: self.rulesBySymbol
     )
@@ -19,10 +19,6 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
 
   public var language: Language {
     Language(self)
-  }
-
-  public var grammar: Grammar {
-    self
   }
 
   public init() {
@@ -42,7 +38,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     }
   }
 
-  public init(startingSymbol: Symbol, @GrammarBuilder _ content: () -> [Rule]) {
+  public init(startingSymbol: Symbol, @RulesBuilder _ content: () -> [Rule]) {
     self.init(startingSymbol: startingSymbol, content())
   }
 

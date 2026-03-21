@@ -1,5 +1,5 @@
 @resultBuilder
-public enum GrammarBuilder {
+public enum RulesBuilder {
   public static func buildExpression(_ rule: Rule) -> [Rule] {
     [rule]
   }
@@ -9,7 +9,7 @@ public enum GrammarBuilder {
   }
 
   public static func buildExpression(_ component: some GrammarComponent) -> [Rule] {
-    Array(component.grammar.rules)
+    Array(component.rules)
   }
 
   public static func buildBlock(_ components: [Rule]...) -> [Rule] {

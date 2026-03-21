@@ -1,9 +1,9 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
-struct `GrammarBuilder tests` {
+struct `RulesBuilder tests` {
   @Test
   func `Builds Empty Grammar`() {
     let grammar = Grammar()
@@ -19,10 +19,13 @@ struct `GrammarBuilder tests` {
     }
 
     expectNoDifference(grammar.startingSymbol, "expression")
-    expectNoDifference(grammar, Grammar(startingSymbol: "expression") {
-      Rule("expression") { "value" }
-      Rule("term") { Ref("expression") }
-    })
+    expectNoDifference(
+      grammar,
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
+      }
+    )
   }
 
   @Test
@@ -34,10 +37,13 @@ struct `GrammarBuilder tests` {
       Rule("term") { Ref("expression") }
     }
 
-    expectNoDifference(grammar, Grammar(startingSymbol: "expression") {
-      Rule("expression") { "value" }
-      Rule("term") { Ref("expression") }
-    })
+    expectNoDifference(
+      grammar,
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") { "value" }
+        Rule("term") { Ref("expression") }
+      }
+    )
   }
 
   @Test
@@ -48,9 +54,12 @@ struct `GrammarBuilder tests` {
       Rule("expression") { "second" }
     }
 
-    expectNoDifference(grammar, Grammar(startingSymbol: "expression") {
-      Rule("expression") { "second" }
-      Rule("term") { "value" }
-    })
+    expectNoDifference(
+      grammar,
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") { "second" }
+        Rule("term") { "value" }
+      }
+    )
   }
 }

@@ -1,3 +1,6 @@
 public protocol GrammarComponent {
-  var grammar: Grammar { get }
+  associatedtype Rules: Sequence<Rule>
+
+  @RulesBuilder
+  var rules: Rules { get }
 }
