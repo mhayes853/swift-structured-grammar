@@ -133,7 +133,7 @@ extension CharacterGroup {
       case .gbnf:
         return Self.gbnfUnicodeEscape(for: scalar)
       case .w3c:
-        return String(Swift.Character(scalar))
+        return "#x" + String(scalar.value, radix: 16)
       }
     }
   }

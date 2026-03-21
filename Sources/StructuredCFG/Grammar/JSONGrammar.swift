@@ -6,16 +6,16 @@ public struct JSONGrammar: GrammarComponent {
   public var grammar: Grammar {
     Grammar(startingSymbol: .root) {
       Rule("sign") {
-        Choice {
-          ""
-          "+"
-          "-"
+        OptionalExpression {
+          Choice {
+            "+"
+            "-"
+          }
         }
       }
 
       Rule("fraction") {
-        Choice {
-          ""
+        OptionalExpression {
           ConcatenateExpressions {
             "."
             OneOrMore {
@@ -26,8 +26,7 @@ public struct JSONGrammar: GrammarComponent {
       }
 
       Rule("exponent") {
-        Choice {
-          ""
+        OptionalExpression {
           ConcatenateExpressions {
             CharacterGroup("eE")
             Ref("sign")
@@ -57,7 +56,7 @@ public struct JSONGrammar: GrammarComponent {
           name: "characters_item",
           allowedCharacters: self.stringCharacterGroup,
           ending1: Epsilon(),
-          ending2: CharacterGroup(",\\]")
+          ending2: CharacterGroup(",#x5D")
         )
       }
 
@@ -98,8 +97,7 @@ public struct JSONGrammar: GrammarComponent {
       }
 
       Rule("elements_rest") {
-        Choice {
-          Epsilon()
+        OptionalExpression {
           ConcatenateExpressions {
             ZeroOrMore { CharacterGroup.jsonWhitespace }
             ","
@@ -330,7 +328,7 @@ extension JSONGrammar {
     if self.asciiOnly {
       CharacterGroup("\\x20\\x21\\x23-\\x7E")
     } else {
-      CharacterGroup("\\x20\\x21\\u0023-\\U0010FFFF")
+      CharacterGroup("[^\\x00-\\x1F\"#x5C]")
     }
   }
 }
@@ -396,7 +394,7 @@ private struct JSONMembersEnding: ExpressionComponent {
   var expression: Expression {
     GroupExpression {
       "="
-      CharacterGroup(" \\n\\t,}\\]")
+      CharacterGroup(" \\n\\t,}#x5D")
     }
   }
 }

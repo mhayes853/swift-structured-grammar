@@ -1,17 +1,17 @@
 root ::= "{" [ \n\t]* members_and_embrace | "[" [ \n\t]* elements_or_embrace
-sign ::= "" | "+" | "-"
-fraction ::= "" | "." [0-9]+
-exponent ::= "" | [eE] sign [0-9]+
+sign ::= ("+" | "-")?
+fraction ::= ("." [0-9]+)?
+exponent ::= ([eE] sign [0-9]+)?
 hex_digit ::= [a-fA-F0-9]
 escape ::= ["/bfnrt] | "u" hex_digit{4}
-characters_item ::= ("\"" | [\x20\x21\u0023-\U0010FFFF] characters_item | "\\" escape characters_item) "=" [ \n\t]* [,\]]
-characters_and_embrace ::= ("\"" [ \n\t]* "}" | [\x20\x21\u0023-\U0010FFFF] characters_and_embrace | "\\" escape characters_and_embrace) "=" [ \n\t]* [},]
-characters_and_comma ::= ("\"" [ \n\t]* "," | [\x20\x21\u0023-\U0010FFFF] characters_and_comma | "\\" escape characters_and_comma) "=" [ \n\t]* "\""
-characters_and_colon ::= ("\"" [ \n\t]* ":" | [\x20\x21\u0023-\U0010FFFF] characters_and_colon | "\\" escape characters_and_colon) "=" [ \n\t]* ["{[0-9tfn-]
-elements_rest ::= "" | [ \n\t]* "," [ \n\t]* elements
+characters_item ::= ("\"" | [^\x0-\x1f"\x5c] characters_item | "\\" escape characters_item) "=" [ \n\t]* [,\x5d]
+characters_and_embrace ::= ("\"" [ \n\t]* "}" | [^\x0-\x1f"\x5c] characters_and_embrace | "\\" escape characters_and_embrace) "=" [ \n\t]* [},]
+characters_and_comma ::= ("\"" [ \n\t]* "," | [^\x0-\x1f"\x5c] characters_and_comma | "\\" escape characters_and_comma) "=" [ \n\t]* "\""
+characters_and_colon ::= ("\"" [ \n\t]* ":" | [^\x0-\x1f"\x5c] characters_and_colon | "\\" escape characters_and_colon) "=" [ \n\t]* ["{[0-9tfn-]
+elements_rest ::= ([ \n\t]* "," [ \n\t]* elements)?
 elements ::= "{" [ \n\t]* members_and_embrace elements_rest | "[" [ \n\t]* elements_or_embrace elements_rest | "\"" [ \n\t]* characters_item elements_rest | "0" fraction exponent elements_rest | [1-9] [0-9]* fraction exponent elements_rest | "-" [0-9] fraction exponent elements_rest | "-" [1-9] [0-9]* fraction exponent elements_rest | "true" elements_rest | "false" elements_rest | "null" elements_rest
 elements_or_embrace ::= "{" [ \n\t]* members_and_embrace elements_rest [ \n\t]* "]" | "[" [ \n\t]* elements_or_embrace elements_rest [ \n\t]* "]" | "\"" [ \n\t]* characters_item elements_rest [ \n\t]* "]" | "0" fraction exponent elements_rest [ \n\t]* "]" | [1-9] [0-9]* fraction exponent elements_rest [ \n\t]* "]" | "-" [0-9] fraction exponent elements_rest [ \n\t]* "]" | "-" [1-9] [0-9]* fraction exponent elements_rest [ \n\t]* "]" | "true" elements_rest [ \n\t]* "]" | "false" elements_rest [ \n\t]* "]" | "null" elements_rest [ \n\t]* "]" | "]"
-member_suffix_suffix ::= ("}" | "," [ \n\t]* "\"" characters_and_colon [ \n\t]* members_suffix) ("=" [ \n\t,}\]])
-members_suffix ::= (value_non_str [ \n\t]* member_suffix_suffix | "\"" characters_and_embrace | "\"" characters_and_comma [ \n\t]* "\"" characters_and_colon [ \n\t]* members_suffix) ("=" [ \n\t,}\]])
-members_and_embrace ::= ("\"" characters_and_colon [ \n\t]* members_suffix | "}") ("=" [ \n\t,}\]])
+member_suffix_suffix ::= ("}" | "," [ \n\t]* "\"" characters_and_colon [ \n\t]* members_suffix) ("=" [ \n\t,}\x5d])
+members_suffix ::= (value_non_str [ \n\t]* member_suffix_suffix | "\"" characters_and_embrace | "\"" characters_and_comma [ \n\t]* "\"" characters_and_colon [ \n\t]* members_suffix) ("=" [ \n\t,}\x5d])
+members_and_embrace ::= ("\"" characters_and_colon [ \n\t]* members_suffix | "}") ("=" [ \n\t,}\x5d])
 value_non_str ::= ("{" [ \n\t]* members_and_embrace | "[" [ \n\t]* elements_or_embrace | "0" fraction exponent | [1-9] [0-9]* fraction exponent | "-" [0-9] fraction exponent | "-" [1-9] [0-9]* fraction exponent | "true" | "false" | "null") "=" [ \n\t]* member_suffix_suffix

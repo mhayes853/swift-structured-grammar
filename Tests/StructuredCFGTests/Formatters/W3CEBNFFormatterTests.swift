@@ -219,7 +219,7 @@ struct `W3CEBNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: formatter),
-      #"start ::= 'it\'s'"#
+      #"start ::= 'it'#x27's'"#
     )
   }
 
@@ -265,7 +265,7 @@ struct `W3CEBNFFormatter tests` {
       CharacterGroup("\\U0001F600")
     })
 
-    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= [😀]"#)
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"start ::= [#x1f600]"#)
   }
 
   @Test

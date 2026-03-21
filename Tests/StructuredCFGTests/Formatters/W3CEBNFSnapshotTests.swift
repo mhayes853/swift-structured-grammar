@@ -9,7 +9,8 @@ struct `W3CEBNFSnapshot tests` {
   @Test(arguments: LanguageSnapshotSuite.cases.map(\.name))
   func `Representative Grammars Format Canonically`(snapshotName: String) {
     let snapshotCase = LanguageSnapshotSuite.snapshotCase(named: snapshotName)
-    assertEBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
+    let grammar = snapshotCase.language.grammar()
+    assertEBNFSnapshot(grammar, named: snapshotCase.name)
   }
 
   @Test
@@ -278,124 +279,7 @@ private enum LanguageSnapshotSuite {
     ),
     LanguageSnapshotCase(
       name: "json-grammar",
-      language: Grammar(startingSymbol: "value") {
-        Rule("value") {
-          Choice {
-            Ref("object")
-            Ref("array")
-            Ref("string")
-            Ref("number")
-            "true"
-            "false"
-            "null"
-          }
-        }
-
-        Rule("object") {
-          "{"
-          OptionalExpression {
-            Ref("members")
-          }
-          "}"
-        }
-
-        Rule("members") {
-          Ref("pair")
-          ZeroOrMore {
-            GroupExpression {
-              ","
-              Ref("pair")
-            }
-          }
-        }
-
-        Rule("pair") {
-          Ref("string")
-          ":"
-          Ref("value")
-        }
-
-        Rule("array") {
-          "["
-          OptionalExpression {
-            Ref("elements")
-          }
-          "]"
-        }
-
-        Rule("elements") {
-          Ref("value")
-          ZeroOrMore {
-            GroupExpression {
-              ","
-              Ref("value")
-            }
-          }
-        }
-
-        Rule("string") {
-          "string"
-        }
-
-        Rule("number") {
-          Ref("integer")
-          OptionalExpression {
-            Ref("fraction")
-          }
-          OptionalExpression {
-            Ref("exponent")
-          }
-        }
-
-        Rule("integer") {
-          OneOrMore {
-            Ref("digit")
-          }
-        }
-
-        Rule("fraction") {
-          "."
-          OneOrMore {
-            Ref("digit")
-          }
-        }
-
-        Rule("exponent") {
-          Choice {
-            "e"
-            "E"
-          }
-          OptionalExpression {
-            Ref("sign")
-          }
-          OneOrMore {
-            Ref("digit")
-          }
-        }
-
-        Rule("sign") {
-          Choice {
-            "+"
-            "-"
-          }
-        }
-
-        Rule("digit") {
-          Choice {
-            "0"
-            "1"
-            "2"
-            "3"
-            "4"
-            "5"
-            "6"
-            "7"
-            "8"
-            "9"
-          }
-        }
-      }
-      .language
+      language: JSONLanguage().language
     ),
     LanguageSnapshotCase(
       name: "character-group-grammar",

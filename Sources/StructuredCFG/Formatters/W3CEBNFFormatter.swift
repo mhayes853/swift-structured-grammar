@@ -140,7 +140,16 @@ extension Grammar {
       for character in terminal.characters {
         switch character {
         case .character(let character):
-          pendingLiteral.append(character)
+          switch (self.quoting, character) {
+          case (.double, "\""):
+            flushLiteral()
+            result += "#x22"
+          case (.single, "'"):
+            flushLiteral()
+            result += "#x27"
+          default:
+            pendingLiteral.append(character)
+          }
         case .hex, .unicode:
           flushLiteral()
           result += try self.format(terminalCharacter: character)
@@ -170,8 +179,6 @@ extension Grammar {
           switch character {
           case "\\":
             result += "\\\\"
-          case "\"":
-            result += #"\""#
           default:
             result.append(character)
           }
@@ -181,8 +188,6 @@ extension Grammar {
           switch character {
           case "\\":
             result += "\\\\"
-          case "'":
-            result += #"\'"#
           default:
             result.append(character)
           }

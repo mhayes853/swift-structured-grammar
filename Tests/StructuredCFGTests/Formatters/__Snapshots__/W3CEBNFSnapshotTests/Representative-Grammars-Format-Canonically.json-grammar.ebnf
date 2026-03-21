@@ -1,14 +1,17 @@
-root ::= value
-value ::= object | array | string | number | "true" | "false" | "null"
-object ::= "{" members? "}"
-members ::= pair ("," pair)*
-pair ::= string ":" value
-array ::= "[" elements? "]"
-elements ::= value ("," value)*
-string ::= "string"
-number ::= integer fraction? exponent?
-integer ::= digit+
-fraction ::= "." digit+
-exponent ::= ("e" | "E") sign? digit+
-sign ::= "+" | "-"
-digit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+root ::= "{" [ \n\t]* members_and_embrace | "[" [ \n\t]* elements_or_embrace
+sign ::= ("+" | "-")?
+fraction ::= ("." [\d]+)?
+exponent ::= ([eE] sign [\d]+)?
+hex_digit ::= [a-fA-F\d]
+escape ::= ["/bfnrt] | "u" hex_digit hex_digit hex_digit hex_digit
+characters_item ::= (#x22 | [^#x0-#x1f"#x5c] characters_item | "\\" escape characters_item) "=" [ \n\t]* [,#x5d]
+characters_and_embrace ::= (#x22 [ \n\t]* "}" | [^#x0-#x1f"#x5c] characters_and_embrace | "\\" escape characters_and_embrace) "=" [ \n\t]* [},]
+characters_and_comma ::= (#x22 [ \n\t]* "," | [^#x0-#x1f"#x5c] characters_and_comma | "\\" escape characters_and_comma) "=" [ \n\t]* #x22
+characters_and_colon ::= (#x22 [ \n\t]* ":" | [^#x0-#x1f"#x5c] characters_and_colon | "\\" escape characters_and_colon) "=" [ \n\t]* ["{[\dtfn-]
+elements_rest ::= ([ \n\t]* "," [ \n\t]* elements)?
+elements ::= "{" [ \n\t]* members_and_embrace elements_rest | "[" [ \n\t]* elements_or_embrace elements_rest | #x22 [ \n\t]* characters_item elements_rest | "0" fraction exponent elements_rest | [1-9] [\d]* fraction exponent elements_rest | "-" [\d] fraction exponent elements_rest | "-" [1-9] [\d]* fraction exponent elements_rest | "true" elements_rest | "false" elements_rest | "null" elements_rest
+elements_or_embrace ::= "{" [ \n\t]* members_and_embrace elements_rest [ \n\t]* "]" | "[" [ \n\t]* elements_or_embrace elements_rest [ \n\t]* "]" | #x22 [ \n\t]* characters_item elements_rest [ \n\t]* "]" | "0" fraction exponent elements_rest [ \n\t]* "]" | [1-9] [\d]* fraction exponent elements_rest [ \n\t]* "]" | "-" [\d] fraction exponent elements_rest [ \n\t]* "]" | "-" [1-9] [\d]* fraction exponent elements_rest [ \n\t]* "]" | "true" elements_rest [ \n\t]* "]" | "false" elements_rest [ \n\t]* "]" | "null" elements_rest [ \n\t]* "]" | "]"
+member_suffix_suffix ::= ("}" | "," [ \n\t]* #x22 characters_and_colon [ \n\t]* members_suffix) ("=" [ \n\t,}#x5d])
+members_suffix ::= (value_non_str [ \n\t]* member_suffix_suffix | #x22 characters_and_embrace | #x22 characters_and_comma [ \n\t]* #x22 characters_and_colon [ \n\t]* members_suffix) ("=" [ \n\t,}#x5d])
+members_and_embrace ::= (#x22 characters_and_colon [ \n\t]* members_suffix | "}") ("=" [ \n\t,}#x5d])
+value_non_str ::= ("{" [ \n\t]* members_and_embrace | "[" [ \n\t]* elements_or_embrace | "0" fraction exponent | [1-9] [\d]* fraction exponent | "-" [\d] fraction exponent | "-" [1-9] [\d]* fraction exponent | "true" | "false" | "null") "=" [ \n\t]* member_suffix_suffix

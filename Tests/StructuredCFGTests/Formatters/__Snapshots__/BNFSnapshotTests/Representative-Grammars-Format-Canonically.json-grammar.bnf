@@ -3,10 +3,10 @@
 " <root__bnf_1> | "	" <root__bnf_1>
 <root__bnf_2> ::= "" | " " <root__bnf_2> | "
 " <root__bnf_2> | "	" <root__bnf_2>
-<sign> ::= "" | "+" | "-"
-<fraction> ::= "" | "." "0" <fraction__bnf_1> | "." "1" <fraction__bnf_1> | "." "2" <fraction__bnf_1> | "." "3" <fraction__bnf_1> | "." "4" <fraction__bnf_1> | "." "5" <fraction__bnf_1> | "." "6" <fraction__bnf_1> | "." "7" <fraction__bnf_1> | "." "8" <fraction__bnf_1> | "." "9" <fraction__bnf_1>
+<sign> ::= ["+" | "-"]
+<fraction> ::= ["." "0" <fraction__bnf_1> | "." "1" <fraction__bnf_1> | "." "2" <fraction__bnf_1> | "." "3" <fraction__bnf_1> | "." "4" <fraction__bnf_1> | "." "5" <fraction__bnf_1> | "." "6" <fraction__bnf_1> | "." "7" <fraction__bnf_1> | "." "8" <fraction__bnf_1> | "." "9" <fraction__bnf_1>]
 <fraction__bnf_1> ::= "" | "0" <fraction__bnf_1> | "1" <fraction__bnf_1> | "2" <fraction__bnf_1> | "3" <fraction__bnf_1> | "4" <fraction__bnf_1> | "5" <fraction__bnf_1> | "6" <fraction__bnf_1> | "7" <fraction__bnf_1> | "8" <fraction__bnf_1> | "9" <fraction__bnf_1>
-<exponent> ::= "" | "e" <sign> "0" <exponent__bnf_1> | "e" <sign> "1" <exponent__bnf_1> | "e" <sign> "2" <exponent__bnf_1> | "e" <sign> "3" <exponent__bnf_1> | "e" <sign> "4" <exponent__bnf_1> | "e" <sign> "5" <exponent__bnf_1> | "e" <sign> "6" <exponent__bnf_1> | "e" <sign> "7" <exponent__bnf_1> | "e" <sign> "8" <exponent__bnf_1> | "e" <sign> "9" <exponent__bnf_1> | "E" <sign> "0" <exponent__bnf_1> | "E" <sign> "1" <exponent__bnf_1> | "E" <sign> "2" <exponent__bnf_1> | "E" <sign> "3" <exponent__bnf_1> | "E" <sign> "4" <exponent__bnf_1> | "E" <sign> "5" <exponent__bnf_1> | "E" <sign> "6" <exponent__bnf_1> | "E" <sign> "7" <exponent__bnf_1> | "E" <sign> "8" <exponent__bnf_1> | "E" <sign> "9" <exponent__bnf_1>
+<exponent> ::= ["e" <sign> "0" <exponent__bnf_1> | "e" <sign> "1" <exponent__bnf_1> | "e" <sign> "2" <exponent__bnf_1> | "e" <sign> "3" <exponent__bnf_1> | "e" <sign> "4" <exponent__bnf_1> | "e" <sign> "5" <exponent__bnf_1> | "e" <sign> "6" <exponent__bnf_1> | "e" <sign> "7" <exponent__bnf_1> | "e" <sign> "8" <exponent__bnf_1> | "e" <sign> "9" <exponent__bnf_1> | "E" <sign> "0" <exponent__bnf_1> | "E" <sign> "1" <exponent__bnf_1> | "E" <sign> "2" <exponent__bnf_1> | "E" <sign> "3" <exponent__bnf_1> | "E" <sign> "4" <exponent__bnf_1> | "E" <sign> "5" <exponent__bnf_1> | "E" <sign> "6" <exponent__bnf_1> | "E" <sign> "7" <exponent__bnf_1> | "E" <sign> "8" <exponent__bnf_1> | "E" <sign> "9" <exponent__bnf_1>]
 <exponent__bnf_1> ::= "" | "0" <exponent__bnf_1> | "1" <exponent__bnf_1> | "2" <exponent__bnf_1> | "3" <exponent__bnf_1> | "4" <exponent__bnf_1> | "5" <exponent__bnf_1> | "6" <exponent__bnf_1> | "7" <exponent__bnf_1> | "8" <exponent__bnf_1> | "9" <exponent__bnf_1>
 <hex_digit> ::= "a" | "b" | "c" | "d" | "e" | "f" | "A" | "B" | "C" | "D" | "E" | "F" | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 <escape> ::= "\"" | "/" | "b" | "f" | "n" | "r" | "t" | "u" <hex_digit> <hex_digit> <hex_digit> <hex_digit>
@@ -28,7 +28,7 @@
 " <characters_and_colon__bnf_1> | "	" <characters_and_colon__bnf_1>
 <characters_and_colon__bnf_2> ::= "" | " " <characters_and_colon__bnf_2> | "
 " <characters_and_colon__bnf_2> | "	" <characters_and_colon__bnf_2>
-<elements_rest> ::= "" | <elements_rest__bnf_1> "," <elements_rest__bnf_2> <elements>
+<elements_rest> ::= [<elements_rest__bnf_1> "," <elements_rest__bnf_2> <elements>]
 <elements_rest__bnf_1> ::= "" | " " <elements_rest__bnf_1> | "
 " <elements_rest__bnf_1> | "	" <elements_rest__bnf_1>
 <elements_rest__bnf_2> ::= "" | " " <elements_rest__bnf_2> | "
