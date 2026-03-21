@@ -50,221 +50,32 @@ public struct JSONLanguage: LanguageComponent {
           }
         }
 
-        Rule("characters_item") {
-          CharactersExpression(
-            name: "characters_item",
-            allowedCharacters: self.stringCharacterGroup,
-            ending1: Epsilon(),
-            ending2: CharacterGroup(",#x5D")
-          )
-        }
-
-        Rule("characters_and_embrace") {
-          CharactersExpression(
-            name: "characters_and_embrace",
-            allowedCharacters: self.stringCharacterGroup,
-            ending1: ConcatenateExpressions {
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              "}"
-            },
-            ending2: CharacterGroup("},")
-          )
-        }
-
-        Rule("characters_and_comma") {
-          CharactersExpression(
-            name: "characters_and_comma",
-            allowedCharacters: self.stringCharacterGroup,
-            ending1: ConcatenateExpressions {
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              ","
-            },
-            ending2: Terminal("\"")
-          )
-        }
-
-        Rule("characters_and_colon") {
-          CharactersExpression(
-            name: "characters_and_colon",
-            allowedCharacters: self.stringCharacterGroup,
-            ending1: ConcatenateExpressions {
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              ":"
-            },
-            ending2: CharacterGroup("\"{[0-9tfn-")
-          )
-        }
-
-        Rule("elements_rest") {
-          OptionalExpression {
+        Rule("string_characters") {
+          Choice {
             ConcatenateExpressions {
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              ","
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("elements")
+              "\""
+            }
+            ConcatenateExpressions {
+              self.stringCharacterGroup
+              Ref("string_characters")
+            }
+            ConcatenateExpressions {
+              "\\"
+              Ref("escape")
+              Ref("string_characters")
             }
           }
         }
 
-        Rule("elements") {
-          Choice {
-            JSONElement {
-              "{"
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_and_embrace")
-            }
-            JSONElement {
-              "["
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("elements_or_embrace")
-            }
-            JSONElement {
-              "\""
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("characters_item")
-            }
-            JSONElement {
-              "0"
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement {
-              CharacterGroup("1-9")
-              ZeroOrMore { CharacterGroup.digit }
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement {
-              "-"
-              CharacterGroup.digit
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement {
-              "-"
-              CharacterGroup("1-9")
-              ZeroOrMore { CharacterGroup.digit }
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement { "true" }
-            JSONElement { "false" }
-            JSONElement { "null" }
+        Rule("string") {
+          ConcatenateExpressions {
+            "\""
+            Ref("string_characters")
           }
         }
 
-        Rule("elements_or_embrace") {
+        Rule("number") {
           Choice {
-            JSONElement(withEmbrace: true) {
-              "{"
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_and_embrace")
-            }
-            JSONElement(withEmbrace: true) {
-              "["
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("elements_or_embrace")
-            }
-            JSONElement(withEmbrace: true) {
-              "\""
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("characters_item")
-            }
-            JSONElement(withEmbrace: true) {
-              "0"
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement(withEmbrace: true) {
-              CharacterGroup("1-9")
-              ZeroOrMore { CharacterGroup.digit }
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement(withEmbrace: true) {
-              "-"
-              CharacterGroup.digit
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement(withEmbrace: true) {
-              "-"
-              CharacterGroup("1-9")
-              ZeroOrMore { CharacterGroup.digit }
-              Ref("fraction")
-              Ref("exponent")
-            }
-            JSONElement(withEmbrace: true) { "true" }
-            JSONElement(withEmbrace: true) { "false" }
-            JSONElement(withEmbrace: true) { "null" }
-            "]"
-          }
-        }
-
-        Rule("member_suffix_suffix") {
-          Choice {
-            "}"
-            ConcatenateExpressions {
-              ","
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              "\""
-              Ref("characters_and_colon")
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_suffix")
-            }
-          }
-          JSONMembersEnding()
-        }
-
-        Rule("members_suffix") {
-          Choice {
-            ConcatenateExpressions {
-              Ref("value_non_str")
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("member_suffix_suffix")
-            }
-            ConcatenateExpressions {
-              "\""
-              Ref("characters_and_embrace")
-            }
-            ConcatenateExpressions {
-              "\""
-              Ref("characters_and_comma")
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              "\""
-              Ref("characters_and_colon")
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_suffix")
-            }
-          }
-          JSONMembersEnding()
-        }
-
-        Rule("members_and_embrace") {
-          Choice {
-            ConcatenateExpressions {
-              "\""
-              Ref("characters_and_colon")
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_suffix")
-            }
-            "}"
-          }
-          JSONMembersEnding()
-        }
-
-        Rule("value_non_str") {
-          Choice {
-            ConcatenateExpressions {
-              "{"
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_and_embrace")
-            }
-            ConcatenateExpressions {
-              "["
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("elements_or_embrace")
-            }
             ConcatenateExpressions {
               "0"
               Ref("fraction")
@@ -278,7 +89,7 @@ public struct JSONLanguage: LanguageComponent {
             }
             ConcatenateExpressions {
               "-"
-              CharacterGroup.digit
+              "0"
               Ref("fraction")
               Ref("exponent")
             }
@@ -289,29 +100,87 @@ public struct JSONLanguage: LanguageComponent {
               Ref("fraction")
               Ref("exponent")
             }
+          }
+        }
+
+        Rule("value") {
+          Choice {
+            Ref("object")
+            Ref("array")
+            Ref("string")
+            Ref("number")
             "true"
             "false"
             "null"
           }
+        }
+
+        Rule("member") {
           ConcatenateExpressions {
-            "="
+            Ref("string")
             ZeroOrMore { CharacterGroup.jsonWhitespace }
-            Ref("member_suffix_suffix")
+            ":"
+            ZeroOrMore { CharacterGroup.jsonWhitespace }
+            Ref("value")
+          }
+        }
+
+        Rule("members") {
+          ConcatenateExpressions {
+            Ref("member")
+            ZeroOrMore {
+              GroupExpression {
+                ZeroOrMore { CharacterGroup.jsonWhitespace }
+                ","
+                ZeroOrMore { CharacterGroup.jsonWhitespace }
+                Ref("member")
+              }
+            }
+          }
+        }
+
+        Rule("object") {
+          ConcatenateExpressions {
+            "{"
+            ZeroOrMore { CharacterGroup.jsonWhitespace }
+            OptionalExpression {
+              Ref("members")
+              ZeroOrMore { CharacterGroup.jsonWhitespace }
+            }
+            "}"
+          }
+        }
+
+        Rule("elements") {
+          ConcatenateExpressions {
+            Ref("value")
+            ZeroOrMore {
+              GroupExpression {
+                ZeroOrMore { CharacterGroup.jsonWhitespace }
+                ","
+                ZeroOrMore { CharacterGroup.jsonWhitespace }
+                Ref("value")
+              }
+            }
+          }
+        }
+
+        Rule("array") {
+          ConcatenateExpressions {
+            "["
+            ZeroOrMore { CharacterGroup.jsonWhitespace }
+            OptionalExpression {
+              Ref("elements")
+              ZeroOrMore { CharacterGroup.jsonWhitespace }
+            }
+            "]"
           }
         }
 
         Rule(.root) {
           Choice {
-            ConcatenateExpressions {
-              "{"
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("members_and_embrace")
-            }
-            ConcatenateExpressions {
-              "["
-              ZeroOrMore { CharacterGroup.jsonWhitespace }
-              Ref("elements_or_embrace")
-            }
+            Ref("object")
+            Ref("array")
           }
         }
       }
@@ -331,68 +200,6 @@ public struct JSONLanguage: LanguageComponent {
   }
 }
 
-// MARK: - Helpers
-
-private struct CharactersExpression<
-  E: ExpressionComponent,
-  E2: ExpressionComponent
->: ExpressionComponent {
-  let name: Symbol
-  let allowedCharacters: CharacterGroup
-  let ending1: E
-  let ending2: E2
-
-  var expression: Expression {
-    ConcatenateExpressions {
-      Choice {
-        ConcatenateExpressions {
-          "\""
-          self.ending1
-        }
-        ConcatenateExpressions {
-          self.allowedCharacters
-          Ref(self.name)
-        }
-        ConcatenateExpressions {
-          "\\"
-          Ref("escape")
-          Ref(self.name)
-        }
-      }
-      ConcatenateExpressions {
-        "="
-        ZeroOrMore { CharacterGroup.jsonWhitespace }
-        self.ending2
-      }
-    }
-  }
-}
-
 extension CharacterGroup {
   fileprivate static let jsonWhitespace = Self(" \\n\\t")
-}
-
-private struct JSONElement: ExpressionComponent {
-  var withEmbrace = false
-  @ExpressionBuilder var content: () -> Expression
-
-  var expression: Expression {
-    ConcatenateExpressions {
-      content()
-      Ref("elements_rest")
-      if self.withEmbrace {
-        ZeroOrMore { CharacterGroup.jsonWhitespace }
-        "]"
-      }
-    }
-  }
-}
-
-private struct JSONMembersEnding: ExpressionComponent {
-  var expression: Expression {
-    GroupExpression {
-      "="
-      CharacterGroup(" \\n\\t,}#x5D")
-    }
-  }
 }
