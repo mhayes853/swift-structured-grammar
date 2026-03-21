@@ -12,7 +12,7 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   @_disfavoredOverload
   public init(_ string: String) throws {
     let processedString: String
-    switch (string.hasPrefix("["), string.hasSuffix("]")) {
+    switch (string.hasPrefix("["), Self.hasUnescapedTrailingClosingBracket(string)) {
     case (false, false):
       processedString = "[" + string + "]"
     case (true, true):
@@ -431,6 +431,22 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     case .hex(let scalar), .unicode(let scalar):
       return scalar.value
     }
+  }
+
+  private static func hasUnescapedTrailingClosingBracket(_ string: String) -> Bool {
+    guard string.last == "]" else {
+      return false
+    }
+
+    var trailingBackslashCount = 0
+    for character in string.dropLast().reversed() {
+      guard character == "\\" else {
+        break
+      }
+      trailingBackslashCount += 1
+    }
+
+    return trailingBackslashCount.isMultiple(of: 2)
   }
 
   public enum Member: Hashable, Sendable {

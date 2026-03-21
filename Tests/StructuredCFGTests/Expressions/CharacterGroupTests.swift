@@ -182,6 +182,32 @@ struct `CharacterGroup tests` {
   }
 
   @Test
+  func `CharacterGroup Parses Escaped Closing Bracket In Unbracketed Group`() {
+    let group = CharacterGroup(",\\]")
+
+    expectNoDifference(
+      group.members,
+      [
+        .character(.character(",")),
+        .escaped(.rightBracket)
+      ]
+    )
+  }
+
+  @Test
+  func `CharacterGroup Parses Escaped Closing Bracket In Bracketed Group`() throws {
+    let group = try CharacterGroup(String("[,\\]]"))
+
+    expectNoDifference(
+      group.members,
+      [
+        .character(.character(",")),
+        .escaped(.rightBracket)
+      ]
+    )
+  }
+
+  @Test
   func `CharacterGroup Formats Combined Character Class`() throws {
     let group = CharacterGroup("a-zA-Z0-9_")
 

@@ -6,7 +6,7 @@ import Testing
 
 @Suite
 struct `ISO Snapshot tests` {
-  @Test(arguments: ISOSnapshotSuite.cases.map(\.name))
+  @Test(arguments: ISOSnapshotSuite.cases.map { $0.name })
   func `Representative Grammars Format Canonically`(snapshotName: String) {
     let snapshotCase = ISOSnapshotSuite.snapshotCase(named: snapshotName)
     assertISOEBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
@@ -46,7 +46,9 @@ private func assertISOEBNFSnapshot(
 }
 
 private enum ISOSnapshotSuite {
-  static let cases = RepresentativeSnapshotLanguageSuite.cases + [
+  static let cases = RepresentativeSnapshotLanguageSuite.replacingJSONLanguage(
+    with: JSONLanguage(asciiOnly: true).language
+  ) + [
     RepresentativeSnapshotLanguageCase(
       name: "special-sequence-grammar",
       language: Grammar(startingSymbol: "space") {

@@ -6,9 +6,9 @@ import Testing
 
 @Suite
 struct `BNF Snapshot tests` {
-  @Test(arguments: RepresentativeSnapshotLanguageSuite.cases.map(\.name))
+  @Test(arguments: BNFSnapshotSuite.cases.map { $0.name })
   func `Representative Grammars Format Canonically`(snapshotName: String) {
-    let snapshotCase = RepresentativeSnapshotLanguageSuite.snapshotCase(named: snapshotName)
+    let snapshotCase = BNFSnapshotSuite.snapshotCase(named: snapshotName)
     assertBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
   }
 }
@@ -42,4 +42,14 @@ private func assertBNFSnapshot(
   }
 
   expectNoDifference(failure, nil)
+}
+
+private enum BNFSnapshotSuite {
+  static let cases = RepresentativeSnapshotLanguageSuite.replacingJSONLanguage(
+    with: JSONLanguage(asciiOnly: true).language
+  )
+
+  static func snapshotCase(named name: String) -> RepresentativeSnapshotLanguageCase {
+    self.cases.first(where: { $0.name == name })!
+  }
 }

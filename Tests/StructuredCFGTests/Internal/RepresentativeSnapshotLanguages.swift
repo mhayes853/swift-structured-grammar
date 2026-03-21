@@ -56,7 +56,8 @@ enum RepresentativeSnapshotLanguageSuite {
             "2"
           }
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "unioned-grammar",
@@ -95,7 +96,8 @@ enum RepresentativeSnapshotLanguageSuite {
             "identifier"
           }
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "namespaced-grammar",
@@ -122,7 +124,8 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("gb-term") {
           "right"
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "helper-production-grammar",
@@ -135,7 +138,8 @@ enum RepresentativeSnapshotLanguageSuite {
             }
           }
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "comprehensive-grammar",
@@ -213,7 +217,8 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("ga-qualified") {
           "qualified"
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "hex-terminal-grammar",
@@ -231,127 +236,12 @@ enum RepresentativeSnapshotLanguageSuite {
             .character("]")
           ])
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "json-grammar",
-      language: Grammar(startingSymbol: "value") {
-        Rule("value") {
-          Choice {
-            Ref("object")
-            Ref("array")
-            Ref("string")
-            Ref("number")
-            "true"
-            "false"
-            "null"
-          }
-        }
-
-        Rule("object") {
-          "{"
-          OptionalExpression {
-            Ref("members")
-          }
-          "}"
-        }
-
-        Rule("members") {
-          Ref("pair")
-          ZeroOrMore {
-            GroupExpression {
-              ","
-              Ref("pair")
-            }
-          }
-        }
-
-        Rule("pair") {
-          Ref("string")
-          ":"
-          Ref("value")
-        }
-
-        Rule("array") {
-          "["
-          OptionalExpression {
-            Ref("elements")
-          }
-          "]"
-        }
-
-        Rule("elements") {
-          Ref("value")
-          ZeroOrMore {
-            GroupExpression {
-              ","
-              Ref("value")
-            }
-          }
-        }
-
-        Rule("string") {
-          "string"
-        }
-
-        Rule("number") {
-          Ref("integer")
-          OptionalExpression {
-            Ref("fraction")
-          }
-          OptionalExpression {
-            Ref("exponent")
-          }
-        }
-
-        Rule("integer") {
-          OneOrMore {
-            Ref("digit")
-          }
-        }
-
-        Rule("fraction") {
-          "."
-          OneOrMore {
-            Ref("digit")
-          }
-        }
-
-        Rule("exponent") {
-          Choice {
-            "e"
-            "E"
-          }
-          OptionalExpression {
-            Ref("sign")
-          }
-          OneOrMore {
-            Ref("digit")
-          }
-        }
-
-        Rule("sign") {
-          Choice {
-            "+"
-            "-"
-          }
-        }
-
-        Rule("digit") {
-          Choice {
-            "0"
-            "1"
-            "2"
-            "3"
-            "4"
-            "5"
-            "6"
-            "7"
-            "8"
-            "9"
-          }
-        }
-      }.language
+      language: Language { JSONLanguage() }
     ),
     RepresentativeSnapshotLanguageCase(
       name: "character-group-grammar",
@@ -377,7 +267,8 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("escaped") {
           CharacterGroup("\\n\\r\\t")
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "range-grammar",
@@ -394,7 +285,8 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("bounded") {
           Repeat(1...3, Terminal("b"))
         }
-      }.language
+      }
+      .language
     ),
     RepresentativeSnapshotLanguageCase(
       name: "hex-character-group-grammar",
@@ -411,11 +303,24 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("mixed-hex") {
           CharacterGroup("a-z#x41")
         }
-      }.language
+      }
+      .language
     )
   ]
 
   static func snapshotCase(named name: String) -> RepresentativeSnapshotLanguageCase {
     self.cases.first(where: { $0.name == name })!
+  }
+
+  static func replacingJSONLanguage(with language: Language) -> [RepresentativeSnapshotLanguageCase] {
+    self.cases.map { snapshotCase in
+      guard snapshotCase.name == "json-grammar" else {
+        return snapshotCase
+      }
+      return RepresentativeSnapshotLanguageCase(
+        name: snapshotCase.name,
+        language: language
+      )
+    }
   }
 }

@@ -1,14 +1,56 @@
-root = value;
-value = object | array | string | number | 'true' | 'false' | 'null';
-object = '{', [members], '}';
-members = pair, {(',', pair)};
-pair = string, ':', value;
-array = '[', [elements], ']';
-elements = value, {(',', value)};
-string = 'string';
-number = integer, [fraction], [exponent];
-integer = digit, {digit};
-fraction = '.', digit, {digit};
-exponent = ('e' | 'E'), [sign], digit, {digit};
-sign = '+' | '-';
-digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+root = '{', {' ' | '
+' | '	'}, members_and_embrace | '[', {' ' | '
+' | '	'}, elements_or_embrace;
+sign = '' | '+' | '-';
+fraction = '' | '.', '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'};
+exponent = '' | 'e' | 'E', sign, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'};
+hex_digit = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+escape = '"' | '/' | 'b' | 'f' | 'n' | 'r' | 't' | 'u', 4 * hex_digit;
+characters_item = ('"' | ' ' | '!' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '[' | '\\' | ']' | '^' | '_' | '`' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|' | '}' | '~', characters_item | '\\', escape, characters_item), '=', {' ' | '
+' | '	'}, ',' | ']';
+characters_and_embrace = ('"', {' ' | '
+' | '	'}, '}' | ' ' | '!' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '[' | '\\' | ']' | '^' | '_' | '`' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|' | '}' | '~', characters_and_embrace | '\\', escape, characters_and_embrace), '=', {' ' | '
+' | '	'}, '}' | ',';
+characters_and_comma = ('"', {' ' | '
+' | '	'}, ',' | ' ' | '!' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '[' | '\\' | ']' | '^' | '_' | '`' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|' | '}' | '~', characters_and_comma | '\\', escape, characters_and_comma), '=', {' ' | '
+' | '	'}, '"';
+characters_and_colon = ('"', {' ' | '
+' | '	'}, ':' | ' ' | '!' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '[' | '\\' | ']' | '^' | '_' | '`' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|' | '}' | '~', characters_and_colon | '\\', escape, characters_and_colon), '=', {' ' | '
+' | '	'}, '"' | '{' | '[' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 't' | 'f' | 'n' | '-';
+elements_rest =  | {' ' | '
+' | '	'}, ',', {' ' | '
+' | '	'}, elements;
+elements = '{', {' ' | '
+' | '	'}, members_and_embrace, elements_rest | '[', {' ' | '
+' | '	'}, elements_or_embrace, elements_rest | '"', {' ' | '
+' | '	'}, characters_item, elements_rest | '0', fraction, exponent, elements_rest | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'}, fraction, exponent, elements_rest | '-', '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', fraction, exponent, elements_rest | '-', '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'}, fraction, exponent, elements_rest | 'true', elements_rest | 'false', elements_rest | 'null', elements_rest;
+elements_or_embrace = '{', {' ' | '
+' | '	'}, members_and_embrace, elements_rest, {' ' | '
+' | '	'}, ']' | '[', {' ' | '
+' | '	'}, elements_or_embrace, elements_rest, {' ' | '
+' | '	'}, ']' | '"', {' ' | '
+' | '	'}, characters_item, elements_rest, {' ' | '
+' | '	'}, ']' | '0', fraction, exponent, elements_rest, {' ' | '
+' | '	'}, ']' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'}, fraction, exponent, elements_rest, {' ' | '
+' | '	'}, ']' | '-', '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', fraction, exponent, elements_rest, {' ' | '
+' | '	'}, ']' | '-', '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'}, fraction, exponent, elements_rest, {' ' | '
+' | '	'}, ']' | 'true', elements_rest, {' ' | '
+' | '	'}, ']' | 'false', elements_rest, {' ' | '
+' | '	'}, ']' | 'null', elements_rest, {' ' | '
+' | '	'}, ']' | ']';
+member_suffix_suffix = ('}' | ',', {' ' | '
+' | '	'}, '"', characters_and_colon, {' ' | '
+' | '	'}, members_suffix), ('=', ' ' | '
+' | '	' | ',' | '}' | ']');
+members_suffix = (value_non_str, {' ' | '
+' | '	'}, member_suffix_suffix | '"', characters_and_embrace | '"', characters_and_comma, {' ' | '
+' | '	'}, '"', characters_and_colon, {' ' | '
+' | '	'}, members_suffix), ('=', ' ' | '
+' | '	' | ',' | '}' | ']');
+members_and_embrace = ('"', characters_and_colon, {' ' | '
+' | '	'}, members_suffix | '}'), ('=', ' ' | '
+' | '	' | ',' | '}' | ']');
+value_non_str = ('{', {' ' | '
+' | '	'}, members_and_embrace | '[', {' ' | '
+' | '	'}, elements_or_embrace | '0', fraction, exponent | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'}, fraction, exponent | '-', '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', fraction, exponent | '-', '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', {'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'}, fraction, exponent | 'true' | 'false' | 'null'), '=', {' ' | '
+' | '	'}, member_suffix_suffix;
