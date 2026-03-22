@@ -62,16 +62,16 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
   }
 
   public static var all: Self {
-      Self(
-        isNegated: false,
-        members: [
-          .range(
-            .unicode(Unicode.Scalar(UInt32(0))!),
-            .unicode(Unicode.Scalar(UInt32(0x10FFFF))!)
-          )
-        ]
-      )
-    }
+    Self(
+      isNegated: false,
+      members: [
+        .range(
+          .unicode(Unicode.Scalar(UInt32(0))!),
+          .unicode(Unicode.Scalar(UInt32(0x10FFFF))!)
+        )
+      ]
+    )
+  }
 
   public var isDigit: Bool {
     self.matches(isNegated: false, members: Self.digitMembers)
@@ -217,7 +217,9 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     return (members, index + 2)
   }
 
-  private static func parseHexEscape(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
+  private static func parseHexEscape(characters: [Character], index: Int) throws -> (
+    members: [Member], index: Int
+  ) {
     guard index + 2 < characters.count else {
       throw ParseError.incompleteHexEscape
     }
@@ -244,7 +246,9 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     return ([.character(.hex(scalar))], hexEnd)
   }
 
-  private static func parseUnicodeEscape(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
+  private static func parseUnicodeEscape(characters: [Character], index: Int) throws -> (
+    members: [Member], index: Int
+  ) {
     let escapedCharacter = characters[index + 1]
     let expectedDigits = escapedCharacter == "u" ? 4 : 8
 
@@ -276,7 +280,9 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     return ([.character(.unicode(startScalar))], hexEnd)
   }
 
-  private static func parseHexMember(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
+  private static func parseHexMember(characters: [Character], index: Int) throws -> (
+    members: [Member], index: Int
+  ) {
     let hexStart = index + 2
     var hexEnd = hexStart
     while hexEnd < characters.count && characters[hexEnd].isHexDigit {
@@ -304,7 +310,9 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     return ([.character(.hex(scalar))], hexEnd)
   }
 
-  private static func parseCharacterRange(characters: [Character], index: Int) throws -> (members: [Member], index: Int) {
+  private static func parseCharacterRange(characters: [Character], index: Int) throws -> (
+    members: [Member], index: Int
+  ) {
     let startCharacter = characters[index]
     if startCharacter == "-" {
       return ([.character(.character(characters[index]))], index + 1)
@@ -412,7 +420,8 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
 
   private static func validateRange(start: Terminal.Character, end: Terminal.Character) throws {
     guard case .character = start else {
-      guard let startValue = Self.scalarValue(for: start), let endValue = Self.scalarValue(for: end) else {
+      guard let startValue = Self.scalarValue(for: start), let endValue = Self.scalarValue(for: end)
+      else {
         return
       }
       guard startValue <= endValue else {

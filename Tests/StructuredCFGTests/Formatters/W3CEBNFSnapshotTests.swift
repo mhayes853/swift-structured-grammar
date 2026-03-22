@@ -279,7 +279,7 @@ private enum LanguageSnapshotSuite {
     ),
     LanguageSnapshotCase(
       name: "json-grammar",
-      language: JSONLanguage().language
+      language: JSON().language
     ),
     LanguageSnapshotCase(
       name: "character-group-grammar",

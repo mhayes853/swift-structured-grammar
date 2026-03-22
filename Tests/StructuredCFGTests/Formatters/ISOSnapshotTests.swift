@@ -46,24 +46,26 @@ private func assertISOEBNFSnapshot(
 }
 
 private enum ISOSnapshotSuite {
-  static let cases = RepresentativeSnapshotLanguageSuite.replacingJSONLanguage(
-    with: JSONLanguage(asciiOnly: true).language
-  ) + [
-    RepresentativeSnapshotLanguageCase(
-      name: "special-sequence-grammar",
-      language: Grammar(startingSymbol: "space") {
-        Rule("space") {
-          Special("ASCII character 32")
-        }
-        Rule("line") {
-          Choice {
-            Epsilon()
-            Ref("space")
+  static let cases =
+    RepresentativeSnapshotLanguageSuite.replacingJSONLanguage(
+      with: JSON(asciiOnly: true).language
+    ) + [
+      RepresentativeSnapshotLanguageCase(
+        name: "special-sequence-grammar",
+        language: Grammar(startingSymbol: "space") {
+          Rule("space") {
+            Special("ASCII character 32")
+          }
+          Rule("line") {
+            Choice {
+              Epsilon()
+              Ref("space")
+            }
           }
         }
-      }.language
-    )
-  ]
+        .language
+      )
+    ]
 
   static func snapshotCase(named name: String) -> RepresentativeSnapshotLanguageCase {
     self.cases.first(where: { $0.name == name })!

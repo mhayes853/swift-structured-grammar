@@ -46,7 +46,7 @@ private func assertBNFSnapshot(
 
 private enum BNFSnapshotSuite {
   static let cases = RepresentativeSnapshotLanguageSuite.replacingJSONLanguage(
-    with: JSONLanguage(asciiOnly: true).language
+    with: JSON(asciiOnly: true).language
   )
 
   static func snapshotCase(named name: String) -> RepresentativeSnapshotLanguageCase {

@@ -241,7 +241,7 @@ enum RepresentativeSnapshotLanguageSuite {
     ),
     RepresentativeSnapshotLanguageCase(
       name: "json-grammar",
-      language: Language { JSONLanguage() }
+      language: Language { JSON() }
     ),
     RepresentativeSnapshotLanguageCase(
       name: "character-group-grammar",
@@ -312,7 +312,8 @@ enum RepresentativeSnapshotLanguageSuite {
     self.cases.first(where: { $0.name == name })!
   }
 
-  static func replacingJSONLanguage(with language: Language) -> [RepresentativeSnapshotLanguageCase] {
+  static func replacingJSONLanguage(with language: Language) -> [RepresentativeSnapshotLanguageCase]
+  {
     self.cases.map { snapshotCase in
       guard snapshotCase.name == "json-grammar" else {
         return snapshotCase

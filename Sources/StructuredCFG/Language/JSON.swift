@@ -1,4 +1,4 @@
-public struct JSONLanguage: LanguageComponent {
+public struct JSON: LanguageComponent {
   public let asciiOnly: Bool
 
   public var language: Language {
