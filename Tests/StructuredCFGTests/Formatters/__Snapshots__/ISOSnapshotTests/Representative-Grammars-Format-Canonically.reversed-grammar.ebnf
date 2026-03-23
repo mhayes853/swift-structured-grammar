@@ -1,0 +1,3 @@
+root = expression;
+expression = term, 'a';
+term = 'c', 'b';

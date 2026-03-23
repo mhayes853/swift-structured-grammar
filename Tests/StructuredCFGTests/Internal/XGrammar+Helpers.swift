@@ -28,3 +28,28 @@ extension XGrammar.Grammar {
     self.init(ebnf: try grammar.formatted(with: .gbnf), rootRule: grammar.startingSymbol.rawValue)
   }
 }
+
+extension XGrammarTestSupport {
+  static func matcher(for language: Language) async throws -> XGrammar.Grammar.Matcher {
+    let grammar = try XGrammar.Grammar(language: language)
+    return try await grammar.matcher(
+      for: Self.matcherTokenizer,
+      terminatesWithoutStopToken: true
+    )
+  }
+
+  static func matches(_ input: String, language: Language) async throws -> Bool {
+    let matcher = try await Self.matcher(for: language)
+
+    for token in input.map(String.init) {
+      guard let tokenID = Self.matcherTokenIDs[token] else {
+        return false
+      }
+      guard matcher.accept(tokenID) else {
+        return false
+      }
+    }
+
+    return matcher.isTerminated
+  }
+}

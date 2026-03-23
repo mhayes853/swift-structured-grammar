@@ -1,0 +1,4 @@
+root = lastart;
+prefix = 'a';
+suffix = 'b';
+lastart = prefix, suffix;

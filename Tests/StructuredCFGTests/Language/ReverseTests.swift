@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `Reverse tests` {
@@ -139,5 +139,63 @@ struct `Reverse tests` {
     )
 
     expectNoDifference(helper.grammar(), wrapper.grammar())
+  }
+
+  @Test
+  func `Reverse Formats Rewritten Language In W3C`() throws {
+    let language = Reverse {
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") {
+          ConcatenateExpressions {
+            "a"
+            Ref("term")
+          }
+        }
+        Rule("term") {
+          ConcatenateExpressions {
+            "b"
+            "c"
+          }
+        }
+      }
+    }
+
+    expectNoDifference(
+      try language.language.formatted(with: .w3cEbnf),
+      """
+      root ::= expression
+      expression ::= term "a"
+      term ::= "c" "b"
+      """
+    )
+  }
+
+  @Test
+  func `Reverse XGrammar Matches Reversed Sequence Only`() async throws {
+    let language = Reverse {
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") {
+          ConcatenateExpressions {
+            "a"
+            Ref("term")
+          }
+        }
+        Rule("term") {
+          ConcatenateExpressions {
+            "b"
+            "c"
+          }
+        }
+      }
+    }
+    .language
+
+    let reversedMatch = try await XGrammarTestSupport.matches("cba", language: language)
+    let originalMatch = try await XGrammarTestSupport.matches("abc", language: language)
+    let partialMatch = try await XGrammarTestSupport.matches("cb", language: language)
+
+    expectNoDifference(reversedMatch, true)
+    expectNoDifference(originalMatch, false)
+    expectNoDifference(partialMatch, false)
   }
 }

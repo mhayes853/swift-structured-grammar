@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `Union tests` {
@@ -54,5 +54,48 @@ struct `Union tests` {
         Rule("lastart") { Ref("expression") }
       }
     )
+  }
+
+  @Test
+  func `Union Formats As W3C Choice Over Entry Productions`() throws {
+    let language = Union {
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") { "left" }
+      }
+      Grammar(startingSymbol: "statement") {
+        Rule("statement") { "right" }
+      }
+    }
+
+    expectNoDifference(
+      try language.language.formatted(with: .w3cEbnf),
+      """
+      root ::= lastart
+      expression ::= "left"
+      statement ::= "right"
+      lastart ::= expression | statement
+      """
+    )
+  }
+
+  @Test
+  func `Union XGrammar Matches Either Branch`() async throws {
+    let language = Union {
+      Grammar(startingSymbol: "expression") {
+        Rule("expression") { "left" }
+      }
+      Grammar(startingSymbol: "statement") {
+        Rule("statement") { "right" }
+      }
+    }
+    .language
+
+    let leftMatches = try await XGrammarTestSupport.matches("left", language: language)
+    let rightMatches = try await XGrammarTestSupport.matches("right", language: language)
+    let invalidMatches = try await XGrammarTestSupport.matches("other", language: language)
+
+    expectNoDifference(leftMatches, true)
+    expectNoDifference(rightMatches, true)
+    expectNoDifference(invalidMatches, false)
   }
 }

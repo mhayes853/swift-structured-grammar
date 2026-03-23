@@ -142,6 +142,44 @@ enum RepresentativeSnapshotLanguageSuite {
       .language
     ),
     RepresentativeSnapshotLanguageCase(
+      name: "concatenated-grammar",
+      language: ConcatenateLanguages {
+        Grammar(startingSymbol: "prefix") {
+          Rule("prefix") {
+            "a"
+          }
+        }
+
+        Grammar(startingSymbol: "suffix") {
+          Rule("suffix") {
+            "b"
+          }
+        }
+      }
+      .language
+    ),
+    RepresentativeSnapshotLanguageCase(
+      name: "reversed-grammar",
+      language: Reverse {
+        Grammar(startingSymbol: "expression") {
+          Rule("expression") {
+            ConcatenateExpressions {
+              "a"
+              Ref("term")
+            }
+          }
+
+          Rule("term") {
+            ConcatenateExpressions {
+              "b"
+              "c"
+            }
+          }
+        }
+      }
+      .language
+    ),
+    RepresentativeSnapshotLanguageCase(
       name: "comprehensive-grammar",
       language: Grammar(startingSymbol: "document") {
         Rule("document") {

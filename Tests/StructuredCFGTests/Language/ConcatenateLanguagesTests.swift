@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `ConcatenateLanguages tests` {
@@ -51,5 +51,48 @@ struct `ConcatenateLanguages tests` {
         Rule("lastart") { Ref("expression") }
       }
     )
+  }
+
+  @Test
+  func `ConcatenateLanguages Formats As W3C Sequence Over Entry Productions`() throws {
+    let language = ConcatenateLanguages {
+      Grammar(startingSymbol: "prefix") {
+        Rule("prefix") { "a" }
+      }
+      Grammar(startingSymbol: "suffix") {
+        Rule("suffix") { "b" }
+      }
+    }
+
+    expectNoDifference(
+      try language.language.formatted(with: .w3cEbnf),
+      """
+      root ::= lastart
+      prefix ::= "a"
+      suffix ::= "b"
+      lastart ::= prefix suffix
+      """
+    )
+  }
+
+  @Test
+  func `ConcatenateLanguages XGrammar Matches Full Sequence Only`() async throws {
+    let language = ConcatenateLanguages {
+      Grammar(startingSymbol: "prefix") {
+        Rule("prefix") { "a" }
+      }
+      Grammar(startingSymbol: "suffix") {
+        Rule("suffix") { "b" }
+      }
+    }
+    .language
+
+    let fullMatch = try await XGrammarTestSupport.matches("ab", language: language)
+    let partialMatch = try await XGrammarTestSupport.matches("a", language: language)
+    let wrongOrderMatch = try await XGrammarTestSupport.matches("ba", language: language)
+
+    expectNoDifference(fullMatch, true)
+    expectNoDifference(partialMatch, false)
+    expectNoDifference(wrongOrderMatch, false)
   }
 }
