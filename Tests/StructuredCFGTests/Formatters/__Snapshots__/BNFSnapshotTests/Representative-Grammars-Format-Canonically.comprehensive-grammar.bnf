@@ -1,5 +1,5 @@
 <root> ::= <document>
-<document> ::= <header> <assignment> <document__bnf_1> [<footer>]
+<document> ::= <header> <assignment> <document__bnf_1> | <header> <assignment> <document__bnf_1> <footer>
 <document__bnf_1> ::= "" | <assignment> <document__bnf_1>
 <header> ::= "BEGIN"
 <assignment> ::= <identifier> "=" <literal> | <identifier> "=" <tuple> | <identifier> "=" "computed"

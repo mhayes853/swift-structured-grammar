@@ -8,3 +8,5 @@ DerivedData/
 .netrc
 .plans
 node_modules
+target
+validation/.python-packages/

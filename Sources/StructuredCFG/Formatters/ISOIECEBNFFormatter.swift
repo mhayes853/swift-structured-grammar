@@ -18,12 +18,12 @@ extension Grammar {
 
     public var definitionSeparator = DefinitionSeparator.pipe
     public var terminator = Terminator.semicolon
-    public var quoting = Quoting.single
+    public var quoting = Quoting.double
 
     public init(
       definitionSeparator: DefinitionSeparator = .pipe,
       terminator: Terminator = .semicolon,
-      quoting: Quoting = .single
+      quoting: Quoting = .double
     ) {
       self.definitionSeparator = definitionSeparator
       self.terminator = terminator
@@ -36,8 +36,8 @@ extension Grammar {
         throw UnsupportedExpressionError.customExpression
       }
       let formatted = try self.format(expression: expression)
-      let rightHandSide = formatted.isEmpty ? " " : " \(formatted)"
-      return "\(rule.symbol.rawValue) =\(rightHandSide)\(self.terminator.rawValue)"
+      let rightHandSide = " " + (formatted.isEmpty ? self.formattedEpsilon() : formatted)
+      return "\(self.metaIdentifier(for: rule.symbol)) =\(rightHandSide)\(self.terminator.rawValue)"
     }
 
     private func format(expression: Expression) throws -> String {
@@ -56,8 +56,26 @@ extension Grammar {
           }
           .joined(separator: ", ")
       case .choice(let expressions):
+        let formattedExpressions: [String] = try expressions.compactMap { expression in
+          let simplifiedExpression = expression.simplified
+          let formatted = try self.format(expression: simplifiedExpression)
+          guard !formatted.isEmpty else { return nil }
+          if simplifiedExpression.isPrimary {
+            return formatted
+          }
+          return "(\(formatted))"
+        }
+        let containsEpsilon = expressions.contains { expression in
+          expression.simplified == .epsilon
+        }
+        if formattedExpressions.isEmpty {
+          return ""
+        }
+        if containsEpsilon {
+          return "[\(formattedExpressions.joined(separator: " \(self.definitionSeparator.rawValue) "))]"
+        }
         let separator = " \(self.definitionSeparator.rawValue) "
-        return try expressions.map { try self.format(expression: $0) }.joined(separator: separator)
+        return formattedExpressions.joined(separator: separator)
       case .optional(let expression):
         return "[\(try self.format(expression: expression))]"
       case .repeat(let repeatExpr):
@@ -73,7 +91,7 @@ extension Grammar {
         switch (repeatExpr.min, repeatExpr.max) {
         case (let m?, let n?) where m == n:
           if m == 0 {
-            return ""
+            return self.formattedEpsilon()
           }
           let formatted = try self.formatPrimary(expression: innerExpression)
           return "\(m) * \(formatted)"
@@ -125,11 +143,15 @@ extension Grammar {
           return ""
         }
       case .group(let expression):
-        return "(\(try self.format(expression: expression)))"
+        let formatted = try self.format(expression: expression)
+        if formatted.isEmpty {
+          return ""
+        }
+        return "(\(formatted))"
       case .characterGroup(let characterGroup):
         return try self.format(characterGroup: characterGroup)
       case .ref(let ref):
-        return ref.symbol.rawValue
+        return self.metaIdentifier(for: ref.symbol)
       case .special(let special):
         return "? \(special.value) ?"
       case .terminal(let terminal):
@@ -148,19 +170,83 @@ extension Grammar {
     }
 
     private func format(terminal: Terminal) -> String {
-      self.quote(terminal.string)
+      let renderedCharacters = terminal.characters.map { self.renderedTerminalCharacter(for: $0) }
+      var formattedParts = [String]()
+      var currentQuote = renderedCharacters.first?.quote
+      var currentString = ""
+
+      for renderedCharacter in renderedCharacters {
+        if renderedCharacter.quote != currentQuote, !currentString.isEmpty {
+          formattedParts.append(self.quote(currentString, using: currentQuote ?? self.quoting))
+          currentString = ""
+        }
+        currentQuote = renderedCharacter.quote
+        currentString += renderedCharacter.string
+      }
+
+      if !currentString.isEmpty {
+        formattedParts.append(self.quote(currentString, using: currentQuote ?? self.quoting))
+      }
+
+      return formattedParts.joined(separator: ", ")
+    }
+
+    private enum RenderedTerminalCharacter {
+      case quoted(String, Quoting)
+
+      var string: String {
+        switch self {
+        case .quoted(let string, _):
+          string
+        }
+      }
+
+      var quote: Quoting {
+        switch self {
+        case .quoted(_, let quote):
+          quote
+        }
+      }
+    }
+
+    private func renderedTerminalCharacter(for character: Terminal.Character) -> RenderedTerminalCharacter {
+      let string: String
+      switch character {
+      case .character(let character):
+        string = String(character)
+      case .hex(let scalar), .unicode(let scalar):
+        string = String(scalar)
+      }
+
+      if string == #"""# {
+        return .quoted(string, .single)
+      }
+      if string == "'" {
+        return .quoted(string, .double)
+      }
+      return .quoted(string, self.quoting)
     }
 
     private func quote(_ string: String) -> String {
+      self.quote(string, using: self.quoting)
+    }
+
+    private func formattedEpsilon() -> String {
+      "0 * \(self.quote(""))"
+    }
+
+    private func quote(_ string: String, using quoting: Quoting) -> String {
       let escaped: String
-      switch self.quoting {
+      switch quoting {
       case .double:
         escaped = string.reduce(into: "") { result, character in
           switch character {
-          case "\\":
-            result += "\\\\"
-          case "\"":
-            result += #"\""#
+          case "\n":
+            result += "\\n"
+          case "\r":
+            result += "\\r"
+          case "\t":
+            result += "\\t"
           default:
             result.append(character)
           }
@@ -168,18 +254,40 @@ extension Grammar {
       case .single:
         escaped = string.reduce(into: "") { result, character in
           switch character {
-          case "\\":
-            result += "\\\\"
-          case "'":
-            result += #"\'"#
-          default:
+        case "\n":
+          result += "\\n"
+        case "\r":
+          result += "\\r"
+        case "\t":
+          result += "\\t"
+        case "'":
+          result += #"\'"#
+        default:
             result.append(character)
           }
         }
       }
 
-      let quote = self.quoting == .double ? "\"" : "'"
+      let quote = quoting == .double ? "\"" : "'"
       return quote + escaped + quote
+    }
+
+    private func metaIdentifier(for symbol: Symbol) -> String {
+      let normalized = symbol.rawValue
+        .split(whereSeparator: { character in
+          !(character.isLetter || character.isNumber)
+        })
+        .map(String.init)
+        .filter { !$0.isEmpty }
+        .joined()
+
+      guard let firstCharacter = normalized.first else {
+        return "g"
+      }
+      if firstCharacter.isLetter {
+        return normalized
+      }
+      return "g" + normalized
     }
 
     private func format(characterGroup: CharacterGroup) throws -> String {
@@ -278,7 +386,7 @@ extension Grammar.RuleFormatter where Self == Grammar.ISOIECEBNFFormatter {
   public static func isoIecEbnf(
     definitionSeparator: Grammar.ISOIECEBNFFormatter.DefinitionSeparator = .pipe,
     terminator: Grammar.ISOIECEBNFFormatter.Terminator = .semicolon,
-    quoting: Grammar.ISOIECEBNFFormatter.Quoting = .single
+    quoting: Grammar.ISOIECEBNFFormatter.Quoting = .double
   ) -> Grammar.ISOIECEBNFFormatter {
     Grammar.ISOIECEBNFFormatter(
       definitionSeparator: definitionSeparator,

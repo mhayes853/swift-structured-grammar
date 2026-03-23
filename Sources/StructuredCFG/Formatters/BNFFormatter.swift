@@ -10,7 +10,7 @@ extension Grammar {
       )
 
       var lines = [String]()
-      lines.append("<\(rootSymbol.rawValue)> ::= \(self.formatAlternatives(alternatives))")
+      lines.append("<\(rootSymbol.rawValue)> ::= \(try self.formatAlternatives(alternatives))")
       lines.append(contentsOf: helperLines)
       return lines.joined(separator: "\n")
     }
@@ -18,7 +18,6 @@ extension Grammar {
     private enum Element: Hashable, Sendable {
       case symbol(Symbol)
       case terminal(Terminal)
-      case optional([[Element]])
     }
 
     private struct ExpansionContext {
@@ -51,7 +50,7 @@ extension Grammar {
       case .choice(let expressions):
         return try expressions.flatMap { try self.expand(expression: $0, context: &context) }
       case .optional(let expression):
-        return [[.optional(try self.expand(expression: expression, context: &context))]]
+        return [[]] + (try self.expand(expression: expression, context: &context))
       case .repeat(let repeatExpression):
         return try self.expand(repeatExpression: repeatExpression, context: &context)
       case .group(let expression):
@@ -85,7 +84,7 @@ extension Grammar {
           let symbol = self.nextHelperSymbol(context: &context)
           let recursiveAlternatives = [[]] + self.concatenate(inner, [[.symbol(symbol)]])
           context.helperRules.append(
-            "<\(symbol.rawValue)> ::= \(self.formatAlternatives(recursiveAlternatives))"
+            "<\(symbol.rawValue)> ::= \(try self.formatAlternatives(recursiveAlternatives))"
           )
           return [[.symbol(symbol)]]
         }
@@ -114,7 +113,7 @@ extension Grammar {
       }
 
       let alternatives = (1...max).flatMap { self.repeated(inner, count: $0) }
-      return [[.optional(alternatives)]]
+      return [[]] + alternatives
     }
 
     private func expand(
@@ -234,48 +233,52 @@ extension Grammar {
       }
     }
 
-    private func formatAlternatives(_ alternatives: [[Element]]) -> String {
-      alternatives
+    private func formatAlternatives(_ alternatives: [[Element]]) throws -> String {
+      try alternatives
         .map { sequence in
           if sequence.isEmpty {
             "\"\""
           } else {
-            sequence.map { self.format(element: $0) }.joined(separator: " ")
+            try sequence.map { try self.format(element: $0) }.joined(separator: " ")
           }
         }
         .joined(separator: " | ")
     }
 
-    private func format(element: Element) -> String {
+    private func format(element: Element) throws -> String {
       switch element {
       case .symbol(let symbol):
         "<\(symbol.rawValue)>"
       case .terminal(let terminal):
-        self.format(terminal: terminal)
-      case .optional(let alternatives):
-        "[\(self.formatAlternatives(alternatives))]"
+        try self.format(terminal: terminal)
       }
     }
 
-    private func format(terminal: Terminal) -> String {
-      let escaped = terminal.characters.reduce(into: "") { result, character in
+    private func format(terminal: Terminal) throws -> String {
+      let escaped = try terminal.characters.reduce(into: "") { result, character in
         switch character {
         case .character(let character):
-          result += self.escape(String(character))
+          result += try self.escape(String(character))
         case .hex(let scalar), .unicode(let scalar):
-          result += self.escape(String(scalar))
+          result += try self.escape(String(scalar))
         }
       }
       return "\"" + escaped + "\""
     }
 
-    private func escape(_ string: String) -> String {
-      string.reduce(into: "") { result, character in
+    private func escape(_ string: String) throws -> String {
+      try string.reduce(into: "") { result, character in
         switch character {
         case "\\":
-          result += "\\\\"
+          throw UnsupportedExpressionError("Backslashes are not supported in BNF terminals")
         case "\"":
-          result += "\\\""
+          result += "\"\""
+        case "\n":
+          throw UnsupportedExpressionError("Control characters are not supported in BNF terminals")
+        case "\r":
+          throw UnsupportedExpressionError("Control characters are not supported in BNF terminals")
+        case "\t":
+          throw UnsupportedExpressionError("Control characters are not supported in BNF terminals")
         default:
           result.append(character)
         }

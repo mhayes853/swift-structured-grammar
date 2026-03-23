@@ -29,7 +29,7 @@ struct `BNFFormatter tests` {
   }
 
   @Test
-  func `Formats Optional Using Brackets`() throws {
+  func `Lowers Optional Into An Explicit Empty Alternative`() throws {
     let grammar = Grammar(
       Rule("sign") {
         OptionalExpression {
@@ -43,7 +43,7 @@ struct `BNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: .bnf),
-      #"<sign> ::= ["+" | "-"]"#
+      #"<sign> ::= "" | "+" | "-""#
     )
   }
 
@@ -91,7 +91,7 @@ struct `BNFFormatter tests` {
     expectNoDifference(
       try grammar.formatted(with: .bnf),
       #"""
-      <sign> ::= ["+" | "-"]
+      <sign> ::= "" | "+" | "-"
       <term> ::= <number> | "(" <expression> ")" | "identifier"
       <expression> ::= <sign> <term> <expression__bnf_1>
       <expression__bnf_1> ::= "" | "+" <term> <expression__bnf_1> | "-" <term> <expression__bnf_1>
@@ -133,7 +133,7 @@ struct `BNFFormatter tests` {
   }
 
   @Test
-  func `At Most Repeat Uses Optional Wrapped Union`() throws {
+  func `At Most Repeat Lowers Into An Explicit Empty Alternative`() throws {
     let grammar = Grammar(
       Rule("upto5") {
         Repeat(...3) {
@@ -144,8 +144,38 @@ struct `BNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: .bnf),
-      #"<upto5> ::= ["a" | "a" "a" | "a" "a" "a"]"#
+      #"<upto5> ::= "" | "a" | "a" "a" | "a" "a" "a""#
     )
+  }
+
+  @Test
+  func `Formatting Control Characters Throws`() {
+    let grammar = Grammar(
+      Rule("whitespace") {
+        Choice {
+          "\n"
+          "\r"
+          "\t"
+        }
+      }
+    )
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .bnf)
+    }
+  }
+
+  @Test
+  func `Formatting Backslash Throws`() {
+    let grammar = Grammar(
+      Rule("start") {
+        #"\"#
+      }
+    )
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .bnf)
+    }
   }
 
   @Test

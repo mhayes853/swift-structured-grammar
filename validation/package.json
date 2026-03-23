@@ -4,7 +4,7 @@
   "description": "Validates EBNF and GBNF grammars from snapshot tests",
   "type": "module",
   "scripts": {
-    "validate": "node validate-w3c-ebnf-grammars.js && node validate-w3c-ebnf-behavior.js && node validate-gbnf-grammars.js"
+    "validate": "node validate-w3c-ebnf-grammars.js && node validate-bnf-grammars.js && python3 validate-iso-grammars.py && node validate-w3c-ebnf-behavior.js && node validate-gbnf-grammars.js"
   },
   "dependencies": {
     "ebnf": "^1.9.1",

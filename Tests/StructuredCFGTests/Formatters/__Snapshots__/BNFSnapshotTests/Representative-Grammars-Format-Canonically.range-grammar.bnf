@@ -2,5 +2,5 @@
 <password> ::= "x" "x" <password__bnf_1>
 <password__bnf_1> ::= "" | "x" <password__bnf_1>
 <code> ::= "0" "0" "0" "0"
-<upto5> ::= ["a" | "a" "a" | "a" "a" "a" | "a" "a" "a" "a" | "a" "a" "a" "a" "a"]
-<bounded> ::= "b" ["b" | "b" "b"]
+<upto5> ::= "" | "a" | "a" "a" | "a" "a" "a" | "a" "a" "a" "a" | "a" "a" "a" "a" "a"
+<bounded> ::= "b" | "b" "b" | "b" "b" "b"

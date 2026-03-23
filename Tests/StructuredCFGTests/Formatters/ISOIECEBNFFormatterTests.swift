@@ -5,12 +5,12 @@ import StructuredCFG
 @Suite
 struct `ISOIECEBNFFormatter tests` {
   @Test
-  func `Formats Semantic Epsilon As Empty Right Hand Side`() throws {
+  func `Formats Pure Epsilon As An Exact Zero Repeat`() throws {
     let grammar = Grammar(Rule("start") {
       Epsilon()
     })
 
-    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), "start = ;")
+    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), #"start = 0 * "";"#)
   }
 
   @Test
@@ -20,6 +20,18 @@ struct `ISOIECEBNFFormatter tests` {
     })
 
     expectNoDifference(try grammar.formatted(with: .isoIecEbnf), "space = ? ASCII character 32 ?;")
+  }
+
+  @Test
+  func `Formats Semantic Epsilon Choice As An Optional Sequence`() throws {
+    let grammar = Grammar(Rule("line") {
+      Choice {
+        Epsilon()
+        Ref("space")
+      }
+    })
+
+    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), "line = [space];")
   }
 
   @Test
@@ -33,7 +45,7 @@ struct `ISOIECEBNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: .isoIecEbnf(definitionSeparator: .slash, terminator: .period, quoting: .double)),
-      #"start =  / "a"."#
+      #"start = ["a"]."#
     )
   }
 
@@ -43,7 +55,7 @@ struct `ISOIECEBNFFormatter tests` {
       Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])
     })
 
-    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), #"start = 'aa';"#)
+    expectNoDifference(try grammar.formatted(with: .isoIecEbnf), #"start = "aa";"#)
   }
 
   @Test
@@ -59,7 +71,7 @@ struct `ISOIECEBNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: .isoIecEbnf),
-      #"start = [('a' | 'b') | 2 * ('a' | 'b')];"#
+      #"start = [("a" | "b") | 2 * ("a" | "b")];"#
     )
   }
 
@@ -73,7 +85,61 @@ struct `ISOIECEBNFFormatter tests` {
 
     expectNoDifference(
       try grammar.formatted(with: .isoIecEbnf),
-      #"start = 'b', ['b' | 2 * 'b'];"#
+      #"start = "b", ["b" | 2 * "b"];"#
+    )
+  }
+
+  @Test
+  func `Escapes Control Characters In Terminals`() throws {
+    let grammar = Grammar(Rule("whitespace") {
+      Choice {
+        "\n"
+        "\r"
+        "\t"
+      }
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .isoIecEbnf),
+      #"whitespace = "\n" | "\r" | "\t";"#
+    )
+  }
+
+  @Test
+  func `Normalizes Non ISO Meta Identifiers`() throws {
+    let grammar = Grammar(startingSymbol: "hex-char") {
+      Rule("hex-char") {
+        Ref("ga-term")
+      }
+
+      Rule("ga-term") {
+        "A"
+      }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .isoIecEbnf),
+      #"""
+      hexchar = gaterm;
+      gaterm = "A";
+      """#
+    )
+  }
+
+  @Test
+  func `Formats Quote And Slash Characters Without Special Sequences`() throws {
+    let grammar = Grammar(Rule("start") {
+      Choice {
+        "/"
+        #"""#
+        "'"
+        #"\"#
+      }
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .isoIecEbnf),
+      #"start = "/" | '"' | "'" | "\";"#
     )
   }
 }

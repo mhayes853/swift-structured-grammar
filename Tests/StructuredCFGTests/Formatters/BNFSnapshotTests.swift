@@ -45,9 +45,16 @@ private func assertBNFSnapshot(
 }
 
 private enum BNFSnapshotSuite {
+  static let unsupportedCaseNames: Set<String> = [
+    "character-group-grammar",
+    "hex-terminal-grammar",
+    "json-grammar"
+  ]
+
   static let cases = RepresentativeSnapshotLanguageSuite.replacingJSONLanguage(
     with: JSON(asciiOnly: true).language
   )
+  .filter { !Self.unsupportedCaseNames.contains($0.name) }
 
   static func snapshotCase(named name: String) -> RepresentativeSnapshotLanguageCase {
     self.cases.first(where: { $0.name == name })!
