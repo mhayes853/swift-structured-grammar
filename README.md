@@ -78,41 +78,6 @@ let bnf = try grammar.formatted(with: .bnf)
 let iso = try grammar.formatted(with: .isoIecEbnf)
 ```
 
-### Components
-Expression blocks inside `Rule` builder-closures must conform to the `ExpressionComponent` protocol. You can use this protocol to create reusable grammar components.
-
-```swift
-struct Factor: ExpressionComponent {
-  var expression: Expression {
-    Choice {
-      Ref("number")
-      GroupExpression {
-        "("
-        Ref("expression")
-        ")"
-      }
-    }
-  }
-}
-
-let grammar = Grammar(startingSymbol: "expression") {
-  // ...
-
-  Rule("term") {
-    Factor()
-    ZeroOrMore {
-      Choice {
-        "*"
-        "/"
-      }
-      Factor()
-    }
-  }
-
-  // ...
-}
-```
-
 ### Language
 When you want to compose multiple grammars together through common CFG operations, you can use the `Language` struct.
 
@@ -147,6 +112,123 @@ let language = Language {
 let resolved = language.grammar()
 let ebnf = try resolved.formatted(with: .w3cEbnf)
 print(ebnf)
+```
+
+### Imperative Grammar Construction
+You can also build grammars step by step imperatively. `Grammar` exposes mutating and non-mutating APIs that offer the same power as the builder syntax. This is useful if you're attempting to programatically build a grammar from another format (eg. Regex, JSON Schema, Structural Tags).
+
+```swift
+import StructuredCFG
+
+var grammar = Grammar(startingSymbol: "expression", [])
+
+grammar.append(
+  Rule("expression") {
+    Ref("term")
+    ZeroOrMore {
+      Choice {
+        "+"
+        "-"
+      }
+      Ref("term")
+    }
+  }
+)
+
+grammar.append(
+  Rule("term") {
+    OneOrMore {
+      CharacterGroup.digit
+    }
+  }
+)
+
+grammar.replaceRule(for: "term") {
+  Ref("number")
+}
+
+grammar.append(
+  Rule("number") {
+    OneOrMore {
+      CharacterGroup.digit
+    }
+  }
+)
+
+let extended = grammar.appending(
+  Rule("signed-number") {
+    OptionalExpression { "-" }
+    Ref("number")
+  }
+)
+```
+
+`Language` also exposes imperative APIs.
+
+```swift
+import StructuredCFG
+
+let digits = Grammar(Rule("digits") {
+  OneOrMore {
+    CharacterGroup.digit
+  }
+})
+
+let identifier = Grammar(Rule("identifier") {
+  OneOrMore {
+    CharacterGroup.word
+  }
+})
+
+var language = Language(digits)
+language.formUnion(identifier)
+language.concatenate(
+  Grammar(Rule("separator") {
+    "="
+  })
+)
+
+let repeated = language.kleeneStarred()
+let reversed = repeated.reversed()
+
+let resolved = reversed.grammar()
+let gbnf = try resolved.formatted(with: .gbnf)
+print(gbnf)
+```
+
+### Components
+Expression blocks inside `Rule` builder-closures must conform to the `ExpressionComponent` protocol. You can use this protocol to create reusable grammar components.
+
+```swift
+struct Factor: ExpressionComponent {
+  var expression: Expression {
+    Choice {
+      Ref("number")
+      GroupExpression {
+        "("
+        Ref("expression")
+        ")"
+      }
+    }
+  }
+}
+
+let grammar = Grammar(startingSymbol: "expression") {
+  // ...
+
+  Rule("term") {
+    Factor()
+    ZeroOrMore {
+      Choice {
+        "*"
+        "/"
+      }
+      Factor()
+    }
+  }
+
+  // ...
+}
 ```
 
 ### Custom Formats
