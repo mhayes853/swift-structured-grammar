@@ -1,4 +1,6 @@
+/// A reusable language component that accepts JSON objects and arrays.
 public struct JSON: LanguageComponent {
+  /// Whether generated string character classes should be restricted to ASCII.
   public let asciiOnly: Bool
 
   public var language: Language {
@@ -195,6 +197,9 @@ public struct JSON: LanguageComponent {
     }
   }
 
+  /// Creates the built-in JSON language.
+  ///
+  /// - Parameter asciiOnly: Whether string characters should be limited to ASCII.
   public init(asciiOnly: Bool = false) {
     self.asciiOnly = asciiOnly
   }

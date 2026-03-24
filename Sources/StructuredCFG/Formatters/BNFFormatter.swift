@@ -1,5 +1,7 @@
 extension Grammar {
+  /// Formats grammar rules using classic Backus-Naur Form.
   public struct BNFFormatter: RuleFormatter {
+    /// Creates a BNF formatter.
     public init() {}
 
     public func format(rule: Rule) throws -> String {
@@ -288,6 +290,7 @@ extension Grammar {
 }
 
 extension Grammar.RuleFormatter where Self == Grammar.BNFFormatter {
+  /// A BNF formatter.
   public static var bnf: Grammar.BNFFormatter {
     Grammar.BNFFormatter()
   }

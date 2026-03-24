@@ -1,5 +1,7 @@
 extension Grammar {
+  /// Formats grammar rules using GBNF syntax.
   public struct GBNFFormatter: RuleFormatter {
+    /// Creates a GBNF formatter.
     public init() {}
 
     public func format(rule: Rule) throws -> String {
@@ -98,6 +100,7 @@ extension Grammar {
 }
 
 extension Grammar.RuleFormatter where Self == Grammar.GBNFFormatter {
+  /// A GBNF formatter.
   public static var gbnf: Grammar.GBNFFormatter {
     Grammar.GBNFFormatter()
   }

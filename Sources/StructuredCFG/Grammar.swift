@@ -1,6 +1,34 @@
 // MARK: - Grammar
 
+/// A concrete context-free grammar made up of named production rules.
+///
+/// Use ``Grammar`` when you want to define rules directly, edit them imperatively, or
+/// format them into a textual BNF or EBNF dialect.
+///
+/// ```swift
+/// let grammar = Grammar(startingSymbol: "expression") {
+///   Rule("expression") {
+///     Ref("term")
+///     ZeroOrMore {
+///       Choice {
+///         "+"
+///         "-"
+///       }
+///       Ref("term")
+///     }
+///   }
+///
+///   Rule("term") {
+///     OneOrMore {
+///       CharacterGroup.digit
+///     }
+///   }
+/// }
+///
+/// let gbnf = try grammar.formatted(with: .gbnf)
+/// ```
 public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
+  /// The symbol used as the grammar's entry point.
   public var startingSymbol: Symbol {
     didSet {
       self.updateStartingSymbol(from: oldValue)
@@ -10,6 +38,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   private var orderedSymbols: [Symbol]
   private var rulesBySymbol: [Symbol: Rule]
 
+  /// The grammar's ``Rules`` in stable iteration order.
   public var rules: Rules {
     return Rules(
       orderedSymbols: self.orderedSymbols,
@@ -21,14 +50,26 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     Language(self)
   }
 
+  /// Creates an empty grammar rooted at ``Symbol/root``.
   public init() {
     self.init(Rule(.root) { Epsilon() })
   }
 
+  /// Creates a grammar containing a single ``Rule``.
+  ///
+  /// - Parameter rule: The initial ``Rule`` to store.
   public init(_ rule: Rule) {
     self.init(startingSymbol: rule.symbol, CollectionOfOne(rule))
   }
 
+  /// Creates a grammar from a starting ``Symbol`` and rule sequence.
+  ///
+  /// If the starting symbol does not appear in `rules`, an epsilon rule is synthesized
+  /// for it.
+  ///
+  /// - Parameters:
+  ///   - startingSymbol: The grammar entry ``Symbol``.
+  ///   - rules: The ``Rule`` values to include.
   public init(startingSymbol: Symbol, _ rules: some Sequence<Rule>) {
     self.startingSymbol = startingSymbol
     self.orderedSymbols = [startingSymbol]
@@ -38,6 +79,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     }
   }
 
+  /// Creates a grammar from a starting ``Symbol`` and result-builder closure.
+  ///
+  /// - Parameters:
+  ///   - startingSymbol: The grammar entry `Symbol`.
+  ///   - content: A builder that produces the grammar's `Rule` values.
   public init(startingSymbol: Symbol, @RulesBuilder _ content: () -> [Rule]) {
     self.init(startingSymbol: startingSymbol, content())
   }
@@ -52,44 +98,73 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.rulesBySymbol = rulesBySymbol
   }
 
+  /// Returns the ``Rule`` for the supplied symbol.
+  ///
+  /// - Parameter symbol: The ``Symbol`` to look up.
+  /// - Returns: The matching `Rule`, or `nil` if no rule exists.
   public func rule(for symbol: Symbol) -> Rule? {
     self.rulesBySymbol[symbol]
   }
 
+  /// Returns whether the grammar contains a rule for a symbol.
+  ///
+  /// - Parameter symbol: The ``Symbol`` to test.
   public func containsRule(for symbol: Symbol) -> Bool {
     self.rulesBySymbol[symbol] != nil
   }
 
+  /// Accesses a rule by symbol.
   public subscript(_ symbol: Symbol) -> Rule? {
     self.rulesBySymbol[symbol]
   }
 
+  /// Accesses a rule by its ordered position.
   public subscript(index: Int) -> Rule {
     self.rules[index]
   }
 
+  /// Inserts or replaces a ``Rule`` in the grammar.
+  ///
+  /// - Parameter rule: The ``Rule`` to append.
   public mutating func append(_ rule: Rule) {
     self.replaceRule(for: rule.symbol, with: rule)
   }
 
+  /// Inserts or replaces a sequence of rules.
+  ///
+  /// - Parameter rules: The `Rule` values to append.
   public mutating func append(contentsOf rules: some Sequence<Rule>) {
     for rule in rules {
       self.append(rule)
     }
   }
 
+  /// Returns a copy of the grammar with an additional rule appended.
+  ///
+  /// - Parameter rule: The ``Rule`` to append.
+  /// - Returns: A ``Grammar`` containing `rule`.
   public func appending(_ rule: Rule) -> Self {
     var grammar = self
     grammar.append(rule)
     return grammar
   }
 
+  /// Returns a copy of the grammar with additional rules appended.
+  ///
+  /// - Parameter rules: The `Rule` values to append.
+  /// - Returns: A ``Grammar`` containing `rules`.
   public func appending(contentsOf rules: some Sequence<Rule>) -> Self {
     var grammar = self
     grammar.append(contentsOf: rules)
     return grammar
   }
 
+  /// Removes the rule for a symbol.
+  ///
+  /// Removing the starting symbol resets it to an epsilon production instead of deleting
+  /// it entirely.
+  ///
+  /// - Parameter symbol: The ``Symbol`` whose rule should be removed.
   public mutating func removeRule(for symbol: Symbol) {
     if symbol == self.startingSymbol {
       self.rulesBySymbol[symbol] = Rule(symbol) { Epsilon() }
@@ -99,6 +174,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.rulesBySymbol[symbol] = nil
   }
 
+  /// Removes every rule from the grammar except for the starting symbol placeholder.
   public mutating func removeAll() {
     self.orderedSymbols = [self.startingSymbol]
     self.rulesBySymbol = [
@@ -106,6 +182,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     ]
   }
 
+  /// Removes every rule that matches a predicate.
+  ///
+  /// If the starting symbol is removed, it is restored as an epsilon production.
+  ///
+  /// - Parameter shouldBeRemoved: A predicate that decides whether a ``Rule`` is removed.
   public mutating func removeAll(where shouldBeRemoved: (Rule) -> Bool) {
     let removedSymbols = Set<Symbol>(
       self.orderedSymbols.compactMap { symbol in
@@ -126,6 +207,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     }
   }
 
+  /// Replaces the rule for a symbol with a new expression component.
+  ///
+  /// - Parameters:
+  ///   - symbol: The ``Symbol`` to replace.
+  ///   - expression: The new ``ExpressionComponent`` for the rule body.
   public mutating func replaceRule(
     for symbol: Symbol,
     with expression: some ExpressionComponent
@@ -133,6 +219,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.replaceRule(for: symbol, with: Rule(symbol, expression))
   }
 
+  /// Replaces the rule for a symbol with a string terminal.
+  ///
+  /// - Parameters:
+  ///   - symbol: The ``Symbol`` to replace.
+  ///   - string: The `String` terminal value to use for the new rule body.
   public mutating func replaceRule(
     for symbol: Symbol,
     with string: String
@@ -140,6 +231,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.replaceRule(for: symbol, with: Terminal(string))
   }
 
+  /// Replaces the rule for a symbol with an expression builder.
+  ///
+  /// - Parameters:
+  ///   - symbol: The ``Symbol`` to replace.
+  ///   - expression: A builder that produces the new ``Expression``.
   public mutating func replaceRule(
     for symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
@@ -147,6 +243,12 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.replaceRule(for: symbol, with: expression())
   }
 
+  /// Returns a copy of the grammar with a replaced rule.
+  ///
+  /// - Parameters:
+  ///   - symbol: The ``Symbol`` to replace.
+  ///   - expression: The new ``ExpressionComponent`` for the rule body.
+  /// - Returns: A ``Grammar`` with the updated rule.
   public func replacingRule(
     for symbol: Symbol,
     with expression: some ExpressionComponent
@@ -156,6 +258,12 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     return grammar
   }
 
+  /// Returns a copy of the grammar with a replaced rule that uses a terminal string.
+  ///
+  /// - Parameters:
+  ///   - symbol: The ``Symbol`` to replace.
+  ///   - string: The `String` terminal value to use for the new rule body.
+  /// - Returns: A ``Grammar`` with the updated rule.
   public func replacingRule(
     for symbol: Symbol,
     with string: String
@@ -165,6 +273,12 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     return grammar
   }
 
+  /// Returns a copy of the grammar with a replaced rule from a builder closure.
+  ///
+  /// - Parameters:
+  ///   - symbol: The ``Symbol`` to replace.
+  ///   - expression: A builder that produces the new ``Expression``.
+  /// - Returns: A ``Grammar`` with the updated rule.
   public func replacingRule(
     for symbol: Symbol,
     @ExpressionBuilder _ expression: () -> Expression
@@ -181,12 +295,19 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.rulesBySymbol[symbol] = rule
   }
 
+  /// Merges another grammar into this one, replacing rules that share the same symbol.
+  ///
+  /// - Parameter grammar: The ``Grammar`` to merge into this grammar.
   public mutating func merge(_ grammar: Grammar) {
     for rule in grammar.rules {
       self.replaceRule(for: rule.symbol, with: rule)
     }
   }
 
+  /// Returns a copy of the grammar merged with another grammar.
+  ///
+  /// - Parameter grammar: The ``Grammar`` to merge into this grammar.
+  /// - Returns: A merged ``Grammar``.
   public func merging(_ grammar: Grammar) -> Self {
     var merged = self
     merged.merge(grammar)
@@ -217,6 +338,26 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
 // MARK: - Homomorphism
 
 extension Grammar {
+  /// Applies a terminal-to-terminal transform across every rule in the grammar.
+  ///
+  /// Returning `nil` leaves the original terminal unchanged.
+  ///
+  /// ```swift
+  /// var grammar = Grammar(Rule("boolean") {
+  ///   Choice {
+  ///     "true"
+  ///     "false"
+  ///   }
+  /// })
+  ///
+  /// grammar.homomorphMap { terminal in
+  ///   switch terminal.string {
+  ///   case "true": Terminal("1")
+  ///   case "false": Terminal("0")
+  ///   default: nil
+  ///   }
+  /// }
+  /// ```
   public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
     self.rulesBySymbol = self.rulesBySymbol.mapValues { production in
       Rule(
@@ -226,18 +367,33 @@ extension Grammar {
     }
   }
 
+  /// Returns a copy of the grammar after applying a terminal transform.
+  ///
+  /// - Parameter transform: A transform applied to each ``Terminal``.
+  /// - Returns: A transformed ``Grammar``.
   public func homomorphMapped(_ transform: (Terminal) -> Terminal?) -> Self {
     var grammar = self
     grammar.homomorphMap(transform)
     return grammar
   }
 
+  /// Replaces every matching terminal with a new terminal.
+  ///
+  /// - Parameters:
+  ///   - terminal: The ``Terminal`` to replace.
+  ///   - replacement: The replacement `Terminal`.
   public mutating func homomorph(_ terminal: Terminal, to replacement: Terminal) {
     self.homomorphMap { candidate in
       candidate == terminal ? replacement : nil
     }
   }
 
+  /// Returns a copy of the grammar with every matching terminal replaced.
+  ///
+  /// - Parameters:
+  ///   - terminal: The ``Terminal`` to replace.
+  ///   - replacement: The replacement `Terminal`.
+  /// - Returns: A transformed ``Grammar``.
   public func homomorphed(_ terminal: Terminal, to replacement: Terminal) -> Self {
     self.homomorphMapped { candidate in
       candidate == terminal ? replacement : nil
@@ -281,10 +437,14 @@ extension Grammar {
 // MARK: - Reverse
 
 extension Grammar {
+  /// Reverses the order of every reachable terminal sequence in the grammar.
   public mutating func reverse() {
     self = self.reversed()
   }
 
+  /// Returns a grammar that matches the reverse of every string accepted by this grammar.
+  ///
+  /// - Returns: A reversed ``Grammar``.
   public func reversed() -> Self {
     let reachableSymbols = self.reachableSymbols()
     let rules = self.rules.compactMap { rule -> Rule? in
@@ -366,6 +526,7 @@ extension Grammar {
 // MARK: - Rules
 
 extension Grammar {
+  /// An ordered view over a grammar's rules.
   public struct Rules: RandomAccessCollection, Sendable {
     public typealias Element = Rule
     public typealias Index = Int
@@ -390,6 +551,7 @@ extension Grammar {
       self.rulesBySymbol[self.orderedSymbols[position]]!
     }
 
+    /// Accesses a rule by its symbol.
     public subscript(symbol: Symbol) -> Rule? {
       self.rulesBySymbol[symbol]
     }

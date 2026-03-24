@@ -1,12 +1,20 @@
 extension Grammar {
+  /// Formats grammar rules using the W3C EBNF dialect.
   public struct W3CEBNFFormatter: RuleFormatter {
+    /// Controls how literal terminals are quoted.
     public enum Quoting: Sendable {
+      /// Use single quotes.
       case single
+      /// Use double quotes.
       case double
     }
 
+    /// The quoting style used for terminal literals.
     public var quoting = Quoting.double
 
+    /// Creates a W3C EBNF formatter.
+    ///
+    /// - Parameter quoting: The quoting style used for literal terminals.
     public init(quoting: Quoting = .double) {
       self.quoting = quoting
     }
@@ -202,10 +210,15 @@ extension Grammar {
 }
 
 extension Grammar.RuleFormatter where Self == Grammar.W3CEBNFFormatter {
+  /// A W3C EBNF formatter that uses double quotes for terminals.
   public static var w3cEbnf: Grammar.W3CEBNFFormatter {
     Grammar.W3CEBNFFormatter()
   }
 
+  /// Creates a W3C EBNF formatter.
+  ///
+  /// - Parameter quoting: The quoting style used for literal terminals.
+  /// - Returns: A configured W3C EBNF formatter.
   public static func w3cEbnf(
     quoting: Grammar.W3CEBNFFormatter.Quoting = .double
   ) -> Grammar.W3CEBNFFormatter {

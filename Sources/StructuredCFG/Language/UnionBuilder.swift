@@ -1,3 +1,4 @@
+/// A result builder for collecting inputs to a ``Union``.
 @resultBuilder
 public enum UnionBuilder {
   public static func buildExpression(_ value: some LanguageComponent) -> [Language] {

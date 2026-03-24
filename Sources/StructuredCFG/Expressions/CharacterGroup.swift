@@ -1,14 +1,36 @@
 // MARK: - CharacterGroup
 
+/// A character-class expression component.
+///
+/// Character groups can be created from parsed class syntax like `"a-z0-9"` or from
+/// predefined presets such as ``digit``, `word`, and `whitespace`.
+///
+/// ```swift
+/// let identifierHead = CharacterGroup("a-zA-Z_")
+/// let digits = CharacterGroup.digit
+/// let nonWhitespace = CharacterGroup.whitespace.negated()
+/// ```
 public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
+  /// Whether the character group is negated.
   public let isNegated: Bool
+
+  /// The members that make up this character group.
   public let members: [Member]
 
+  /// Creates a character group from explicit members.
+  ///
+  /// - Parameters:
+  ///   - isNegated: Whether the group should be negated.
+  ///   - members: The members contained in the group.
   public init(isNegated: Bool, members: [Member]) {
     self.isNegated = isNegated
     self.members = members
   }
 
+  /// Parses a character group from bracketed or unbracketed class syntax.
+  ///
+  /// - Parameter string: The character-class text to parse.
+  /// - Throws: ``ParseError`` when the class syntax is invalid.
   @_disfavoredOverload
   public init(_ string: String) throws {
     let processedString: String
@@ -26,6 +48,11 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     self.members = parsed.members
   }
 
+  /// Parses a character group from a static string literal.
+  ///
+  /// Invalid input triggers a runtime failure.
+  ///
+  /// - Parameter string: The character-class text to parse.
   public init(_ string: StaticString) {
     do {
       try self.init(String(describing: string))
@@ -34,6 +61,9 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     }
   }
 
+  /// Creates a character group from a closed character range.
+  ///
+  /// - Parameter range: The range of characters to include.
   public init(_ range: ClosedRange<Character>) {
     self.init(
       isNegated: false,
@@ -45,22 +75,29 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     Expression.characterGroup(self)
   }
 
+  /// Returns a negated copy of this character group.
+  ///
+  /// - Returns: A ``CharacterGroup`` with the opposite negation state.
   public func negated() -> CharacterGroup {
     CharacterGroup(isNegated: !self.isNegated, members: self.members)
   }
 
+  /// A character group matching ASCII decimal digits.
   public static var digit: Self {
     Self(isNegated: false, members: Self.digitMembers)
   }
 
+  /// A character group matching ASCII word characters.
   public static var word: Self {
     Self(isNegated: false, members: Self.wordMembers)
   }
 
+  /// A character group matching common whitespace characters.
   public static var whitespace: Self {
     Self(isNegated: false, members: Self.whitespaceMembers)
   }
 
+  /// A character group matching every Unicode scalar.
   public static var all: Self {
     Self(
       isNegated: false,
@@ -73,26 +110,32 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     )
   }
 
+  /// Returns whether this group matches the predefined digit class.
   public var isDigit: Bool {
     self.matches(isNegated: false, members: Self.digitMembers)
   }
 
+  /// Returns whether this group matches the predefined word class.
   public var isWord: Bool {
     self.matches(isNegated: false, members: Self.wordMembers)
   }
 
+  /// Returns whether this group matches the predefined whitespace class.
   public var isWhitespace: Bool {
     self.matches(isNegated: false, members: Self.whitespaceMembers)
   }
 
+  /// Returns whether this group matches the negated digit class.
   public var isNonDigit: Bool {
     self.matches(isNegated: true, members: Self.digitMembers)
   }
 
+  /// Returns whether this group matches the negated word class.
   public var isNonWord: Bool {
     self.matches(isNegated: true, members: Self.wordMembers)
   }
 
+  /// Returns whether this group matches the negated whitespace class.
   public var isNonWhitespace: Bool {
     self.matches(isNegated: true, members: Self.whitespaceMembers)
   }
@@ -458,29 +501,51 @@ public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
     return trailingBackslashCount.isMultiple(of: 2)
   }
 
+  /// A member of a character group.
   public enum Member: Hashable, Sendable {
+    /// A single character member.
     case character(Terminal.Character)
+    /// A closed character range member.
     case range(Terminal.Character, Terminal.Character)
+    /// An escaped metacharacter or control character member.
     case escaped(EscapeSequence)
   }
 
+  /// Escape sequences supported by the character-group parser and formatters.
   public enum EscapeSequence: Hashable, Sendable {
+    /// `\\`
     case backslash
+    /// `\|`
     case pipe
+    /// `\.`
     case period
+    /// `\-`
     case hyphen
+    /// `\^`
     case caret
+    /// `\?`
     case question
+    /// `\*`
     case asterisk
+    /// `\+`
     case plus
+    /// `\{`
     case leftBrace
+    /// `\}`
     case rightBrace
+    /// `\(`
     case leftParen
+    /// `\)`
     case rightParen
+    /// `\[`
     case leftBracket
+    /// `\]`
     case rightBracket
+    /// `\n`
     case newline
+    /// `\r`
     case carriageReturn
+    /// `\t`
     case tab
   }
 
@@ -557,107 +622,146 @@ extension CharacterGroup.EscapeSequence {
 // MARK: - CharacterGroup.ParseError
 
 extension CharacterGroup {
+  /// An error produced while parsing a character group string.
   public struct ParseError: Error, Hashable, Sendable {
+    /// A stable error code describing a parse failure category.
     public struct Code: RawRepresentable, Hashable, Sendable {
+      /// The raw string code.
       public let rawValue: String
 
+      /// Creates an error code from a raw string.
+      ///
+      /// - Parameter rawValue: The raw code value.
       public init(rawValue: String) {
         self.rawValue = rawValue
       }
 
+      /// The input mixed bracketed and unbracketed forms.
       public static let mustBeFullyBracketedOrUnbracketed = Self(
         rawValue: "must_be_fully_bracketed_or_unbracketed"
       )
 
+      /// The input was missing an opening bracket.
       public static let mustStartWithOpeningBracket = Self(
         rawValue: "must_start_with_opening_bracket"
       )
 
+      /// The input was missing a closing bracket.
       public static let mustEndWithClosingBracket = Self(
         rawValue: "must_end_with_closing_bracket"
       )
 
+      /// The input ended with an incomplete escape sequence.
       public static let cannotEndWithEscape = Self(rawValue: "cannot_end_with_escape")
 
+      /// A negated predefined class appeared alongside other members.
       public static let negatedPredefinedClassesMustBeStandalone = Self(
         rawValue: "negated_predefined_classes_must_be_standalone"
       )
 
+      /// XML name class syntax was encountered.
       public static let xmlNameClassesAreNotSupported = Self(
         rawValue: "xml_name_classes_are_not_supported"
       )
 
+      /// A hex escape ended before all digits were read.
       public static let incompleteHexEscape = Self(rawValue: "incomplete_hex_escape")
 
+      /// A hex escape had an invalid prefix.
       public static let invalidHexEscape = Self(rawValue: "invalid_hex_escape")
 
+      /// A hex digit was invalid.
       public static let invalidHexCharacter = Self(rawValue: "invalid_hex_character")
 
+      /// A hex range started after it ended.
       public static let invalidHexRangeStartGreaterThanEnd = Self(
         rawValue: "invalid_hex_range_start_greater_than_end"
       )
 
+      /// A parsed hex value could not be converted to a scalar.
       public static let invalidHexValue = Self(rawValue: "invalid_hex_value")
     }
 
+    /// The stable error code.
     public let code: Code
+
+    /// A human-readable error message.
     public let message: String
 
+    /// Creates a parse error.
+    ///
+    /// - Parameters:
+    ///   - code: The stable error code.
+    ///   - message: A human-readable description.
     public init(code: Code, message: String) {
       self.code = code
       self.message = message
     }
 
+    /// The input mixed bracketed and unbracketed forms.
     public static let mustBeFullyBracketedOrUnbracketed = Self(
       code: .mustBeFullyBracketedOrUnbracketed,
       message: "Character groups must be fully bracketed or unbracketed"
     )
 
+    /// The input was missing an opening bracket.
     public static let mustStartWithOpeningBracket = Self(
       code: .mustStartWithOpeningBracket,
       message: "Character groups must start with '['"
     )
 
+    /// The input was missing a closing bracket.
     public static let mustEndWithClosingBracket = Self(
       code: .mustEndWithClosingBracket,
       message: "Character groups must end with ']'"
     )
 
+    /// The input ended with an incomplete escape sequence.
     public static let cannotEndWithEscape = Self(
       code: .cannotEndWithEscape,
       message: "Character groups cannot end with an escape"
     )
 
+    /// A negated predefined class appeared alongside other members.
     public static let negatedPredefinedClassesMustBeStandalone = Self(
       code: .negatedPredefinedClassesMustBeStandalone,
       message: "Negated predefined classes are only supported as standalone groups"
     )
 
+    /// XML name class syntax was encountered.
     public static let xmlNameClassesAreNotSupported = Self(
       code: .xmlNameClassesAreNotSupported,
       message: "XML name classes are not supported"
     )
 
+    /// A hex escape ended before all digits were read.
     public static let incompleteHexEscape = Self(
       code: .incompleteHexEscape,
       message: "Incomplete hex escape"
     )
 
+    /// A hex escape had an invalid prefix.
     public static let invalidHexEscape = Self(
       code: .invalidHexEscape,
       message: "Invalid hex escape"
     )
 
+    /// A hex digit was invalid.
     public static let invalidHexCharacter = Self(
       code: .invalidHexCharacter,
       message: "Invalid hex character"
     )
 
+    /// A hex range started after it ended.
     public static let invalidHexRangeStartGreaterThanEnd = Self(
       code: .invalidHexRangeStartGreaterThanEnd,
       message: "Invalid hex range: start > end"
     )
 
+    /// Creates an error for a malformed hex scalar value.
+    ///
+    /// - Parameter value: The invalid hex value.
+    /// - Returns: A parse error describing the invalid value.
     public static func invalidHexValue(_ value: String) -> Self {
       Self(code: .invalidHexValue, message: "Invalid hex value: \(value)")
     }

@@ -1,3 +1,4 @@
+/// A result builder for collecting inputs to ``ConcatenateLanguages``.
 @resultBuilder
 public enum ConcatenateLanguagesBuilder {
   public static func buildExpression(_ value: some LanguageComponent) -> [Language] {

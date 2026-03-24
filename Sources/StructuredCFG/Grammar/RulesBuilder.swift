@@ -1,3 +1,4 @@
+/// A result builder for constructing arrays of ``Rule`` values.
 @resultBuilder
 public enum RulesBuilder {
   public static func buildExpression(_ rule: Rule) -> [Rule] {

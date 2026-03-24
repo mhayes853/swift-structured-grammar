@@ -1,3 +1,4 @@
+/// A result builder for constructing ``Language`` values from language components.
 @resultBuilder
 public enum LanguageBuilder {
   public static func buildExpression(_ value: some LanguageComponent) -> Language {

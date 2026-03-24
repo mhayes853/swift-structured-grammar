@@ -1,3 +1,4 @@
+/// A sequence wrapper that exposes the rules of an optional grammar component.
 public struct OptionalRules<Base: Sequence<Rule>>: Sequence {
   private let base: Base?
 

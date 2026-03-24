@@ -1,25 +1,47 @@
 extension Grammar {
+  /// Formats grammar rules using the ISO/IEC 14977 EBNF dialect.
   public struct ISOIECEBNFFormatter: RuleFormatter {
+    /// Controls how literal terminals are quoted.
     public enum Quoting: Sendable {
+      /// Use single quotes.
       case single
+      /// Use double quotes.
       case double
     }
 
+    /// Controls the separator used between alternatives.
     public enum DefinitionSeparator: String, Sendable {
+      /// Use `|`.
       case pipe = "|"
+      /// Use `/`.
       case slash = "/"
+      /// Use `!`.
       case bang = "!"
     }
 
+    /// Controls the terminator used after each rule.
     public enum Terminator: String, Sendable {
+      /// Use `;`.
       case semicolon = ";"
+      /// Use `.`.
       case period = "."
     }
 
+    /// The separator used between alternatives.
     public var definitionSeparator = DefinitionSeparator.pipe
+
+    /// The terminator used after each rule.
     public var terminator = Terminator.semicolon
+
+    /// The quoting style used for terminal literals.
     public var quoting = Quoting.double
 
+    /// Creates an ISO/IEC EBNF formatter.
+    ///
+    /// - Parameters:
+    ///   - definitionSeparator: The separator used between alternatives.
+    ///   - terminator: The terminator used after each rule.
+    ///   - quoting: The quoting style used for terminals.
     public init(
       definitionSeparator: DefinitionSeparator = .pipe,
       terminator: Terminator = .semicolon,
@@ -379,10 +401,18 @@ extension Grammar {
 }
 
 extension Grammar.RuleFormatter where Self == Grammar.ISOIECEBNFFormatter {
+  /// An ISO/IEC EBNF formatter with default options.
   public static var isoIecEbnf: Grammar.ISOIECEBNFFormatter {
     Grammar.ISOIECEBNFFormatter()
   }
 
+  /// Creates an ISO/IEC EBNF formatter.
+  ///
+  /// - Parameters:
+  ///   - definitionSeparator: The separator used between alternatives.
+  ///   - terminator: The terminator used after each rule.
+  ///   - quoting: The quoting style used for terminals.
+  /// - Returns: A configured ISO/IEC EBNF formatter.
   public static func isoIecEbnf(
     definitionSeparator: Grammar.ISOIECEBNFFormatter.DefinitionSeparator = .pipe,
     terminator: Grammar.ISOIECEBNFFormatter.Terminator = .semicolon,

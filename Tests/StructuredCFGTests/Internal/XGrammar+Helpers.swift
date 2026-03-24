@@ -2,7 +2,8 @@ import StructuredCFG
 import XGrammar
 
 enum XGrammarTestSupport {
-  static let matcherVocabulary = ["\t", "\n", "\r"]
+  static let matcherVocabulary =
+    ["\t", "\n", "\r"]
     + (32...126).map { String(UnicodeScalar($0)!) }
     + ["é"]
 
@@ -17,10 +18,10 @@ extension XGrammar.Grammar {
   init(
     language: Language,
     startingSymbol: Symbol = .root,
-    nameResolver: Language.GrammarNameResolver = .default
+    symbolResolver: Language.GrammarSymbolResolver = .default
   ) throws {
     try self.init(
-      grammar: language.grammar(startingSymbol: startingSymbol, nameResolver: nameResolver)
+      grammar: language.grammar(startingSymbol: startingSymbol, symbolResolver: symbolResolver)
     )
   }
 

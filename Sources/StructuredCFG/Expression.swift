@@ -1,17 +1,44 @@
 // MARK: - Expression
 
+/// A grammar expression that describes how a rule can match input.
+///
+/// This enum is maked as `@nonexhaustive`, which means that new cases may be added in future
+/// releases.
+///
+/// You can use the `custom` case to support expressions for custom grammar formats.
 @nonexhaustive
 public indirect enum Expression: Sendable, ExpressionComponent {
+  /// Matches the empty string.
   case epsilon
+
+  /// Matches a sequence of expressions in order.
   case concat([Expression])
+
+  /// Matches any one of several alternatives.
   case choice([Expression])
+
+  /// Matches an optional expression.
   case optional(Expression)
+
+  /// Matches a repeated expression.
   case `repeat`(Repeat)
+
+  /// Groups an expression to preserve precedence.
   case group(Expression)
+
+  /// Matches a character class.
   case characterGroup(CharacterGroup)
+
+  /// References another rule by symbol.
   case ref(Ref)
+
+  /// Matches a formatter-specific special sequence.
   case special(Special)
+
+  /// Matches a literal terminal value.
   case terminal(Terminal)
+
+  /// Stores a custom formatter-defined payload.
   case custom(any Hashable & Sendable)
 
   public var expression: Self {

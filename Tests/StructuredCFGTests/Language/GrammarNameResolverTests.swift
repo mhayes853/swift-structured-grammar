@@ -82,7 +82,7 @@ struct `GrammarNameResolver tests` {
 
   @Test
   func `Custom Resolver Is Used For Symbol Conflicts`() {
-    struct CustomResolver: Language.GrammarNameResolver {
+    struct CustomResolver: Language.GrammarSymbolResolver {
       func resolveSymbolConflict(
         for new: Language.ResolvableGrammarSymbol,
         against existing: Language.ResolvableGrammarSymbol,
@@ -108,7 +108,7 @@ struct `GrammarNameResolver tests` {
       }
     }
 
-    let grammar = language.language.grammar(nameResolver: CustomResolver())
+    let grammar = language.language.grammar(symbolResolver: CustomResolver())
 
     expectNoDifference(
       grammar.rules.map(\.symbol.rawValue).sorted(),
@@ -118,7 +118,7 @@ struct `GrammarNameResolver tests` {
 
   @Test
   func `Custom Resolver Can Choose To Keep Original Symbol`() {
-    struct KeepOriginalNameResolver: Language.GrammarNameResolver {
+    struct KeepOriginalNameResolver: Language.GrammarSymbolResolver {
       func resolveSymbolConflict(
         for new: Language.ResolvableGrammarSymbol,
         against existing: Language.ResolvableGrammarSymbol,
@@ -144,7 +144,7 @@ struct `GrammarNameResolver tests` {
       }
     }
 
-    let grammar = language.language.grammar(nameResolver: KeepOriginalNameResolver())
+    let grammar = language.language.grammar(symbolResolver: KeepOriginalNameResolver())
 
     let expressionProds = grammar.rules.filter { $0.symbol.rawValue == "expression" }
     expectNoDifference(expressionProds.count, 1)
@@ -153,7 +153,7 @@ struct `GrammarNameResolver tests` {
 
   @Test
   func `Context Grammar Index Increments For Each Merged Grammar`() {
-    struct IndexCapturingResolver: Language.GrammarNameResolver {
+    struct IndexCapturingResolver: Language.GrammarSymbolResolver {
       func resolveSymbolConflict(
         for new: Language.ResolvableGrammarSymbol,
         against existing: Language.ResolvableGrammarSymbol,
@@ -175,7 +175,7 @@ struct `GrammarNameResolver tests` {
       Grammar(startingSymbol: "expr") { Rule("expr") { "y" } }
       Grammar(startingSymbol: "expr") { Rule("expr") { "z" } }
     }
-    let grammar = language.language.grammar(nameResolver: IndexCapturingResolver())
+    let grammar = language.language.grammar(symbolResolver: IndexCapturingResolver())
 
     let conflictSymbols = grammar.rules.filter { $0.symbol.rawValue.hasPrefix("idx1__") || $0.symbol.rawValue.hasPrefix("idx2__") }
     expectNoDifference(conflictSymbols.count, 2)
@@ -200,7 +200,7 @@ struct `GrammarNameResolver tests` {
 
   @Test
   func `Context Grammars Array Contains All Grammars In Union`() {
-    struct GrammarCapturingResolver: Language.GrammarNameResolver {
+    struct GrammarCapturingResolver: Language.GrammarSymbolResolver {
       func resolveSymbolConflict(
         for new: Language.ResolvableGrammarSymbol,
         against existing: Language.ResolvableGrammarSymbol,
@@ -228,7 +228,7 @@ struct `GrammarNameResolver tests` {
       grammar2
       grammar3
     }
-    let grammar = language.language.grammar(nameResolver: GrammarCapturingResolver())
+    let grammar = language.language.grammar(symbolResolver: GrammarCapturingResolver())
 
     let synthesizedSymbols = grammar.rules.filter { $0.symbol.rawValue.hasPrefix("grammars3__") }
     expectNoDifference(synthesizedSymbols.isEmpty, false)
