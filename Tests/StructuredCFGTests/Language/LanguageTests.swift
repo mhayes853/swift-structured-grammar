@@ -506,4 +506,56 @@ struct `Language tests` {
       }
     )
   }
+
+  @Test
+  func `Resolved Grammar Preserves Comments Through Nested Language Operations`() {
+    let language = ConcatenateLanguages {
+      Grammar(startingSymbol: "alpha") {
+        Comment("Alpha comment")
+        Rule("alpha") { "a" }
+      }
+
+      Union {
+        Grammar(startingSymbol: "branch") {
+          Comment("Left branch comment")
+          Rule("branch") { "b" }
+        }
+
+        KleeneStar {
+          Grammar(startingSymbol: "branch") {
+            Comment("Right branch comment")
+            Rule("branch") { "c" }
+          }
+        }
+      }
+
+      Reverse {
+        Grammar(startingSymbol: "tail") {
+          Comment("Tail comment")
+          Rule("tail") {
+            ConcatenateExpressions {
+              "d"
+              "e"
+            }
+          }
+        }
+      }
+    }
+    .language
+
+    let resolvedGrammar = language.grammar()
+
+    expectNoDifference(
+      resolvedGrammar.statements.compactMap { statement in
+        guard case .comment(let comment) = statement else { return nil }
+        return comment.text
+      },
+      [
+        "Alpha comment",
+        "Left branch comment",
+        "Right branch comment",
+        "Tail comment"
+      ]
+    )
+  }
 }

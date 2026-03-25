@@ -190,6 +190,45 @@ struct `BNFFormatter tests` {
   }
 
   @Test
+  func `Comments Use ISO Style When Configured`() throws {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A comment")
+      Rule("start") { "value" }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .bnf(commentStyle: .iso)),
+      "(* A comment *)\n<start> ::= \"value\""
+    )
+  }
+
+  @Test
+  func `Comments Use Single Line Style When Configured`() throws {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A comment")
+      Rule("start") { "value" }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .bnf(commentStyle: .line)),
+      "// A comment\n<start> ::= \"value\""
+    )
+  }
+
+  @Test
+  func `Comments Are Omitted When Disabled`() throws {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A comment")
+      Rule("start") { "value" }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .bnf(commentStyle: .none)),
+      "<start> ::= \"value\""
+    )
+  }
+
+  @Test
   func `Formatting Special Sequence Throws`() {
     let grammar = Grammar(
       Rule("space") {

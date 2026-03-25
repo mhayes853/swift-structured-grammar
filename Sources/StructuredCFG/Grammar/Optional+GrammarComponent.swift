@@ -1,5 +1,5 @@
-/// A sequence wrapper that exposes the rules of an optional grammar component.
-public struct OptionalRules<Base: Sequence<Rule>>: Sequence {
+/// A sequence wrapper that exposes the statements of an optional grammar component.
+public struct OptionalStatements<Base: Sequence<Grammar.Statement>>: Sequence {
   private let base: Base?
 
   init(_ base: Base?) {
@@ -17,14 +17,14 @@ public struct OptionalRules<Base: Sequence<Rule>>: Sequence {
       self.base = base
     }
 
-    public mutating func next() -> Rule? {
+    public mutating func next() -> Grammar.Statement? {
       self.base?.next()
     }
   }
 }
 
-extension Optional: GrammarComponent where Wrapped: GrammarComponent {
-  public var rules: OptionalRules<Wrapped.Rules> {
-    return OptionalRules(self?.rules)
+extension Optional: Grammar.Component where Wrapped: Grammar.Component {
+  public var statements: OptionalStatements<Wrapped.Statements> {
+    return OptionalStatements(self?.statements)
   }
 }

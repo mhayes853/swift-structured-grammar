@@ -2,12 +2,12 @@ import { Grammars } from "ebnf";
 import GBNF from "gbnf";
 
 try {
-  const grammar = GBNF(
+  const grammar = new Grammars.BNF.Parser(
     `
-root ::= "\\u0061"
+// A W3C comment
+<start> ::= "value"
 `,
   );
-  grammar.add("a");
   console.log("fine");
 } catch (e) {
   console.error(e);

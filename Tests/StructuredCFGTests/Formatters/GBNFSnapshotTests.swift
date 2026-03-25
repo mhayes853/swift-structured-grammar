@@ -13,6 +13,15 @@ struct `GBNF Snapshot tests` {
   }
 
   @Test
+  func `Comments Format Canonically`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A GBNF comment")
+      Rule("start") { "value" }
+    }
+    assertGBNFSnapshot(grammar, named: "commented-grammar")
+  }
+
+  @Test
   func `Unicode Ranges Format Canonically`() {
     let grammar = Grammar(startingSymbol: "unicode-char") {
       Rule("unicode-char") {

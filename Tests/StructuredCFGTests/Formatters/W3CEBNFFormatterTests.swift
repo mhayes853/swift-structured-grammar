@@ -239,6 +239,45 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
+  func `Comments Use ISO Style When Configured`() throws {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A comment")
+      Rule("start") { "value" }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf(commentStyle: .iso)),
+      "(* A comment *)\nstart ::= \"value\""
+    )
+  }
+
+  @Test
+  func `Comments Use Single Line Style When Configured`() throws {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A comment")
+      Rule("start") { "value" }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf(commentStyle: .line)),
+      "// A comment\nstart ::= \"value\""
+    )
+  }
+
+  @Test
+  func `Comments Are Omitted When Disabled`() throws {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A comment")
+      Rule("start") { "value" }
+    }
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf(commentStyle: .none)),
+      "start ::= \"value\""
+    )
+  }
+
+  @Test
   func `Mixed Hex Terminal Uses Single W3C Terminal`() throws {
     let grammar = Grammar(Rule("start") {
       Terminal(characters: [.hex("a".unicodeScalars.first!), .character("a")])

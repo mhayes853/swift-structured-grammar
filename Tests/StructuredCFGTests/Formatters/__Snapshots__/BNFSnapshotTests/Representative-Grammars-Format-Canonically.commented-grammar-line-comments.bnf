@@ -1,0 +1,2 @@
+// A BNF comment
+<start> ::= "value"

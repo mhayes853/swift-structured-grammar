@@ -27,7 +27,20 @@
 ///
 /// let gbnf = try grammar.formatted(with: .gbnf)
 /// ```
-public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
+public struct Grammar: Hashable, Sendable, LanguageComponent, Grammar.Component {
+  /// A top-level statement in a grammar.
+  @nonexhaustive
+  public enum Statement: Sendable {
+    /// A named production rule.
+    case rule(Rule)
+
+    /// A formatter-emitted comment.
+    case comment(Comment)
+
+    /// A custom statement understood by a formatter-specific extension.
+    case custom(any Hashable & Sendable)
+  }
+
   /// The symbol used as the grammar's entry point.
   public var startingSymbol: Symbol {
     didSet {
@@ -35,12 +48,18 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     }
   }
 
+  private var orderedStatements: [Statement]
   private var orderedSymbols: [Symbol]
   private var rulesBySymbol: [Symbol: Rule]
 
+  /// The grammar's statements in stable iteration order.
+  public var statements: Statements {
+    Statements(orderedStatements: self.orderedStatements)
+  }
+
   /// The grammar's ``Rules`` in stable iteration order.
   public var rules: Rules {
-    return Rules(
+    Rules(
       orderedSymbols: self.orderedSymbols,
       rulesBySymbol: self.rulesBySymbol
     )
@@ -49,6 +68,8 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   public var language: Language {
     Language(self)
   }
+
+  public typealias Statements = StatementCollection
 
   /// Creates an empty grammar rooted at ``Symbol/root``.
   public init() {
@@ -69,31 +90,45 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   ///
   /// - Parameters:
   ///   - startingSymbol: The grammar entry ``Symbol``.
-  ///   - rules: The ``Rule`` values to include.
-  public init(startingSymbol: Symbol, _ rules: some Sequence<Rule>) {
+  ///   - statements: The top-level statements to include.
+  public init(startingSymbol: Symbol, _ statements: some Sequence<Statement>) {
     self.startingSymbol = startingSymbol
+    self.orderedStatements = [Statement]()
     self.orderedSymbols = [startingSymbol]
     self.rulesBySymbol = [startingSymbol: Rule(startingSymbol) { Epsilon() }]
-    for rule in rules {
-      self.append(rule)
+    for statement in statements {
+      self.append(statement)
     }
+    self.ensureStartingRuleStatement()
+    self.moveStartingRuleToFirstRuleSlot()
+  }
+
+  /// Creates a grammar from a starting ``Symbol`` and rule sequence.
+  ///
+  /// - Parameters:
+  ///   - startingSymbol: The grammar entry ``Symbol``.
+  ///   - rules: The ``Rule`` values to include.
+  public init(startingSymbol: Symbol, _ rules: some Sequence<Rule>) {
+    self.init(startingSymbol: startingSymbol, rules.map(Statement.rule))
   }
 
   /// Creates a grammar from a starting ``Symbol`` and result-builder closure.
   ///
   /// - Parameters:
   ///   - startingSymbol: The grammar entry `Symbol`.
-  ///   - content: A builder that produces the grammar's `Rule` values.
-  public init(startingSymbol: Symbol, @RulesBuilder _ content: () -> [Rule]) {
+  ///   - content: A builder that produces the grammar's top-level statements.
+  public init(startingSymbol: Symbol, @StatementsBuilder _ content: () -> [Statement]) {
     self.init(startingSymbol: startingSymbol, content())
   }
 
   private init(
     startingSymbol: Symbol,
+    orderedStatements: [Statement],
     orderedSymbols: [Symbol],
     rulesBySymbol: [Symbol: Rule]
   ) {
     self.startingSymbol = startingSymbol
+    self.orderedStatements = orderedStatements
     self.orderedSymbols = orderedSymbols
     self.rulesBySymbol = rulesBySymbol
   }
@@ -123,11 +158,32 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     self.rules[index]
   }
 
+  /// Appends a top-level statement to the grammar.
+  ///
+  /// - Parameter statement: The ``Statement`` to append.
+  public mutating func append(_ statement: Statement) {
+    switch statement {
+    case .rule(let rule):
+      self.replaceRuleStatement(for: rule.symbol, with: rule)
+    case .comment, .custom:
+      self.orderedStatements.append(statement)
+    }
+  }
+
+  /// Appends a sequence of top-level statements.
+  ///
+  /// - Parameter statements: The ``Statement`` values to append.
+  public mutating func append(contentsOf statements: some Sequence<Statement>) {
+    for statement in statements {
+      self.append(statement)
+    }
+  }
+
   /// Inserts or replaces a ``Rule`` in the grammar.
   ///
   /// - Parameter rule: The ``Rule`` to append.
   public mutating func append(_ rule: Rule) {
-    self.replaceRule(for: rule.symbol, with: rule)
+    self.append(.rule(rule))
   }
 
   /// Inserts or replaces a sequence of rules.
@@ -149,6 +205,26 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
     return grammar
   }
 
+  /// Returns a copy of the grammar with an additional statement appended.
+  ///
+  /// - Parameter statement: The ``Statement`` to append.
+  /// - Returns: A ``Grammar`` containing `statement`.
+  public func appending(_ statement: Statement) -> Self {
+    var grammar = self
+    grammar.append(statement)
+    return grammar
+  }
+
+  /// Returns a copy of the grammar with additional statements appended.
+  ///
+  /// - Parameter statements: The ``Statement`` values to append.
+  /// - Returns: A ``Grammar`` containing `statements`.
+  public func appending(contentsOf statements: some Sequence<Statement>) -> Self {
+    var grammar = self
+    grammar.append(contentsOf: statements)
+    return grammar
+  }
+
   /// Returns a copy of the grammar with additional rules appended.
   ///
   /// - Parameter rules: The `Rule` values to append.
@@ -167,19 +243,24 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   /// - Parameter symbol: The ``Symbol`` whose rule should be removed.
   public mutating func removeRule(for symbol: Symbol) {
     if symbol == self.startingSymbol {
-      self.rulesBySymbol[symbol] = Rule(symbol) { Epsilon() }
+      let placeholder = Rule(symbol) { Epsilon() }
+      self.rulesBySymbol[symbol] = placeholder
+      self.replaceOrInsertStartingRuleStatement(with: placeholder)
       return
     }
     self.orderedSymbols.removeAll { $0 == symbol }
     self.rulesBySymbol[symbol] = nil
+    self.removeRuleStatement(for: symbol)
   }
 
   /// Removes every rule from the grammar except for the starting symbol placeholder.
   public mutating func removeAll() {
+    self.orderedStatements = [Statement]()
     self.orderedSymbols = [self.startingSymbol]
     self.rulesBySymbol = [
       self.startingSymbol: Rule(self.startingSymbol) { Epsilon() }
     ]
+    self.ensureStartingRuleStatement()
   }
 
   /// Removes every rule that matches a predicate.
@@ -197,13 +278,44 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
 
     self.orderedSymbols.removeAll { removedSymbols.contains($0) }
     self.rulesBySymbol = self.rulesBySymbol.filter { !removedSymbols.contains($0.key) }
-    if removedSymbols.contains(self.startingSymbol) {
-      self.rulesBySymbol[self.startingSymbol] = Rule(self.startingSymbol) {
-        Epsilon()
+    self.orderedStatements.removeAll { statement in
+      if case .rule(let rule) = statement {
+        removedSymbols.contains(rule.symbol)
+      } else {
+        false
       }
+    }
+    if removedSymbols.contains(self.startingSymbol) {
+      let placeholder = Rule(self.startingSymbol) { Epsilon() }
+      self.rulesBySymbol[self.startingSymbol] = placeholder
       if !self.orderedSymbols.contains(self.startingSymbol) {
         self.orderedSymbols.insert(self.startingSymbol, at: 0)
       }
+      self.replaceOrInsertStartingRuleStatement(with: placeholder)
+    }
+  }
+
+  /// Removes every statement that matches a predicate.
+  ///
+  /// - Parameter shouldBeRemoved: A predicate that decides whether a ``Statement`` is removed.
+  public mutating func removeAllStatements(where shouldBeRemoved: (Statement) -> Bool) {
+    let removedRuleSymbols = Set(
+      self.orderedStatements.compactMap { statement -> Symbol? in
+        guard shouldBeRemoved(statement) else { return nil }
+        if case .rule(let rule) = statement {
+          return rule.symbol
+        }
+        return nil
+      }
+    )
+    self.orderedStatements.removeAll(where: shouldBeRemoved)
+    self.orderedSymbols.removeAll { removedRuleSymbols.contains($0) }
+    self.rulesBySymbol = self.rulesBySymbol.filter { !removedRuleSymbols.contains($0.key) }
+    if self.rulesBySymbol[self.startingSymbol] == nil {
+      let placeholder = Rule(self.startingSymbol) { Epsilon() }
+      self.rulesBySymbol[self.startingSymbol] = placeholder
+      self.orderedSymbols.insert(self.startingSymbol, at: 0)
+      self.replaceOrInsertStartingRuleStatement(with: placeholder)
     }
   }
 
@@ -289,10 +401,7 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   }
 
   private mutating func replaceRule(for symbol: Symbol, with rule: Rule) {
-    if self.rulesBySymbol[symbol] == nil {
-      self.appendSymbolIfNeeded(symbol)
-    }
-    self.rulesBySymbol[symbol] = rule
+    self.replaceRuleStatement(for: symbol, with: rule)
   }
 
   /// Merges another grammar into this one, replacing rules that share the same symbol.
@@ -326,12 +435,113 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, GrammarComponent {
   private mutating func updateStartingSymbol(from oldValue: Symbol) {
     guard self.startingSymbol != oldValue else { return }
     if self.rulesBySymbol[self.startingSymbol] == nil {
-      self.rulesBySymbol[self.startingSymbol] = Rule(self.startingSymbol) {
-        Epsilon()
-      }
+      let placeholder = Rule(self.startingSymbol) { Epsilon() }
+      self.rulesBySymbol[self.startingSymbol] = placeholder
+      self.replaceOrInsertStartingRuleStatement(with: placeholder)
     }
     self.orderedSymbols.removeAll { $0 == self.startingSymbol }
     self.orderedSymbols.insert(self.startingSymbol, at: 0)
+    self.moveStartingRuleToFirstRuleSlot()
+  }
+
+  private mutating func replaceRuleStatement(for symbol: Symbol, with rule: Rule) {
+    if self.rulesBySymbol[symbol] == nil {
+      self.appendSymbolIfNeeded(symbol)
+    }
+    self.rulesBySymbol[symbol] = rule
+
+    if let index = self.ruleStatementIndex(for: symbol) {
+      self.orderedStatements[index] = .rule(rule)
+    } else {
+      self.orderedStatements.append(.rule(rule))
+    }
+
+    if symbol == self.startingSymbol {
+      self.moveStartingRuleToFirstRuleSlot()
+    }
+  }
+
+  private mutating func removeRuleStatement(for symbol: Symbol) {
+    if let index = self.ruleStatementIndex(for: symbol) {
+      self.orderedStatements.remove(at: index)
+    }
+  }
+
+  private func ruleStatementIndex(for symbol: Symbol) -> Int? {
+    self.orderedStatements.firstIndex { statement in
+      if case .rule(let rule) = statement {
+        rule.symbol == symbol
+      } else {
+        false
+      }
+    }
+  }
+
+  private func firstRuleStatementIndex() -> Int {
+    self.orderedStatements.firstIndex { statement in
+      if case .rule = statement {
+        true
+      } else {
+        false
+      }
+    } ?? self.orderedStatements.endIndex
+  }
+
+  private mutating func ensureStartingRuleStatement() {
+    guard self.ruleStatementIndex(for: self.startingSymbol) == nil else { return }
+    let insertIndex = self.firstRuleStatementIndex()
+    let placeholder =
+      self.rulesBySymbol[self.startingSymbol] ?? Rule(self.startingSymbol) { Epsilon() }
+    self.orderedStatements.insert(.rule(placeholder), at: insertIndex)
+  }
+
+  private mutating func replaceOrInsertStartingRuleStatement(with rule: Rule) {
+    if let index = self.ruleStatementIndex(for: rule.symbol) {
+      self.orderedStatements[index] = .rule(rule)
+    } else {
+      let insertIndex = self.firstRuleStatementIndex()
+      self.orderedStatements.insert(.rule(rule), at: insertIndex)
+    }
+    self.moveStartingRuleToFirstRuleSlot()
+  }
+
+  private mutating func moveStartingRuleToFirstRuleSlot() {
+    guard let currentIndex = self.ruleStatementIndex(for: self.startingSymbol) else { return }
+    let targetIndex = self.firstRuleStatementIndex()
+    guard currentIndex != targetIndex else { return }
+    let statement = self.orderedStatements.remove(at: currentIndex)
+    self.orderedStatements.insert(statement, at: targetIndex)
+  }
+}
+
+extension Grammar.Statement: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case (.rule(let lhsRule), .rule(let rhsRule)):
+      lhsRule == rhsRule
+    case (.comment(let lhsComment), .comment(let rhsComment)):
+      lhsComment == rhsComment
+    case (.custom(let lhsValue), .custom(let rhsValue)):
+      equals(lhsValue, rhsValue)
+    default:
+      false
+    }
+  }
+}
+
+extension Grammar.Statement: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    switch self {
+    case .rule(let rule):
+      hasher.combine(0)
+      hasher.combine(rule)
+    case .comment(let comment):
+      hasher.combine(1)
+      hasher.combine(comment)
+    case .custom(let value):
+      hasher.combine(2)
+      value.hash(into: &hasher)
+    }
   }
 }
 
@@ -359,11 +569,18 @@ extension Grammar {
   /// }
   /// ```
   public mutating func homomorphMap(_ transform: (Terminal) -> Terminal?) {
-    self.rulesBySymbol = self.rulesBySymbol.mapValues { production in
-      Rule(
-        production.symbol,
-        self.homomorphed(expression: production.expression, transform: transform)
-      )
+    self.orderedStatements = self.orderedStatements.map { statement in
+      switch statement {
+      case .rule(let rule):
+        let updatedRule = Rule(
+          rule.symbol,
+          self.homomorphed(expression: rule.expression, transform: transform)
+        )
+        self.rulesBySymbol[rule.symbol] = updatedRule
+        return .rule(updatedRule)
+      case .comment, .custom:
+        return statement
+      }
     }
   }
 
@@ -447,11 +664,16 @@ extension Grammar {
   /// - Returns: A reversed ``Grammar``.
   public func reversed() -> Self {
     let reachableSymbols = self.reachableSymbols()
-    let rules = self.rules.compactMap { rule -> Rule? in
-      guard reachableSymbols.contains(rule.symbol) else { return nil }
-      return Rule(rule.symbol, self.reversed(expression: rule.expression))
+    let statements = self.statements.compactMap { statement -> Statement? in
+      switch statement {
+      case .rule(let rule):
+        guard reachableSymbols.contains(rule.symbol) else { return nil }
+        return .rule(Rule(rule.symbol, self.reversed(expression: rule.expression)))
+      case .comment, .custom:
+        return statement
+      }
     }
-    return Grammar(startingSymbol: self.startingSymbol, rules)
+    return Grammar(startingSymbol: self.startingSymbol, statements)
   }
 
   private func reachableSymbols() -> Set<Symbol> {
@@ -526,6 +748,30 @@ extension Grammar {
 // MARK: - Rules
 
 extension Grammar {
+  /// An ordered view over a grammar's statements.
+  public struct StatementCollection: RandomAccessCollection, Sendable {
+    public typealias Element = Statement
+    public typealias Index = Int
+
+    private let orderedStatements: [Statement]
+
+    init(orderedStatements: [Statement]) {
+      self.orderedStatements = orderedStatements
+    }
+
+    public var startIndex: Int {
+      self.orderedStatements.startIndex
+    }
+
+    public var endIndex: Int {
+      self.orderedStatements.endIndex
+    }
+
+    public subscript(position: Int) -> Statement {
+      self.orderedStatements[position]
+    }
+  }
+
   /// An ordered view over a grammar's rules.
   public struct Rules: RandomAccessCollection, Sendable {
     public typealias Element = Rule

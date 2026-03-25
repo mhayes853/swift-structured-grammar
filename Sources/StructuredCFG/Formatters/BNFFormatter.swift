@@ -1,10 +1,44 @@
 extension Grammar {
   /// Formats grammar rules using classic Backus-Naur Form.
-  public struct BNFFormatter: RuleFormatter {
-    /// Creates a BNF formatter.
-    public init() {}
+  public struct BNFFormatter: StatementFormatter {
+    /// Controls how comments are emitted.
+    public enum CommentStyle: Sendable {
+      /// Emit block comments.
+      case block
+      /// Emit ISO-style comments.
+      case iso
+      /// Emit single-line comments.
+      case line
+      /// Omit comments entirely.
+      case none
+    }
 
-    public func format(rule: Rule) throws -> String {
+    /// The style used for formatted comments.
+    public var commentStyle = CommentStyle.block
+
+    /// Creates a BNF formatter.
+    ///
+    /// - Parameter commentStyle: The comment style used for formatted comments.
+    public init(commentStyle: CommentStyle = .block) {
+      self.commentStyle = commentStyle
+    }
+
+    /// Formats a single grammar statement.
+    ///
+    /// - Parameter statement: The statement to format.
+    /// - Returns: A textual representation of `statement`.
+    public func format(statement: Statement) throws -> String {
+      switch statement {
+      case .rule(let rule):
+        return try self.format(rule: rule)
+      case .comment(let comment):
+        return comment.formatted(style: self.commentStyle.sharedStyle)
+      case .custom:
+        throw UnsupportedStatementError.customStatement
+      }
+    }
+
+    private func format(rule: Rule) throws -> String {
       let rootSymbol = rule.symbol
       let (alternatives, helperLines) = try self.expand(
         expression: rule.expression.simplified,
@@ -139,7 +173,8 @@ extension Grammar {
       case .character(let character):
         return [[.terminal(self.terminal(from: character))]]
       case .range(let start, let end):
-        guard let startValue = self.asciiValue(for: start), let endValue = self.asciiValue(for: end) else {
+        guard let startValue = self.asciiValue(for: start), let endValue = self.asciiValue(for: end)
+        else {
           throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
         }
         return (startValue...endValue)
@@ -289,9 +324,19 @@ extension Grammar {
   }
 }
 
-extension Grammar.RuleFormatter where Self == Grammar.BNFFormatter {
+extension Grammar.StatementFormatter where Self == Grammar.BNFFormatter {
   /// A BNF formatter.
   public static var bnf: Grammar.BNFFormatter {
     Grammar.BNFFormatter()
+  }
+
+  /// Creates a BNF formatter.
+  ///
+  /// - Parameter commentStyle: The comment style used for formatted comments.
+  /// - Returns: A configured BNF formatter.
+  public static func bnf(
+    commentStyle: Grammar.BNFFormatter.CommentStyle = .block
+  ) -> Grammar.BNFFormatter {
+    Grammar.BNFFormatter(commentStyle: commentStyle)
   }
 }

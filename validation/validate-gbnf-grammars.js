@@ -24,7 +24,7 @@ function getGbnfFiles(dir) {
 
 function validateGrammar(filePath) {
   const content = readFileSync(filePath, "utf-8");
-  const normalizedContent = content.endsWith("\n") ? content : content + "\n";
+  const normalizedContent = normalizeGBNF(content);
   
   const firstRule = normalizedContent.split("\n")[0].split("::=")[0].trim();
   
@@ -44,6 +44,14 @@ function validateGrammar(filePath) {
     
     return { valid: false, error: message, firstRule };
   }
+}
+
+function normalizeGBNF(content) {
+  const withoutComments = content
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n");
+  return withoutComments.endsWith("\n") ? withoutComments : withoutComments + "\n";
 }
 
 const files = getGbnfFiles(snapshotDir);

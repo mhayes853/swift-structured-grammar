@@ -1,10 +1,21 @@
 extension Grammar {
   /// Formats grammar rules using GBNF syntax.
-  public struct GBNFFormatter: RuleFormatter {
+  public struct GBNFFormatter: StatementFormatter {
     /// Creates a GBNF formatter.
     public init() {}
 
-    public func format(rule: Rule) throws -> String {
+    public func format(statement: Statement) throws -> String {
+      switch statement {
+      case .rule(let rule):
+        return try self.format(rule: rule)
+      case .comment(let comment):
+        return self.format(comment: comment)
+      case .custom:
+        throw UnsupportedStatementError.customStatement
+      }
+    }
+
+    private func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if case .special = expression {
         throw UnsupportedExpressionError("Special sequences are not supported")
@@ -96,10 +107,17 @@ extension Grammar {
         )
       )
     }
+
+    private func format(comment: Comment) -> String {
+      comment.text
+        .split(separator: "\n", omittingEmptySubsequences: false)
+        .map { "# \($0)" }
+        .joined(separator: "\n")
+    }
   }
 }
 
-extension Grammar.RuleFormatter where Self == Grammar.GBNFFormatter {
+extension Grammar.StatementFormatter where Self == Grammar.GBNFFormatter {
   /// A GBNF formatter.
   public static var gbnf: Grammar.GBNFFormatter {
     Grammar.GBNFFormatter()

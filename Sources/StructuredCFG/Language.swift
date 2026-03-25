@@ -376,15 +376,15 @@ extension Language {
     guard entrySymbol != startingSymbol else { return resolved.grammar }
     return Grammar(
       startingSymbol: startingSymbol,
-      resolved.grammar.rules + [Rule(startingSymbol) { Ref(entrySymbol) }]
+      resolved.grammar.statements + [.rule(Rule(startingSymbol) { Ref(entrySymbol) })]
     )
   }
 
   /// Formats the resolved grammar using the supplied formatter.
   ///
-  /// - Parameter formatter: The ``RuleFormatter`` used to serialize the resolved grammar.
+  /// - Parameter formatter: The ``StatementFormatter`` used to serialize the resolved grammar.
   /// - Returns: The formatted representation of the resolved grammar.
-  public func formatted(with formatter: some Grammar.RuleFormatter) throws -> String {
+  public func formatted(with formatter: some Grammar.StatementFormatter) throws -> String {
     try self.grammar().formatted(with: formatter)
   }
 }
@@ -548,20 +548,26 @@ extension Language {
         grammars: allGrammars
       )
 
-      for production in incoming.rules {
-        if existingSymbols.contains(production.symbol) {
-          if let existingRule = base.rules.first(where: {
-            $0.symbol == production.symbol
-          }) {
-            let resolvedSymbol = self.symbolResolver.resolveSymbolConflict(
-              for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
-              against: ResolvableGrammarSymbol(symbol: existingRule.symbol, grammar: base),
-              context: context
-            )
-            result.append(Rule(resolvedSymbol, production.expression))
+      for statement in incoming.statements {
+        switch statement {
+        case .comment, .custom:
+          result.append(statement)
+
+        case .rule(let production):
+          if existingSymbols.contains(production.symbol) {
+            if let existingRule = base.rules.first(where: {
+              $0.symbol == production.symbol
+            }) {
+              let resolvedSymbol = self.symbolResolver.resolveSymbolConflict(
+                for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
+                against: ResolvableGrammarSymbol(symbol: existingRule.symbol, grammar: base),
+                context: context
+              )
+              result.append(Rule(resolvedSymbol, production.expression))
+            }
+          } else {
+            result.append(production)
           }
-        } else {
-          result.append(production)
         }
       }
 

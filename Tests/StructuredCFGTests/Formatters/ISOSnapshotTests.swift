@@ -11,6 +11,15 @@ struct `ISO Snapshot tests` {
     let snapshotCase = ISOSnapshotSuite.snapshotCase(named: snapshotName)
     assertISOEBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
   }
+
+  @Test
+  func `Comments Format Canonically`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("An ISO comment")
+      Rule("start") { "value" }
+    }
+    assertISOEBNFSnapshot(grammar, named: "commented-grammar")
+  }
 }
 
 private let isRecordingISOSnapshots = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"

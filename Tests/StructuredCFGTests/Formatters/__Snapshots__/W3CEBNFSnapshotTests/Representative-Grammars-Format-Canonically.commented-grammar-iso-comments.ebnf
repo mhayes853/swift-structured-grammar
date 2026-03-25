@@ -1,0 +1,2 @@
+(* A W3C comment *)
+start ::= "value"

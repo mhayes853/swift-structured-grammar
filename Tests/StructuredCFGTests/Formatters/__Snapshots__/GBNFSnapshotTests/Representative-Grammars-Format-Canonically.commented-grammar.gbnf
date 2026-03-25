@@ -1,0 +1,2 @@
+# A GBNF comment
+start ::= "value"

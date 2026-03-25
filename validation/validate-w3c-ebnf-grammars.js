@@ -24,12 +24,23 @@ function getEbnfFiles(dir) {
 function validateGrammar(filePath) {
   const content = readFileSync(filePath, "utf-8");
   try {
-    const normalizedContent = content.endsWith("\n") ? content : content + "\n";
+    const normalizedContent = normalizeEBNF(content);
     new Grammars.W3C.Parser(normalizedContent);
     return { valid: true, error: null };
   } catch (e) {
     return { valid: false, error: e.message };
   }
+}
+
+function normalizeEBNF(content) {
+  const withoutComments = content
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trimStart();
+      return !trimmed.startsWith("/*") && !trimmed.startsWith("(*") && !trimmed.startsWith("//");
+    })
+    .join("\n");
+  return withoutComments.endsWith("\n") ? withoutComments : withoutComments + "\n";
 }
 
 const files = getEbnfFiles(snapshotDir);

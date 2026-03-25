@@ -1,6 +1,18 @@
 extension Grammar {
   /// Formats grammar rules using the W3C EBNF dialect.
-  public struct W3CEBNFFormatter: RuleFormatter {
+  public struct W3CEBNFFormatter: StatementFormatter {
+    /// Controls how comments are emitted.
+    public enum CommentStyle: Sendable {
+      /// Emit block comments.
+      case block
+      /// Emit ISO-style comments.
+      case iso
+      /// Emit single-line comments.
+      case line
+      /// Omit comments entirely.
+      case none
+    }
+
     /// Controls how literal terminals are quoted.
     public enum Quoting: Sendable {
       /// Use single quotes.
@@ -12,14 +24,34 @@ extension Grammar {
     /// The quoting style used for terminal literals.
     public var quoting = Quoting.double
 
+    /// The style used for formatted comments.
+    public var commentStyle = CommentStyle.block
+
     /// Creates a W3C EBNF formatter.
     ///
     /// - Parameter quoting: The quoting style used for literal terminals.
-    public init(quoting: Quoting = .double) {
+    /// - Parameter commentStyle: The comment style used for formatted comments.
+    public init(quoting: Quoting = .double, commentStyle: CommentStyle = .block) {
       self.quoting = quoting
+      self.commentStyle = commentStyle
     }
 
-    public func format(rule: Rule) throws -> String {
+    /// Formats a single grammar statement.
+    ///
+    /// - Parameter statement: The statement to format.
+    /// - Returns: A textual representation of `statement`.
+    public func format(statement: Statement) throws -> String {
+      switch statement {
+      case .rule(let rule):
+        try self.format(rule: rule)
+      case .comment(let comment):
+        comment.formatted(style: self.commentStyle.sharedStyle)
+      case .custom:
+        throw UnsupportedStatementError.customStatement
+      }
+    }
+
+    private func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if expression == .epsilon {
         throw UnsupportedExpressionError("Epsilon expressions are not supported")
@@ -79,7 +111,8 @@ extension Grammar {
           if n == 0 {
             return ""
           } else {
-            let choices = (1...n).map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
+            let choices = (1...n)
+              .map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
             let union = Expression.choice(choices)
             let expanded = Expression.optional(union)
             return try self.format(expression: expanded)
@@ -93,7 +126,8 @@ extension Grammar {
         case (let m?, let n?):
           let required = Expression.concat(Array(repeating: innerExpression, count: m))
           let additionalMax = n - m
-          let additionalChoices = (1...additionalMax).map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
+          let additionalChoices = (1...additionalMax)
+            .map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
           let optionalAdditional: Expression
           if additionalChoices.isEmpty {
             optionalAdditional = .epsilon
@@ -205,11 +239,10 @@ extension Grammar {
       let quote = self.quoting == .double ? "\"" : "'"
       return quote + escaped + quote
     }
-
   }
 }
 
-extension Grammar.RuleFormatter where Self == Grammar.W3CEBNFFormatter {
+extension Grammar.StatementFormatter where Self == Grammar.W3CEBNFFormatter {
   /// A W3C EBNF formatter that uses double quotes for terminals.
   public static var w3cEbnf: Grammar.W3CEBNFFormatter {
     Grammar.W3CEBNFFormatter()
@@ -218,10 +251,12 @@ extension Grammar.RuleFormatter where Self == Grammar.W3CEBNFFormatter {
   /// Creates a W3C EBNF formatter.
   ///
   /// - Parameter quoting: The quoting style used for literal terminals.
+  /// - Parameter commentStyle: The comment style used for formatted comments.
   /// - Returns: A configured W3C EBNF formatter.
   public static func w3cEbnf(
-    quoting: Grammar.W3CEBNFFormatter.Quoting = .double
+    quoting: Grammar.W3CEBNFFormatter.Quoting = .double,
+    commentStyle: Grammar.W3CEBNFFormatter.CommentStyle = .block
   ) -> Grammar.W3CEBNFFormatter {
-    Grammar.W3CEBNFFormatter(quoting: quoting)
+    Grammar.W3CEBNFFormatter(quoting: quoting, commentStyle: commentStyle)
   }
 }

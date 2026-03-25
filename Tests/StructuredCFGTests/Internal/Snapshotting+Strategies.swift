@@ -2,9 +2,9 @@ import SnapshotTesting
 import StructuredCFG
 
 extension Snapshotting where Value == Grammar, Format == String {
-  static func bnf() -> Self {
+  static func bnf(formatter: Grammar.BNFFormatter = .bnf) -> Self {
     Self(pathExtension: "bnf", diffing: .lines) { grammar in
-      try! grammar.formatted(with: .bnf)
+      try! grammar.formatted(with: formatter)
     }
   }
 

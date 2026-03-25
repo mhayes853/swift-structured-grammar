@@ -14,6 +14,28 @@ struct `W3CEBNFSnapshot tests` {
   }
 
   @Test
+  func `Comments Format Canonically`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A W3C comment")
+      Rule("start") { "value" }
+    }
+    assertEBNFSnapshot(grammar, named: "commented-grammar")
+  }
+
+  @Test
+  func `Comments Format Canonically With ISO Style`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A W3C comment")
+      Rule("start") { "value" }
+    }
+    assertEBNFSnapshot(
+      grammar,
+      named: "commented-grammar-iso-comments",
+      formatter: .w3cEbnf(commentStyle: .iso)
+    )
+  }
+
+  @Test
   func `Representative Grammars Format Canonically With Single Quotes`() {
     var formatter = Grammar.W3CEBNFFormatter()
     formatter.quoting = .single

@@ -1,8 +1,25 @@
-/// A reusable component that contributes one or more grammar rules.
-public protocol GrammarComponent {
-  associatedtype Rules: Sequence<Rule>
+// MARK: - Component
 
-  /// The rules represented by this component.
-  @RulesBuilder
-  var rules: Rules { get }
+extension Grammar {
+  /// A reusable component that contributes one or more top-level grammar statements.
+  public protocol Component {
+    associatedtype Statements: Sequence<Statement>
+
+    /// The statements represented by this component.
+    var statements: Statements { get }
+  }
+}
+
+// MARK: - Base Conformances
+
+extension Rule: Grammar.Component {
+  public var statements: CollectionOfOne<Grammar.Statement> {
+    CollectionOfOne(.rule(self))
+  }
+}
+
+extension Comment: Grammar.Component {
+  public var statements: CollectionOfOne<Grammar.Statement> {
+    CollectionOfOne(.comment(self))
+  }
 }

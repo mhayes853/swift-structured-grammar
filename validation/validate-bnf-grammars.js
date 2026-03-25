@@ -23,7 +23,7 @@ function getBnfFiles(dir) {
 
 function validateGrammar(filePath) {
   const content = readFileSync(filePath, "utf-8");
-  const normalizedContent = content.endsWith("\n") ? content : content + "\n";
+  const normalizedContent = normalizeBNF(content);
 
   try {
     new Grammars.BNF.Parser(normalizedContent);
@@ -31,6 +31,17 @@ function validateGrammar(filePath) {
   } catch (error) {
     return { valid: false, error: error.message };
   }
+}
+
+function normalizeBNF(content) {
+  const withoutComments = content
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trimStart();
+      return !trimmed.startsWith("/*") && !trimmed.startsWith("(*") && !trimmed.startsWith("//");
+    })
+    .join("\n");
+  return withoutComments.endsWith("\n") ? withoutComments : withoutComments + "\n";
 }
 
 const files = getBnfFiles(snapshotDir);

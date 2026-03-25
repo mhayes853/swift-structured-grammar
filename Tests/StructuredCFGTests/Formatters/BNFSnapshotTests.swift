@@ -11,6 +11,28 @@ struct `BNF Snapshot tests` {
     let snapshotCase = BNFSnapshotSuite.snapshotCase(named: snapshotName)
     assertBNFSnapshot(snapshotCase.language.grammar(), named: snapshotCase.name)
   }
+
+  @Test
+  func `Comments Format Canonically`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A BNF comment")
+      Rule("start") { "value" }
+    }
+    assertBNFSnapshot(grammar, named: "commented-grammar")
+  }
+
+  @Test
+  func `Comments Format Canonically With Single Line Style`() {
+    let grammar = Grammar(startingSymbol: "start") {
+      Comment("A BNF comment")
+      Rule("start") { "value" }
+    }
+    assertBNFSnapshot(
+      grammar,
+      named: "commented-grammar-line-comments",
+      formatter: .bnf(commentStyle: .line)
+    )
+  }
 }
 
 private let isRecordingBNFSnapshots = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"
@@ -23,11 +45,12 @@ private func assertBNFSnapshot(
   file: StaticString = #filePath,
   function: StaticString = #function,
   line: UInt = #line,
-  column: UInt = #column
+  column: UInt = #column,
+  formatter: Grammar.BNFFormatter = .bnf
 ) {
   let failure = verifySnapshot(
     of: value(),
-    as: .bnf(),
+    as: .bnf(formatter: formatter),
     named: name,
     record: isRecordingBNFSnapshots,
     fileID: fileID,

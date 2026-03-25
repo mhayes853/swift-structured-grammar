@@ -1,6 +1,6 @@
 extension Grammar {
   /// Formats grammar rules using the ISO/IEC 14977 EBNF dialect.
-  public struct ISOIECEBNFFormatter: RuleFormatter {
+  public struct ISOIECEBNFFormatter: StatementFormatter {
     /// Controls how literal terminals are quoted.
     public enum Quoting: Sendable {
       /// Use single quotes.
@@ -52,7 +52,18 @@ extension Grammar {
       self.quoting = quoting
     }
 
-    public func format(rule: Rule) throws -> String {
+    public func format(statement: Statement) throws -> String {
+      switch statement {
+      case .rule(let rule):
+        return try self.format(rule: rule)
+      case .comment(let comment):
+        return self.format(comment: comment)
+      case .custom:
+        throw UnsupportedStatementError.customStatement
+      }
+    }
+
+    private func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if case .custom = expression {
         throw UnsupportedExpressionError.customExpression
@@ -340,6 +351,13 @@ extension Grammar {
       return terminals.joined(separator: separator)
     }
 
+    private func format(comment: Comment) -> String {
+      comment.text
+        .split(separator: "\n", omittingEmptySubsequences: false)
+        .map { "(* \($0) *)" }
+        .joined(separator: "\n")
+    }
+
     private func terminal(from character: Terminal.Character) -> Terminal {
       switch character {
       case .character(let character):
@@ -400,7 +418,7 @@ extension Grammar {
   }
 }
 
-extension Grammar.RuleFormatter where Self == Grammar.ISOIECEBNFFormatter {
+extension Grammar.StatementFormatter where Self == Grammar.ISOIECEBNFFormatter {
   /// An ISO/IEC EBNF formatter with default options.
   public static var isoIecEbnf: Grammar.ISOIECEBNFFormatter {
     Grammar.ISOIECEBNFFormatter()
