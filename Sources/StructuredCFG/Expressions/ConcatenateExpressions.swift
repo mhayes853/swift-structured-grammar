@@ -1,12 +1,12 @@
 /// An expression component that concatenates expressions in sequence.
-public struct ConcatenateExpressions: Hashable, Sendable, ExpressionComponent {
+public struct ConcatenateExpressions: Hashable, Sendable, Expression.Component {
   public let expression: Expression
 
   /// Creates a concatenation from an expression component.
   ///
   /// - Parameter expression: The expression to concatenate.
   @inlinable
-  public init(_ expression: some ExpressionComponent) {
+  public init(_ expression: some Expression.Component) {
     self.expression = .concat([expression.expression])
   }
 

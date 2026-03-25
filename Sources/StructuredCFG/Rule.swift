@@ -26,7 +26,7 @@ public struct Rule: Hashable, Sendable {
   ///   - expression: The expression component to associate with `symbol`.
   public init(
     _ symbol: Symbol,
-    _ expression: some ExpressionComponent
+    _ expression: some Expression.Component
   ) {
     self.init(symbol) { expression.expression }
   }

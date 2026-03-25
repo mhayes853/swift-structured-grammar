@@ -7,7 +7,7 @@
 ///   }
 /// }
 /// ```
-public struct Reverse: Hashable, Sendable, LanguageComponent {
+public struct Reverse: Hashable, Sendable, Language.Component {
   public let language: Language
 
   /// Creates a reversed language from a result-builder closure.

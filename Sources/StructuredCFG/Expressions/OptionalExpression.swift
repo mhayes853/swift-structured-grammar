@@ -1,12 +1,12 @@
 /// An expression component that matches an optional expression.
-public struct OptionalExpression: Hashable, Sendable, ExpressionComponent {
+public struct OptionalExpression: Hashable, Sendable, Expression.Component {
   public let expression: Expression
 
   /// Creates an optional expression from an expression component.
   ///
   /// - Parameter expression: The expression to make optional.
   @inlinable
-  public init(_ expression: some ExpressionComponent) {
+  public init(_ expression: some Expression.Component) {
     self.expression = .optional(expression.expression)
   }
 

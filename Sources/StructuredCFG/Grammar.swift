@@ -27,7 +27,7 @@
 ///
 /// let gbnf = try grammar.formatted(with: .gbnf)
 /// ```
-public struct Grammar: Hashable, Sendable, LanguageComponent, Grammar.Component {
+public struct Grammar: Hashable, Sendable, Language.Component, Grammar.Component {
   /// A top-level statement in a grammar.
   @nonexhaustive
   public enum Statement: Sendable {
@@ -323,10 +323,10 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, Grammar.Component 
   ///
   /// - Parameters:
   ///   - symbol: The ``Symbol`` to replace.
-  ///   - expression: The new ``ExpressionComponent`` for the rule body.
+  ///   - expression: The new ``Expression.Component`` for the rule body.
   public mutating func replaceRule(
     for symbol: Symbol,
-    with expression: some ExpressionComponent
+    with expression: some Expression.Component
   ) {
     self.replaceRule(for: symbol, with: Rule(symbol, expression))
   }
@@ -359,11 +359,11 @@ public struct Grammar: Hashable, Sendable, LanguageComponent, Grammar.Component 
   ///
   /// - Parameters:
   ///   - symbol: The ``Symbol`` to replace.
-  ///   - expression: The new ``ExpressionComponent`` for the rule body.
+  ///   - expression: The new ``Expression.Component`` for the rule body.
   /// - Returns: A ``Grammar`` with the updated rule.
   public func replacingRule(
     for symbol: Symbol,
-    with expression: some ExpressionComponent
+    with expression: some Expression.Component
   ) -> Self {
     var grammar = self
     grammar.replaceRule(for: symbol, with: expression)

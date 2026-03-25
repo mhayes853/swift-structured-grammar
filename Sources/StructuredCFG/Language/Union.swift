@@ -8,7 +8,7 @@
 ///   }
 /// }
 /// ```
-public struct Union: Hashable, Sendable, LanguageComponent {
+public struct Union: Hashable, Sendable, Language.Component {
   public let language: Language
 
   /// Creates a union from a result-builder closure.

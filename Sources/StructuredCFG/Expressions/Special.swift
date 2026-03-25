@@ -1,5 +1,5 @@
 /// An expression component that stores a formatter-specific special sequence.
-public struct Special: Hashable, Sendable, ExpressionComponent {
+public struct Special: Hashable, Sendable, Expression.Component {
   /// The raw special-sequence value.
   public let value: String
 

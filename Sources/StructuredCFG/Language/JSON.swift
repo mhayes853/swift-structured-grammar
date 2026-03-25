@@ -1,5 +1,5 @@
 /// A reusable language component that accepts JSON objects and arrays.
-public struct JSON: LanguageComponent {
+public struct JSON: Language.Component {
   /// Whether generated string character classes should be restricted to ASCII.
   public let asciiOnly: Bool
 

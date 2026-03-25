@@ -1,7 +1,7 @@
 /// A result builder for collecting inputs to ``ConcatenateLanguages``.
 @resultBuilder
 public enum ConcatenateLanguagesBuilder {
-  public static func buildExpression(_ value: some LanguageComponent) -> [Language] {
+  public static func buildExpression(_ value: some Language.Component) -> [Language] {
     [value.language]
   }
 

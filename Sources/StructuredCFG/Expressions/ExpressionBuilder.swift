@@ -1,7 +1,7 @@
 /// A result builder for constructing ``Expression`` values from expression components.
 @resultBuilder
 public enum ExpressionBuilder {
-  public static func buildExpression(_ value: some ExpressionComponent) -> Expression {
+  public static func buildExpression(_ value: some Expression.Component) -> Expression {
     value.expression
   }
 

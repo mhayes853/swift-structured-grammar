@@ -1,4 +1,4 @@
-extension Optional: LanguageComponent where Wrapped: LanguageComponent {
+extension Optional: Language.Component where Wrapped: Language.Component {
   public var language: Language {
     self.map { $0.language } ?? Language()
   }

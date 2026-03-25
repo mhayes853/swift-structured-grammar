@@ -203,12 +203,12 @@ print(gbnf)
 
 ## Components
 
-Expression blocks inside a ``Rule`` builder closure must conform to ``ExpressionComponent``. You can use that protocol to create reusable grammar components.
+Expression blocks inside a ``Rule`` builder closure must conform to ``Expression.Component``. You can use that protocol to create reusable grammar components.
 
 ```swift
 import StructuredCFG
 
-struct Factor: ExpressionComponent {
+struct Factor: Expression.Component {
   var expression: Expression {
     Choice {
       Ref("number")

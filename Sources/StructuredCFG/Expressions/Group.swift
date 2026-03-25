@@ -1,12 +1,12 @@
 /// An expression component that groups another expression to preserve precedence.
-public struct GroupExpression: Hashable, Sendable, ExpressionComponent {
+public struct GroupExpression: Hashable, Sendable, Expression.Component {
   public let expression: Expression
 
   /// Creates a grouped expression from an expression component.
   ///
   /// - Parameter expression: The expression to group.
   @inlinable
-  public init(_ expression: some ExpressionComponent) {
+  public init(_ expression: some Expression.Component) {
     self.expression = .group(expression.expression)
   }
 

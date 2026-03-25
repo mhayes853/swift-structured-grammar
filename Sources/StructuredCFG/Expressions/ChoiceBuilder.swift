@@ -1,7 +1,7 @@
 /// A result builder for constructing the alternatives of a ``Choice``.
 @resultBuilder
 public enum ChoiceBuilder {
-  public static func buildExpression(_ value: some ExpressionComponent) -> [Expression] {
+  public static func buildExpression(_ value: some Expression.Component) -> [Expression] {
     [value.expression]
   }
 

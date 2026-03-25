@@ -7,7 +7,7 @@
 ///
 /// You can use the `custom` case to support expressions for custom grammar formats.
 @nonexhaustive
-public indirect enum Expression: Sendable, ExpressionComponent {
+public indirect enum Expression: Sendable {
   /// Matches the empty string.
   case epsilon
 
@@ -45,6 +45,19 @@ public indirect enum Expression: Sendable, ExpressionComponent {
     self
   }
 }
+
+// MARK: - Component
+
+extension Expression {
+  /// A reusable component that can be converted into an ``Expression``.
+  public protocol Component: Sendable {
+    /// The expression represented by this component.
+    @ExpressionBuilder
+    var expression: Expression { get }
+  }
+}
+
+extension Expression: Expression.Component {}
 
 // MARK: - Equatable
 

@@ -7,7 +7,7 @@
 ///   }
 /// }
 /// ```
-public struct KleeneStar: Hashable, Sendable, LanguageComponent {
+public struct KleeneStar: Hashable, Sendable, Language.Component {
   public let language: Language
 
   /// Creates a Kleene-star language from a result-builder closure.

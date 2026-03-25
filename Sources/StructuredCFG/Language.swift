@@ -28,7 +28,14 @@
 ///
 /// let resolved = language.grammar()
 /// ```
-public struct Language: Hashable, Sendable, LanguageComponent {
+public struct Language: Hashable, Sendable {
+  /// A reusable component that can be converted into a ``Language``.
+  public protocol Component: Sendable {
+    /// The language represented by this component.
+    @LanguageBuilder
+    var language: Language { get }
+  }
+
   private indirect enum Operation: Hashable, Sendable {
     case empty
     case grammar(Grammar)
@@ -57,6 +64,8 @@ public struct Language: Hashable, Sendable, LanguageComponent {
     self = content()
   }
 }
+
+extension Language: Language.Component {}
 
 // MARK: - Name Resolution
 
@@ -199,49 +208,49 @@ extension Language {
   ///   Grammar(Rule("equals") { "=" })
   /// )
   /// ```
-  /// - Parameter languages: The ``LanguageComponent`` values to concatenate.
+  /// - Parameter languages: The ``Language.Component`` values to concatenate.
   /// - Returns: A ``Language`` that matches each input language in order.
-  public static func concatenate(_ languages: [any LanguageComponent]) -> Self {
+  public static func concatenate(_ languages: [any Language.Component]) -> Self {
     Self(operation: .concatenate(languages.map { $0.language }))
   }
 
   /// Concatenates multiple languages into a single language.
   ///
-  /// - Parameter languages: The ``LanguageComponent`` values to concatenate.
+  /// - Parameter languages: The ``Language.Component`` values to concatenate.
   /// - Returns: A ``Language`` that matches each input language in order.
-  public static func concatenate(_ languages: any LanguageComponent...) -> Self {
+  public static func concatenate(_ languages: any Language.Component...) -> Self {
     Self.concatenate(languages)
   }
 
   /// Unions multiple languages into a single language.
   ///
-  /// - Parameter languages: The ``LanguageComponent`` values to union.
+  /// - Parameter languages: The ``Language.Component`` values to union.
   /// - Returns: A ``Language`` that matches any of the input languages.
-  public static func union(_ languages: [any LanguageComponent]) -> Self {
+  public static func union(_ languages: [any Language.Component]) -> Self {
     Self(operation: .union(languages.map { $0.language }))
   }
 
   /// Unions multiple languages into a single language.
   ///
-  /// - Parameter languages: The ``LanguageComponent`` values to union.
+  /// - Parameter languages: The ``Language.Component`` values to union.
   /// - Returns: A ``Language`` that matches any of the input languages.
-  public static func union(_ languages: any LanguageComponent...) -> Self {
+  public static func union(_ languages: any Language.Component...) -> Self {
     Self.union(languages)
   }
 
   /// Applies the Kleene-star operation to a language.
   ///
-  /// - Parameter language: The ``LanguageComponent`` to repeat.
+  /// - Parameter language: The ``Language.Component`` to repeat.
   /// - Returns: A ``Language`` that matches zero or more repetitions of `language`.
-  public static func kleeneStar(_ language: some LanguageComponent) -> Self {
+  public static func kleeneStar(_ language: some Language.Component) -> Self {
     Self(operation: .kleeneStar(language.language))
   }
 
   /// Reverses every terminal in a language.
   ///
-  /// - Parameter language: The ``LanguageComponent`` to reverse.
+  /// - Parameter language: The ``Language.Component`` to reverse.
   /// - Returns: A ``Language`` whose resolved grammar matches reversed terminal sequences.
-  public static func reverse(_ language: some LanguageComponent) -> Self {
+  public static func reverse(_ language: some Language.Component) -> Self {
     Self(operation: .reverse(language.language))
   }
 }
@@ -251,31 +260,31 @@ extension Language {
 extension Language {
   /// Replaces this language with the concatenation of itself and another language.
   ///
-  /// - Parameter other: The ``LanguageComponent`` to append.
-  public mutating func concatenate(_ other: some LanguageComponent) {
+  /// - Parameter other: The ``Language.Component`` to append.
+  public mutating func concatenate(_ other: some Language.Component) {
     self = self.concatenated(other)
   }
 
   /// Returns a language formed by concatenating this language with another language.
   ///
-  /// - Parameter other: The ``LanguageComponent`` to append.
+  /// - Parameter other: The ``Language.Component`` to append.
   /// - Returns: The concatenated ``Language``.
-  public func concatenated(_ other: some LanguageComponent) -> Self {
+  public func concatenated(_ other: some Language.Component) -> Self {
     Self.concatenate([self, other.language])
   }
 
   /// Replaces this language with the union of itself and another language.
   ///
-  /// - Parameter other: The ``LanguageComponent`` to union with this language.
-  public mutating func formUnion(_ other: some LanguageComponent) {
+  /// - Parameter other: The ``Language.Component`` to union with this language.
+  public mutating func formUnion(_ other: some Language.Component) {
     self = self.unioned(other)
   }
 
   /// Returns a language formed by unioning this language with another language.
   ///
-  /// - Parameter other: The ``LanguageComponent`` to union with this language.
+  /// - Parameter other: The ``Language.Component`` to union with this language.
   /// - Returns: The unioned ``Language``.
-  public func unioned(_ other: some LanguageComponent) -> Self {
+  public func unioned(_ other: some Language.Component) -> Self {
     Self.union([self, other.language])
   }
 

@@ -10,7 +10,7 @@
 /// let digits = CharacterGroup.digit
 /// let nonWhitespace = CharacterGroup.whitespace.negated()
 /// ```
-public struct CharacterGroup: Hashable, Sendable, ExpressionComponent {
+public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   /// Whether the character group is negated.
   public let isNegated: Bool
 

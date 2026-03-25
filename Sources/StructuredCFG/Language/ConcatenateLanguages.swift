@@ -8,7 +8,7 @@
 ///   }
 /// }
 /// ```
-public struct ConcatenateLanguages: Hashable, Sendable, LanguageComponent {
+public struct ConcatenateLanguages: Hashable, Sendable, Language.Component {
   public let language: Language
 
   /// Creates a concatenation from a result-builder closure.

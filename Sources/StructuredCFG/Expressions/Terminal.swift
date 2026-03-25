@@ -1,5 +1,5 @@
 /// A literal terminal expression.
-public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, ExpressionComponent {
+public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Expression.Component {
   /// A single terminal character stored either literally or by scalar representation.
   public enum Character: Hashable, Sendable {
     /// A literal Swift character.

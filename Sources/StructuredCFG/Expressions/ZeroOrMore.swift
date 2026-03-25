@@ -1,5 +1,5 @@
 /// An expression component that matches zero or more repetitions of an expression.
-public struct ZeroOrMore: Hashable, Sendable, ExpressionComponent {
+public struct ZeroOrMore: Hashable, Sendable, Expression.Component {
   /// The expression being repeated.
   public let innerExpression: Expression
 
@@ -7,7 +7,7 @@ public struct ZeroOrMore: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameter expression: The expression to repeat.
   @inlinable
-  public init(_ expression: some ExpressionComponent) {
+  public init(_ expression: some Expression.Component) {
     self.innerExpression = expression.expression
   }
 

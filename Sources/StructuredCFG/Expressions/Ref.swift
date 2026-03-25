@@ -1,5 +1,5 @@
 /// An expression component that references another rule by symbol.
-public struct Ref: Hashable, Sendable, ExpressionComponent {
+public struct Ref: Hashable, Sendable, Expression.Component {
   /// The referenced symbol.
   public let symbol: Symbol
 

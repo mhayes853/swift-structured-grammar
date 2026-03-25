@@ -9,7 +9,7 @@
 ///   CharacterGroup("a-z")
 /// }
 /// ```
-public struct Repeat: Hashable, Sendable, ExpressionComponent {
+public struct Repeat: Hashable, Sendable, Expression.Component {
   /// The inclusive lower bound, or `nil` when there is no lower bound.
   public let min: Int?
 
@@ -38,8 +38,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   /// - Parameters:
   ///   - min: The inclusive lower bound.
   ///   - max: The inclusive upper bound.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(min: Int?, max: Int?, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(min: Int?, max: Int?, _ expression: some Expression.Component) {
     precondition(min != nil || max != nil, "Repeat must have at least one bound")
     if let min = min, let max = max {
       precondition(min <= max, "Repeat min must be less than or equal to max")
@@ -53,8 +53,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameters:
   ///   - count: The required repetition count.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(exactly count: Int, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(exactly count: Int, _ expression: some Expression.Component) {
     self.init(min: count, max: count, expression)
   }
 
@@ -62,8 +62,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameters:
   ///   - range: The lower-bound range.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(_ range: PartialRangeFrom<Int>, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(_ range: PartialRangeFrom<Int>, _ expression: some Expression.Component) {
     self.init(min: range.lowerBound, max: nil, expression)
   }
 
@@ -71,8 +71,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameters:
   ///   - range: The upper-bound range.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(_ range: PartialRangeThrough<Int>, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(_ range: PartialRangeThrough<Int>, _ expression: some Expression.Component) {
     self.init(min: nil, max: range.upperBound, expression)
   }
 
@@ -80,8 +80,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameters:
   ///   - range: The upper-bound range.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(_ range: PartialRangeUpTo<Int>, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(_ range: PartialRangeUpTo<Int>, _ expression: some Expression.Component) {
     self.init(min: nil, max: range.upperBound - 1, expression)
   }
 
@@ -89,8 +89,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameters:
   ///   - range: The closed repetition range.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(_ range: ClosedRange<Int>, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(_ range: ClosedRange<Int>, _ expression: some Expression.Component) {
     self.init(min: range.lowerBound, max: range.upperBound, expression)
   }
 
@@ -98,8 +98,8 @@ public struct Repeat: Hashable, Sendable, ExpressionComponent {
   ///
   /// - Parameters:
   ///   - count: The required repetition count.
-  ///   - expression: The ``ExpressionComponent`` to repeat.
-  public init(_ count: Int, _ expression: some ExpressionComponent) {
+  ///   - expression: The ``Expression.Component`` to repeat.
+  public init(_ count: Int, _ expression: some Expression.Component) {
     self.init(min: count, max: count, expression)
   }
 
