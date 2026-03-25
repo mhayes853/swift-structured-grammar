@@ -255,10 +255,13 @@ extension XGrammar.Grammar {
   init(
     language: Language,
     startingSymbol: Symbol = .root,
-    nameResolver: some Language.GrammarNameResolver = .default
+    symbolResolver: some Language.GrammarSymbolResolver = .default
   ) throws {
     try self.init(
-      grammar: language.grammar(startingSymbol: startingSymbol, nameResolver: nameResolver)
+      grammar: language.grammar(
+        startingSymbol: startingSymbol,
+        symbolResolver: symbolResolver
+      )
     )
   }
 
