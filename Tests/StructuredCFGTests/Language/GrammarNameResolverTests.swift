@@ -182,8 +182,8 @@ struct `GrammarNameResolver tests` {
   }
 
   @Test
-  func `Kleene Star Synthesis Uses Default Resolver`() {
-    let language = KleeneStar {
+  func `Star Synthesis Uses Default Resolver`() {
+    let language = Star {
       Grammar(startingSymbol: "item") {
         Rule("item") { "a" }
       }

@@ -41,7 +41,7 @@ public struct Language: Hashable, Sendable {
     case grammar(Grammar)
     case concatenate([Language])
     case union([Language])
-    case kleeneStar(Language)
+    case star(Language)
     case reverse(Language)
   }
 
@@ -77,7 +77,7 @@ extension Language {
     /// Resolving a concatenation of languages.
     case concatenate
     /// Resolving a Kleene-star operation.
-    case kleeneStar
+    case star
     /// Resolving a reversal operation.
     case reverse
     /// Resolving a plain grammar leaf.
@@ -242,8 +242,8 @@ extension Language {
   ///
   /// - Parameter language: The ``Language.Component`` to repeat.
   /// - Returns: A ``Language`` that matches zero or more repetitions of `language`.
-  public static func kleeneStar(_ language: some Language.Component) -> Self {
-    Self(operation: .kleeneStar(language.language))
+  public static func star(_ language: some Language.Component) -> Self {
+    Self(operation: .star(language.language))
   }
 
   /// Reverses every terminal in a language.
@@ -289,15 +289,15 @@ extension Language {
   }
 
   /// Replaces this language with its Kleene-star form.
-  public mutating func formKleeneStar() {
-    self = self.kleeneStarred()
+  public mutating func formStar() {
+    self = self.starred()
   }
 
   /// Returns the Kleene-star form of this language.
   ///
   /// - Returns: The Kleene-starred ``Language``.
-  public func kleeneStarred() -> Self {
-    Self.kleeneStar(self)
+  public func starred() -> Self {
+    Self.star(self)
   }
 
   /// Replaces this language with its reversed form.
@@ -442,8 +442,8 @@ extension Language {
             Rule(entrySymbol, Expression.choice(entrySymbols.map { .ref(Ref($0)) }))
           }
         }
-      case .kleeneStar(let language):
-        return self.resolveKleeneStarOperation(language)
+      case .star(let language):
+        return self.resolveStarOperation(language)
       case .reverse(let language):
         return self.resolveReverseOperation(language)
       }
@@ -493,8 +493,8 @@ extension Language {
       return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
     }
 
-    private mutating func resolveKleeneStarOperation(_ language: Language) -> ResolvedLanguage {
-      let resolved = self.resolve(language, operation: .kleeneStar)
+    private mutating func resolveStarOperation(_ language: Language) -> ResolvedLanguage {
+      let resolved = self.resolve(language, operation: .star)
       guard let entrySymbol = resolved.entrySymbol else {
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
       }

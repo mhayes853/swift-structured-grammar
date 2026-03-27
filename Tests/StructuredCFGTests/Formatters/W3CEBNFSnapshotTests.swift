@@ -226,7 +226,7 @@ private enum LanguageSnapshotSuite {
     ),
     LanguageSnapshotCase(
       name: "helper-production-grammar",
-      language: KleeneStar {
+      language: Star {
         Grammar(startingSymbol: "token") {
           Rule("token") {
             Choice {

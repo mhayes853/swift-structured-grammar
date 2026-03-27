@@ -3,10 +3,10 @@ import StructuredCFG
 import Testing
 
 @Suite
-struct `KleeneStar tests` {
+struct `Star tests` {
   @Test
-  func `KleeneStar Synthesizes Repetition Start Production`() {
-    let language = KleeneStar {
+  func `Star Synthesizes Repetition Start Production`() {
+    let language = Star {
       Grammar(Rule("expression") { "value" })
     }
 
@@ -25,18 +25,18 @@ struct `KleeneStar tests` {
   }
 
   @Test
-  func `Static KleeneStar Helper Matches Wrapper`() {
-    let wrapper = KleeneStar {
+  func `Static Star Helper Matches Wrapper`() {
+    let wrapper = Star {
       Grammar(Rule("expression") { "value" })
     }.language
-    let helper = Language.kleeneStar(Grammar(Rule("expression") { "value" }))
+    let helper = Language.star(Grammar(Rule("expression") { "value" }))
 
     expectNoDifference(helper.grammar(), wrapper.grammar())
   }
 
   @Test
-  func `KleeneStar Formats As W3C Zero Or More`() throws {
-    let language = KleeneStar {
+  func `Star Formats As W3C Zero Or More`() throws {
+    let language = Star {
       Grammar(startingSymbol: "token") {
         Rule("token") {
           Choice {
@@ -58,8 +58,8 @@ struct `KleeneStar tests` {
   }
 
   @Test
-  func `KleeneStar XGrammar Matches Empty And Repeated Inputs`() async throws {
-    let language = KleeneStar {
+  func `Star XGrammar Matches Empty And Repeated Inputs`() async throws {
+    let language = Star {
       Grammar(startingSymbol: "token") {
         Rule("token") {
           Choice {

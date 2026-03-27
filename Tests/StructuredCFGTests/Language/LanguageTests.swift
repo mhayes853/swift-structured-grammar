@@ -200,12 +200,12 @@ struct `Language tests` {
   }
 
   @Test
-  func `KleeneStarred Returns New Language Without Mutating Original`() {
+  func `Starred Returns New Language Without Mutating Original`() {
     let base = Language {
       Grammar(Rule("expression") { "value" })
     }
 
-    let starred = base.kleeneStarred()
+    let starred = base.starred()
 
     expectNoDifference(
       base.grammar(),
@@ -229,12 +229,12 @@ struct `Language tests` {
   }
 
   @Test
-  func `Mutating KleeneStar Updates Language`() {
+  func `Mutating Star Updates Language`() {
     var language = Language {
       Grammar(Rule("expression") { "value" })
     }
 
-    language.formKleeneStar()
+    language.formStar()
 
     expectNoDifference(
       language.grammar(),
@@ -521,7 +521,7 @@ struct `Language tests` {
           Rule("branch") { "b" }
         }
 
-        KleeneStar {
+        Star {
           Grammar(startingSymbol: "branch") {
             Comment("Right branch comment")
             Rule("branch") { "c" }

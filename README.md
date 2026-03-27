@@ -95,7 +95,7 @@ let language = Language {
     }
   }
   ConcatenateLanguages {
-    KleeneStar {
+    Star {
       Grammar(startingSymbol: .root) {
         // ...
       }
