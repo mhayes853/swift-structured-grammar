@@ -324,13 +324,20 @@ extension Grammar {
     }
 
     private func format(characterGroup: CharacterGroup) throws -> String {
+      if characterGroup.isAllCharacters {
+        throw UnsupportedExpressionError("All-character groups are not supported")
+      }
       if characterGroup.isNegated {
         throw UnsupportedExpressionError("Negated character groups are not supported")
       }
 
+      guard let members = characterGroup.members else {
+        throw UnsupportedExpressionError("Character group members are not available")
+      }
+
       var terminals = [String]()
 
-      for member in characterGroup.members {
+      for member in members {
         switch member {
         case .character(let character):
           terminals.append(self.format(terminal: self.terminal(from: character)))

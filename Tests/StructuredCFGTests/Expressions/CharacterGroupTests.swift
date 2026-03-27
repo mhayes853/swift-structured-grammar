@@ -10,7 +10,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(group.isNegated, false)
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .range(.character("a"), .character("z")),
         .range(.character("A"), .character("Z")),
@@ -51,14 +51,14 @@ struct `CharacterGroup tests` {
   @Test
   func `CharacterGroup Parses Character Range`() {
     let group = CharacterGroup("a-z")
-    expectNoDifference(group.members, [.range(.character("a"), .character("z"))])
+    expectNoDifference(group.members ?? [], [.range(.character("a"), .character("z"))])
   }
 
   @Test
   func `CharacterGroup Parses Negated Character Class`() {
     let group = CharacterGroup("^0-9")
     expectNoDifference(group.isNegated, true)
-    expectNoDifference(group.members, [.range(.character("0"), .character("9"))])
+    expectNoDifference(group.members ?? [], [.range(.character("0"), .character("9"))])
   }
 
   @Test
@@ -66,7 +66,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("\\d")
 
     expectNoDifference(group.isDigit, true)
-    expectNoDifference(group.members, [.range(.character("0"), .character("9"))])
+    expectNoDifference(group.members ?? [], [.range(.character("0"), .character("9"))])
   }
 
   @Test
@@ -75,7 +75,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(group.isWord, true)
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .range(.character("a"), .character("z")),
         .range(.character("A"), .character("Z")),
@@ -90,7 +90,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("\\w\\d")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .range(.character("a"), .character("z")),
         .range(.character("A"), .character("Z")),
@@ -107,7 +107,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(group.isWhitespace, true)
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .character(.character(" ")),
         .escaped(.tab),
@@ -123,7 +123,7 @@ struct `CharacterGroup tests` {
 
     expectNoDifference(group.isNonDigit, true)
     expectNoDifference(group.isNegated, true)
-    expectNoDifference(group.members, [.range(.character("0"), .character("9"))])
+    expectNoDifference(group.members ?? [], [.range(.character("0"), .character("9"))])
   }
 
   @Test
@@ -166,19 +166,19 @@ struct `CharacterGroup tests` {
   @Test
   func `CharacterGroup Parses Newline Escape`() {
     let group = CharacterGroup("\\n")
-    expectNoDifference(group.members, [.escaped(.newline)])
+    expectNoDifference(group.members ?? [], [.escaped(.newline)])
   }
 
   @Test
   func `CharacterGroup Parses Carriage Return Escape`() {
     let group = CharacterGroup("\\r")
-    expectNoDifference(group.members, [.escaped(.carriageReturn)])
+    expectNoDifference(group.members ?? [], [.escaped(.carriageReturn)])
   }
 
   @Test
   func `CharacterGroup Parses Tab Escape`() {
     let group = CharacterGroup("\\t")
-    expectNoDifference(group.members, [.escaped(.tab)])
+    expectNoDifference(group.members ?? [], [.escaped(.tab)])
   }
 
   @Test
@@ -186,7 +186,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup(",\\]")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .character(.character(",")),
         .escaped(.rightBracket)
@@ -199,7 +199,7 @@ struct `CharacterGroup tests` {
     let group = try CharacterGroup(String("[,\\]]"))
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .character(.character(",")),
         .escaped(.rightBracket)
@@ -225,14 +225,14 @@ struct `CharacterGroup tests` {
   func `CharacterGroup Created From ClosedRange Has Correct Members`() {
     let group = CharacterGroup("a"..."z")
 
-    expectNoDifference(group.members, [.range(.character("a"), .character("z"))])
+    expectNoDifference(group.members ?? [], [.range(.character("a"), .character("z"))])
   }
 
   @Test
   func `CharacterGroup Parses Hex Character`() {
     let group = CharacterGroup("#x41")
 
-    expectNoDifference(group.members, [.character(.hex("A".unicodeScalars.first!))])
+    expectNoDifference(group.members ?? [], [.character(.hex("A".unicodeScalars.first!))])
   }
 
   @Test
@@ -240,7 +240,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("#x41-#x5A")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [.range(.hex("A".unicodeScalars.first!), .hex("Z".unicodeScalars.first!))]
     )
   }
@@ -249,14 +249,14 @@ struct `CharacterGroup tests` {
   func `CharacterGroup Parses Hex Character With Leading Zeros`() {
     let group = CharacterGroup("#x0041")
 
-    expectNoDifference(group.members, [.character(.hex("A".unicodeScalars.first!))])
+    expectNoDifference(group.members ?? [], [.character(.hex("A".unicodeScalars.first!))])
   }
 
   @Test
   func `CharacterGroup Parses Hex Escape`() {
     let group = CharacterGroup("\\x41")
 
-    expectNoDifference(group.members, [.character(.hex("A".unicodeScalars.first!))])
+    expectNoDifference(group.members ?? [], [.character(.hex("A".unicodeScalars.first!))])
   }
 
   @Test
@@ -264,7 +264,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("a-z#x41")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [.range(.character("a"), .character("z")), .character(.hex("A".unicodeScalars.first!))]
     )
   }
@@ -274,7 +274,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("a-z\\x41")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [.range(.character("a"), .character("z")), .character(.hex("A".unicodeScalars.first!))]
     )
   }
@@ -357,11 +357,39 @@ struct `CharacterGroup tests` {
   }
 
   @Test
+  func `CharacterGroup All Does Not Expose Members`() {
+    let group = CharacterGroup.all
+
+    expectNoDifference(group.members, nil)
+  }
+
+  @Test
+  func `CharacterGroup All Sets IsAllCharacters`() {
+    let group = CharacterGroup.all
+
+    expectNoDifference(group.isAllCharacters, true)
+  }
+
+  @Test
+  func `CharacterGroup Negated All Formats In GBNF`() throws {
+    let group = CharacterGroup.all.negated()
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    let formatted = try grammar.formatted(with: .gbnf)
+    expectNoDifference(formatted, #"test ::= [^\u0000-\U0010FFFF]"#)
+  }
+
+  @Test
   func `CharacterGroup Parses Unicode 4Digit Escape`() {
     let group = CharacterGroup("\\u0041")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [.character(.unicode("A".unicodeScalars.first!))]
     )
   }
@@ -371,7 +399,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("\\U00000041")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [.character(.unicode("A".unicodeScalars.first!))]
     )
   }
@@ -381,7 +409,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("\\u0041-\\U0000005A")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .range(
           .unicode("A".unicodeScalars.first!),
@@ -396,7 +424,7 @@ struct `CharacterGroup tests` {
     let group = CharacterGroup("\\x00-\\U0001FFFF")
 
     expectNoDifference(
-      group.members,
+      group.members ?? [],
       [
         .range(
           .hex(Unicode.Scalar(UInt32(0))!),

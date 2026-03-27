@@ -308,6 +308,30 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
+  func `All Character Group Uses Full W3C Range`() throws {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup.all
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf),
+      #"start ::= [#x9#xA#xD#x20-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF]"#
+    )
+  }
+
+  @Test
+  func `Negated All Character Group Uses Negated W3C Range`() throws {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup.all.negated()
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf),
+      #"start ::= [^#x9#xA#xD#x20-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF]"#
+    )
+  }
+
+  @Test
   func `Formatting Custom Expression Throws`() {
     struct CustomExpr: Hashable, Sendable {
       let value: String

@@ -283,6 +283,15 @@ struct `GBNFFormatter tests` {
   }
 
   @Test
+  func `All Character Group Uses Full GBNF Range`() throws {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup.all
+    })
+
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [\u0000-\U0010FFFF]"#)
+  }
+
+  @Test
   func `Formatting Custom Expression Throws`() {
     struct CustomExpr: Hashable, Sendable {
       let value: String

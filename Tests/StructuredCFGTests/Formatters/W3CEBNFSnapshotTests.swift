@@ -49,6 +49,20 @@ struct `W3CEBNFSnapshot tests` {
     }
     assertEBNFSnapshot(grammar, named: "single-quote-test", formatter: formatter)
   }
+
+  @Test
+  func `All Character Groups Format Canonically`() {
+    let grammar = Grammar(startingSymbol: "allchars") {
+      Rule("allchars") {
+        CharacterGroup.all
+      }
+      Rule("notallchars") {
+        CharacterGroup.all.negated()
+      }
+    }
+
+    assertEBNFSnapshot(grammar, named: "all-character-group-grammar")
+  }
 }
 
 private let isRecordingSnapshots = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"

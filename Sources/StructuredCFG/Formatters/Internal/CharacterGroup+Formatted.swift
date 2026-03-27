@@ -9,9 +9,21 @@ extension CharacterGroup {
     var hexFormat: HexFormat = .none
     var useShorthands: Bool = true
     var expandRanges: Bool = true
+    var allCharactersContent: String?
   }
 
   func formatted(options: FormatOptions = FormatOptions()) throws -> String {
+    if self.isAllCharacters {
+      guard let allCharactersContent = options.allCharactersContent else {
+        throw UnsupportedExpressionError("All-character groups are not supported")
+      }
+      return self.formattedAllCharacters(content: allCharactersContent)
+    }
+
+    guard let members = self.members else {
+      throw UnsupportedExpressionError("Character group members are not available")
+    }
+
     if options.useShorthands {
       if let shorthand = self.shorthand(for: self) {
         return shorthand
@@ -21,10 +33,10 @@ extension CharacterGroup {
     var result = self.isNegated ? "[^" : "["
 
     var memberIndex = 0
-    while memberIndex < self.members.count {
+    while memberIndex < members.count {
       if options.useShorthands {
         if let shorthand = self.shorthand(
-          in: self.members,
+          in: members,
           startingAt: memberIndex,
           isNegated: self.isNegated
         ) {
@@ -34,13 +46,20 @@ extension CharacterGroup {
         }
       }
 
-      let member = self.members[memberIndex]
+      let member = members[memberIndex]
       result += try self.format(member: member, hexFormat: options.hexFormat)
       memberIndex += 1
     }
 
     result.append("]")
     return result
+  }
+
+  private func formattedAllCharacters(content: String) -> String {
+    if self.isNegated {
+      return "[^" + content + "]"
+    }
+    return "[" + content + "]"
   }
 
   private func shorthand(for characterGroup: CharacterGroup) -> String? {

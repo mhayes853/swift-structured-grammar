@@ -142,4 +142,15 @@ struct `ISOIECEBNFFormatter tests` {
       #"start = "/" | '"' | "'" | "\";"#
     )
   }
+
+  @Test
+  func `Formatting All Character Group Throws`() {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup.all
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .isoIecEbnf)
+    }
+  }
 }

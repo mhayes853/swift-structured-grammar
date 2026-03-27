@@ -15,7 +15,19 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   public let isNegated: Bool
 
   /// The members that make up this character group.
-  public let members: [Member]
+  ///
+  /// This is `nil` when the group is represented semantically rather than as explicit members,
+  /// such as ``all``.
+  public var members: [Member]? {
+    switch self.storage {
+    case .members(let members):
+      members
+    case .all:
+      nil
+    }
+  }
+
+  private let storage: Storage
 
   /// Creates a character group from explicit members.
   ///
@@ -23,8 +35,12 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   ///   - isNegated: Whether the group should be negated.
   ///   - members: The members contained in the group.
   public init(isNegated: Bool, members: [Member]) {
+    self.init(isNegated: isNegated, storage: .members(members))
+  }
+
+  private init(isNegated: Bool, storage: Storage) {
     self.isNegated = isNegated
-    self.members = members
+    self.storage = storage
   }
 
   /// Parses a character group from bracketed or unbracketed class syntax.
@@ -44,8 +60,7 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     }
 
     let parsed = try Self.parse(processedString)
-    self.isNegated = parsed.isNegated
-    self.members = parsed.members
+    self.init(isNegated: parsed.isNegated, members: parsed.members)
   }
 
   /// Parses a character group from a static string literal.
@@ -79,7 +94,18 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   ///
   /// - Returns: A ``CharacterGroup`` with the opposite negation state.
   public func negated() -> CharacterGroup {
-    CharacterGroup(isNegated: !self.isNegated, members: self.members)
+    CharacterGroup(isNegated: !self.isNegated, storage: self.storage)
+  }
+
+  /// Returns whether this group semantically matches all characters.
+  ///
+  /// This is `true` for ``all`` and for negated forms derived from it.
+  public var isAllCharacters: Bool {
+    if case .all = self.storage {
+      true
+    } else {
+      false
+    }
   }
 
   /// A character group matching ASCII decimal digits.
@@ -99,15 +125,7 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
 
   /// A character group matching every Unicode scalar.
   public static var all: Self {
-    Self(
-      isNegated: false,
-      members: [
-        .range(
-          .unicode(Unicode.Scalar(UInt32(0))!),
-          .unicode(Unicode.Scalar(UInt32(0x10FFFF))!)
-        )
-      ]
-    )
+    Self(isNegated: false, storage: .all)
   }
 
   /// Returns whether this group matches the predefined digit class.
@@ -511,6 +529,11 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     case escaped(EscapeSequence)
   }
 
+  private enum Storage: Hashable, Sendable {
+    case members([Member])
+    case all
+  }
+
   /// Escape sequences supported by the character-group parser and formatters.
   public enum EscapeSequence: Hashable, Sendable {
     /// `\\`
@@ -570,7 +593,10 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   }
 
   private var memberCounts: [Member: Int] {
-    self.members.reduce(into: [Member: Int]()) { counts, member in
+    guard let members = self.members else {
+      return [:]
+    }
+    return members.reduce(into: [Member: Int]()) { counts, member in
       counts[member, default: 0] += 1
     }
   }

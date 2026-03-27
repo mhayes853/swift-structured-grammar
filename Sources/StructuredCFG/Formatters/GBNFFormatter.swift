@@ -103,7 +103,8 @@ extension Grammar {
         options: CharacterGroup.FormatOptions(
           hexFormat: .gbnf,
           useShorthands: false,
-          expandRanges: true
+          expandRanges: true,
+          allCharactersContent: #"\u0000-\U0010FFFF"#
         )
       )
     }

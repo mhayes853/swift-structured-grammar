@@ -156,11 +156,18 @@ extension Grammar {
       characterGroup: CharacterGroup,
       context: inout ExpansionContext
     ) throws -> [[Element]] {
+      if characterGroup.isAllCharacters {
+        throw UnsupportedExpressionError("All-character groups are not supported")
+      }
       if characterGroup.isNegated {
         throw UnsupportedExpressionError("Negated character groups are not supported")
       }
 
-      return try characterGroup.members.flatMap { member in
+      guard let members = characterGroup.members else {
+        throw UnsupportedExpressionError("Character group members are not available")
+      }
+
+      return try members.flatMap { member in
         try self.expand(characterGroupMember: member, context: &context)
       }
     }

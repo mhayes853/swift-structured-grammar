@@ -179,6 +179,19 @@ struct `BNFFormatter tests` {
   }
 
   @Test
+  func `Formatting All Character Group Throws`() {
+    let grammar = Grammar(
+      Rule("start") {
+        CharacterGroup.all
+      }
+    )
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .bnf)
+    }
+  }
+
+  @Test
   func `Formatting Empty Productions Outputs Empty Terminal String`() throws {
     let grammar = Grammar(
       Rule("padding") {
