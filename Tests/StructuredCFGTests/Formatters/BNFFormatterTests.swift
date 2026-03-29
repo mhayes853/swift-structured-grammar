@@ -149,36 +149,6 @@ struct `BNFFormatter tests` {
   }
 
   @Test
-  func `Formatting Control Characters Throws`() {
-    let grammar = Grammar(
-      Rule("whitespace") {
-        Choice {
-          "\n"
-          "\r"
-          "\t"
-        }
-      }
-    )
-
-    #expect(throws: UnsupportedExpressionError.self) {
-      try grammar.formatted(with: .bnf)
-    }
-  }
-
-  @Test
-  func `Formatting Backslash Throws`() {
-    let grammar = Grammar(
-      Rule("start") {
-        #"\"#
-      }
-    )
-
-    #expect(throws: UnsupportedExpressionError.self) {
-      try grammar.formatted(with: .bnf)
-    }
-  }
-
-  @Test
   func `Formatting All Character Group Throws`() {
     let grammar = Grammar(
       Rule("start") {
@@ -189,6 +159,34 @@ struct `BNFFormatter tests` {
     #expect(throws: UnsupportedExpressionError.self) {
       try grammar.formatted(with: .bnf)
     }
+  }
+
+  @Test
+  func `Formatting Control Characters Renders Without Throwing`() throws {
+    let grammar = Grammar(
+      Rule("whitespace") {
+        Choice {
+          "\n"
+          "\r"
+          "\t"
+        }
+      }
+    )
+
+    let formatted = try grammar.formatted(with: .bnf)
+    expectNoDifference(formatted, #"<whitespace> ::= "\n" | "\r" | "\t""#)
+  }
+
+  @Test
+  func `Formatting Backslash Renders Without Throwing`() throws {
+    let grammar = Grammar(
+      Rule("start") {
+        #"\"#
+      }
+    )
+
+    let formatted = try grammar.formatted(with: .bnf)
+    expectNoDifference(formatted, #"<start> ::= "\\""#)
   }
 
   @Test

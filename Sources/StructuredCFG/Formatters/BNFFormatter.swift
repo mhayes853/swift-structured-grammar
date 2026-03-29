@@ -294,35 +294,35 @@ extension Grammar {
       case .symbol(let symbol):
         "<\(symbol.rawValue)>"
       case .terminal(let terminal):
-        try self.format(terminal: terminal)
+        self.format(terminal: terminal)
       }
     }
 
-    private func format(terminal: Terminal) throws -> String {
-      let escaped = try terminal.characters.reduce(into: "") { result, character in
+    private func format(terminal: Terminal) -> String {
+      let escaped = terminal.characters.reduce(into: "") { result, character in
         switch character {
         case .character(let character):
-          result += try self.escape(String(character))
+          result += self.escape(String(character))
         case .hex(let scalar), .unicode(let scalar):
-          result += try self.escape(String(scalar))
+          result += self.escape(String(scalar))
         }
       }
       return "\"" + escaped + "\""
     }
 
-    private func escape(_ string: String) throws -> String {
-      try string.reduce(into: "") { result, character in
+    private func escape(_ string: String) -> String {
+      string.reduce(into: "") { result, character in
         switch character {
         case "\\":
-          throw UnsupportedExpressionError("Backslashes are not supported in BNF terminals")
+          result += "\\\\"
+        case "\n":
+          result += "\\n"
+        case "\r":
+          result += "\\r"
+        case "\t":
+          result += "\\t"
         case "\"":
           result += "\"\""
-        case "\n":
-          throw UnsupportedExpressionError("Control characters are not supported in BNF terminals")
-        case "\r":
-          throw UnsupportedExpressionError("Control characters are not supported in BNF terminals")
-        case "\t":
-          throw UnsupportedExpressionError("Control characters are not supported in BNF terminals")
         default:
           result.append(character)
         }
