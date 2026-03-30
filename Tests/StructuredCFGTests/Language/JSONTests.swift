@@ -37,6 +37,15 @@ struct `JSONLanguage tests` {
     expectNoDifference(matches, true)
   }
 
+  @Test
+  func `Matcher Accepts Escaped Slash Regression Payload`() async throws {
+    let payload = #"{"url":"https:\/\/example.com\/a\/b"}"#
+
+    let matches = try await Self.matches(payload, with: JSON())
+
+    expectNoDifference(matches, true)
+  }
+
   @Test(arguments: Self.invalidPayloads)
   func `Matcher Rejects Invalid JSON Payloads`(payload: String) async throws {
     let matches = try await Self.matches(payload, with: JSON())
@@ -80,6 +89,7 @@ struct `JSONLanguage tests` {
     "{}",
     "{\"name\":\"value\"}",
     "{\"escaped\":\"line\\n\\u0041\"}",
+    "{\"url\":\"https:\\/\\/example.com\\/a\\/b\"}",
     "{\"items\":[1,true,null,{\"a\":\"b\"}],\"active\":false}",
     """
     {

@@ -175,6 +175,57 @@ extension CharacterGroup {
   }
 
   private func format(escape: EscapeSequence) -> String {
-    "\\" + String(escape.character)
+    if escape.isBackslash {
+      return "\\\\"
+    }
+    if escape.isPipe {
+      return "\\|"
+    }
+    if escape.isPeriod {
+      return "\\."
+    }
+    if escape.isHyphen {
+      return "\\-"
+    }
+    if escape.isCaret {
+      return "\\^"
+    }
+    if escape.isQuestion {
+      return "\\?"
+    }
+    if escape.isAsterisk {
+      return "\\*"
+    }
+    if escape.isPlus {
+      return "\\+"
+    }
+    if escape.isLeftBrace {
+      return "\\{"
+    }
+    if escape.isRightBrace {
+      return "\\}"
+    }
+    if escape.isLeftParen {
+      return "\\("
+    }
+    if escape.isRightParen {
+      return "\\)"
+    }
+    if escape.isLeftBracket {
+      return "\\["
+    }
+    if escape.isRightBracket {
+      return "\\]"
+    }
+    if escape.isNewline {
+      return "\\n"
+    }
+    if escape.isCarriageReturn {
+      return "\\r"
+    }
+    if escape.isTab {
+      return "\\t"
+    }
+    return String(escape.character)
   }
 }
