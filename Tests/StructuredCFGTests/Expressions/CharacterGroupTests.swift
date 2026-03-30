@@ -110,9 +110,9 @@ struct `CharacterGroup tests` {
       group.members ?? [],
       [
         .character(.character(" ")),
-        .escaped(.tab),
-        .escaped(.newline),
-        .escaped(.carriageReturn)
+        .escaped(CharacterGroup.EscapeSequence("\t")),
+        .escaped(CharacterGroup.EscapeSequence("\n")),
+        .escaped(CharacterGroup.EscapeSequence("\r"))
       ]
     )
   }
@@ -166,19 +166,26 @@ struct `CharacterGroup tests` {
   @Test
   func `CharacterGroup Parses Newline Escape`() {
     let group = CharacterGroup("\\n")
-    expectNoDifference(group.members ?? [], [.escaped(.newline)])
+    expectNoDifference(group.members ?? [], [.escaped(CharacterGroup.EscapeSequence("\n"))])
   }
 
   @Test
   func `CharacterGroup Parses Carriage Return Escape`() {
     let group = CharacterGroup("\\r")
-    expectNoDifference(group.members ?? [], [.escaped(.carriageReturn)])
+    expectNoDifference(group.members ?? [], [.escaped(CharacterGroup.EscapeSequence("\r"))])
   }
 
   @Test
   func `CharacterGroup Parses Tab Escape`() {
     let group = CharacterGroup("\\t")
-    expectNoDifference(group.members ?? [], [.escaped(.tab)])
+    expectNoDifference(group.members ?? [], [.escaped(CharacterGroup.EscapeSequence("\t"))])
+  }
+
+  @Test
+  func `CharacterGroup Parses Arbitrary Escaped Character`() {
+    let group = CharacterGroup("\\a")
+
+    expectNoDifference(group.members ?? [], [.escaped(CharacterGroup.EscapeSequence("a"))])
   }
 
   @Test
@@ -189,7 +196,7 @@ struct `CharacterGroup tests` {
       group.members ?? [],
       [
         .character(.character(",")),
-        .escaped(.rightBracket)
+        .escaped(CharacterGroup.EscapeSequence("]"))
       ]
     )
   }
@@ -202,9 +209,23 @@ struct `CharacterGroup tests` {
       group.members ?? [],
       [
         .character(.character(",")),
-        .escaped(.rightBracket)
+        .escaped(CharacterGroup.EscapeSequence("]"))
       ]
     )
+  }
+
+  @Test
+  func `EscapeSequence Compatibility Properties Match Existing Named Escapes`() {
+    let newline = CharacterGroup.EscapeSequence("\n")
+    let tab = CharacterGroup.EscapeSequence("\t")
+    let rightBracket = CharacterGroup.EscapeSequence("]")
+    let letter = CharacterGroup.EscapeSequence("a")
+
+    expectNoDifference(newline.isNewline, true)
+    expectNoDifference(newline.isTab, false)
+    expectNoDifference(tab.isTab, true)
+    expectNoDifference(rightBracket.isRightBracket, true)
+    expectNoDifference(letter.isRightBracket, false)
   }
 
   @Test

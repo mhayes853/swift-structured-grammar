@@ -259,21 +259,17 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     case "i", "I", "c", "C":
       throw ParseError.xmlNameClassesAreNotSupported
     case "n":
-      members.append(.escaped(.newline))
+      members.append(.escaped(EscapeSequence("\n")))
     case "r":
-      members.append(.escaped(.carriageReturn))
+      members.append(.escaped(EscapeSequence("\r")))
     case "t":
-      members.append(.escaped(.tab))
+      members.append(.escaped(EscapeSequence("\t")))
     case "x":
       return try parseHexEscape(characters: characters, index: index)
     case "u", "U":
       return try parseUnicodeEscape(characters: characters, index: index)
     default:
-      if let escape = EscapeSequence(escapedCharacter: escapedCharacter) {
-        members.append(.escaped(escape))
-      } else {
-        members.append(.character(.character(escapedCharacter)))
-      }
+      members.append(.escaped(EscapeSequence(escapedCharacter)))
     }
     return (members, index + 2)
   }
@@ -536,42 +532,102 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     case all
   }
 
-  /// Escape sequences supported by the character-group parser and formatters.
-  public enum EscapeSequence: Hashable, Sendable {
-    /// `\\`
-    case backslash
-    /// `\|`
-    case pipe
-    /// `\.`
-    case period
-    /// `\-`
-    case hyphen
-    /// `\^`
-    case caret
-    /// `\?`
-    case question
-    /// `\*`
-    case asterisk
-    /// `\+`
-    case plus
-    /// `\{`
-    case leftBrace
-    /// `\}`
-    case rightBrace
-    /// `\(`
-    case leftParen
-    /// `\)`
-    case rightParen
-    /// `\[`
-    case leftBracket
-    /// `\]`
-    case rightBracket
-    /// `\n`
-    case newline
-    /// `\r`
-    case carriageReturn
-    /// `\t`
-    case tab
+  /// An escaped source character in a character group.
+  public struct EscapeSequence: Hashable, Sendable {
+    /// The escaped source character.
+    public let character: Character
+
+    /// Creates an escape sequence from an escaped character.
+    ///
+    /// - Parameter character: The escaped source character.
+    public init(_ character: Character) {
+      self.character = character
+    }
+
+    /// Returns whether this escape sequence is `\\`.
+    public var isBackslash: Bool {
+      self.character == "\\"
+    }
+
+    /// Returns whether this escape sequence is `\|`.
+    public var isPipe: Bool {
+      self.character == "|"
+    }
+
+    /// Returns whether this escape sequence is `\.`.
+    public var isPeriod: Bool {
+      self.character == "."
+    }
+
+    /// Returns whether this escape sequence is `\-`.
+    public var isHyphen: Bool {
+      self.character == "-"
+    }
+
+    /// Returns whether this escape sequence is `\^`.
+    public var isCaret: Bool {
+      self.character == "^"
+    }
+
+    /// Returns whether this escape sequence is `\?`.
+    public var isQuestion: Bool {
+      self.character == "?"
+    }
+
+    /// Returns whether this escape sequence is `\*`.
+    public var isAsterisk: Bool {
+      self.character == "*"
+    }
+
+    /// Returns whether this escape sequence is `\+`.
+    public var isPlus: Bool {
+      self.character == "+"
+    }
+
+    /// Returns whether this escape sequence is `\{`.
+    public var isLeftBrace: Bool {
+      self.character == "{"
+    }
+
+    /// Returns whether this escape sequence is `\}`.
+    public var isRightBrace: Bool {
+      self.character == "}"
+    }
+
+    /// Returns whether this escape sequence is `\(`.
+    public var isLeftParen: Bool {
+      self.character == "("
+    }
+
+    /// Returns whether this escape sequence is `\)`.
+    public var isRightParen: Bool {
+      self.character == ")"
+    }
+
+    /// Returns whether this escape sequence is `\[`.
+    public var isLeftBracket: Bool {
+      self.character == "["
+    }
+
+    /// Returns whether this escape sequence is `\]`.
+    public var isRightBracket: Bool {
+      self.character == "]"
+    }
+
+    /// Returns whether this escape sequence is `\n`.
+    public var isNewline: Bool {
+      self.character == "\n"
+    }
+
+    /// Returns whether this escape sequence is `\r`.
+    public var isCarriageReturn: Bool {
+      self.character == "\r"
+    }
+
+    /// Returns whether this escape sequence is `\t`.
+    public var isTab: Bool {
+      self.character == "\t"
+    }
   }
 
   private static let digitMembers: [Member] = [.range(.character("0"), .character("9"))]
@@ -585,9 +641,9 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
 
   private static let whitespaceMembers: [Member] = [
     .character(.character(" ")),
-    .escaped(.tab),
-    .escaped(.newline),
-    .escaped(.carriageReturn)
+    .escaped(EscapeSequence("\t")),
+    .escaped(EscapeSequence("\n")),
+    .escaped(EscapeSequence("\r"))
   ]
 
   private func matches(isNegated: Bool, members: [Member]) -> Bool {
@@ -606,43 +662,6 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   private static func memberCounts(_ members: [Member]) -> [Member: Int] {
     members.reduce(into: [Member: Int]()) { counts, member in
       counts[member, default: 0] += 1
-    }
-  }
-}
-
-extension CharacterGroup.EscapeSequence {
-  fileprivate init?(escapedCharacter: Character) {
-    switch escapedCharacter {
-    case "\\":
-      self = .backslash
-    case "|":
-      self = .pipe
-    case ".":
-      self = .period
-    case "-":
-      self = .hyphen
-    case "^":
-      self = .caret
-    case "?":
-      self = .question
-    case "*":
-      self = .asterisk
-    case "+":
-      self = .plus
-    case "{":
-      self = .leftBrace
-    case "}":
-      self = .rightBrace
-    case "(":
-      self = .leftParen
-    case ")":
-      self = .rightParen
-    case "[":
-      self = .leftBracket
-    case "]":
-      self = .rightBracket
-    default:
-      return nil
     }
   }
 }

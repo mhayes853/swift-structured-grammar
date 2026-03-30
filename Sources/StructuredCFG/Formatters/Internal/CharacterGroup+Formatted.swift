@@ -114,9 +114,9 @@ extension CharacterGroup {
 
   private static let whitespaceMembers: [Member] = [
     .character(.character(" ")),
-    .escaped(.tab),
-    .escaped(.newline),
-    .escaped(.carriageReturn)
+    .escaped(EscapeSequence("\t")),
+    .escaped(EscapeSequence("\n")),
+    .escaped(EscapeSequence("\r"))
   ]
 
   private func format(member: Member, hexFormat: HexFormat) throws -> String {
@@ -175,41 +175,6 @@ extension CharacterGroup {
   }
 
   private func format(escape: EscapeSequence) -> String {
-    switch escape {
-    case .backslash:
-      "\\\\"
-    case .pipe:
-      "\\|"
-    case .period:
-      "\\."
-    case .hyphen:
-      "\\-"
-    case .caret:
-      "\\^"
-    case .question:
-      "\\?"
-    case .asterisk:
-      "\\*"
-    case .plus:
-      "\\+"
-    case .leftBrace:
-      "\\{"
-    case .rightBrace:
-      "\\}"
-    case .leftParen:
-      "\\("
-    case .rightParen:
-      "\\)"
-    case .leftBracket:
-      "\\["
-    case .rightBracket:
-      "\\]"
-    case .newline:
-      "\\n"
-    case .carriageReturn:
-      "\\r"
-    case .tab:
-      "\\t"
-    }
+    "\\" + String(escape.character)
   }
 }
