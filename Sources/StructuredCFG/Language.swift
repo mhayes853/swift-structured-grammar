@@ -316,7 +316,7 @@ extension Language {
   ///
   /// ```swift
   /// var language = Language(Grammar(Rule("boolean") {
-  ///   Choice {
+  ///   ChoiceOf {
   ///     "true"
   ///     "false"
   ///   }

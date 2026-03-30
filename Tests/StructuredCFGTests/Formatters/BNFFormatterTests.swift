@@ -8,7 +8,7 @@ struct `BNFFormatter tests` {
   func `Formats Simple Rules With Traditional BNF Syntax`() throws {
     let grammar = Grammar(startingSymbol: "expression") {
       Rule("expression") {
-        Choice {
+        ChoiceOf {
           Ref("term")
           "identifier"
         }
@@ -33,7 +33,7 @@ struct `BNFFormatter tests` {
     let grammar = Grammar(
       Rule("sign") {
         OptionalExpression {
-          Choice {
+          ChoiceOf {
             "+"
             "-"
           }
@@ -52,7 +52,7 @@ struct `BNFFormatter tests` {
     let grammar = Grammar(startingSymbol: "sign") {
       Rule("sign") {
         OptionalExpression {
-          Choice {
+          ChoiceOf {
             "+"
             "-"
           }
@@ -60,7 +60,7 @@ struct `BNFFormatter tests` {
       }
 
       Rule("term") {
-        Choice {
+        ChoiceOf {
           Ref("number")
           GroupExpression {
             "("
@@ -77,7 +77,7 @@ struct `BNFFormatter tests` {
         ZeroOrMore {
           ConcatenateExpressions {
             GroupExpression {
-              Choice {
+              ChoiceOf {
                 "+"
                 "-"
               }
@@ -165,7 +165,7 @@ struct `BNFFormatter tests` {
   func `Formatting Control Characters Renders Without Throwing`() throws {
     let grammar = Grammar(
       Rule("whitespace") {
-        Choice {
+        ChoiceOf {
           "\n"
           "\r"
           "\t"

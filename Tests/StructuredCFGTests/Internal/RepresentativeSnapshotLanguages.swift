@@ -13,7 +13,7 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("expression") {
           Ref("term")
           ZeroOrMore {
-            Choice {
+            ChoiceOf {
               "+"
               "-"
             }
@@ -24,7 +24,7 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("term") {
           Ref("factor")
           ZeroOrMore {
-            Choice {
+            ChoiceOf {
               "*"
               "/"
             }
@@ -33,7 +33,7 @@ enum RepresentativeSnapshotLanguageSuite {
         }
 
         Rule("factor") {
-          Choice {
+          ChoiceOf {
             Ref("number")
             GroupExpression {
               "("
@@ -50,7 +50,7 @@ enum RepresentativeSnapshotLanguageSuite {
         }
 
         Rule("digit") {
-          Choice {
+          ChoiceOf {
             "0"
             "1"
             "2"
@@ -74,7 +74,7 @@ enum RepresentativeSnapshotLanguageSuite {
           }
 
           Rule("digit") {
-            Choice {
+            ChoiceOf {
               "0"
               "1"
             }
@@ -83,7 +83,7 @@ enum RepresentativeSnapshotLanguageSuite {
 
         Grammar(startingSymbol: "statement") {
           Rule("statement") {
-            Choice {
+            ChoiceOf {
               "pass"
               ConcatenateExpressions {
                 "let"
@@ -103,7 +103,7 @@ enum RepresentativeSnapshotLanguageSuite {
       name: "namespaced-grammar",
       language: Grammar(startingSymbol: .root) {
         Rule(.root) {
-          Choice {
+          ChoiceOf {
             Ref("ga-expression")
             Ref("gb-expression")
           }
@@ -132,7 +132,7 @@ enum RepresentativeSnapshotLanguageSuite {
       language: Star {
         Grammar(startingSymbol: "token") {
           Rule("token") {
-            Choice {
+            ChoiceOf {
               "a"
               "b"
             }
@@ -199,7 +199,7 @@ enum RepresentativeSnapshotLanguageSuite {
         Rule("assignment") {
           Ref("identifier")
           "="
-          Choice {
+          ChoiceOf {
             Ref("literal")
             Ref("tuple")
             "computed"
@@ -219,7 +219,7 @@ enum RepresentativeSnapshotLanguageSuite {
         }
 
         Rule("literal") {
-          Choice {
+          ChoiceOf {
             Ref("number")
             Ref("ga-qualified")
             "quoted"
@@ -233,7 +233,7 @@ enum RepresentativeSnapshotLanguageSuite {
         }
 
         Rule("digit") {
-          Choice {
+          ChoiceOf {
             "0"
             "1"
             "2"

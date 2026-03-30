@@ -41,7 +41,7 @@ struct `W3CEBNFSnapshot tests` {
     formatter.quoting = .single
     let grammar = Grammar(startingSymbol: "expression") {
       Rule("expression") {
-        Choice {
+        ChoiceOf {
           "a"
           "b"
         }
@@ -110,7 +110,7 @@ private enum LanguageSnapshotSuite {
         Rule("expression") {
           Ref("term")
           ZeroOrMore {
-            Choice {
+            ChoiceOf {
               "+"
               "-"
             }
@@ -121,7 +121,7 @@ private enum LanguageSnapshotSuite {
         Rule("term") {
           Ref("factor")
           ZeroOrMore {
-            Choice {
+            ChoiceOf {
               "*"
               "/"
             }
@@ -130,7 +130,7 @@ private enum LanguageSnapshotSuite {
         }
 
         Rule("factor") {
-          Choice {
+          ChoiceOf {
             Ref("number")
             GroupExpression {
               "("
@@ -147,7 +147,7 @@ private enum LanguageSnapshotSuite {
         }
 
         Rule("digit") {
-          Choice {
+          ChoiceOf {
             "0"
             "1"
             "2"
@@ -171,7 +171,7 @@ private enum LanguageSnapshotSuite {
           }
 
           Rule("digit") {
-            Choice {
+            ChoiceOf {
               "0"
               "1"
             }
@@ -180,7 +180,7 @@ private enum LanguageSnapshotSuite {
 
         Grammar(startingSymbol: "statement") {
           Rule("statement") {
-            Choice {
+            ChoiceOf {
               "pass"
               ConcatenateExpressions {
                 "let"
@@ -200,7 +200,7 @@ private enum LanguageSnapshotSuite {
       name: "namespaced-grammar",
       language: Grammar(startingSymbol: .root) {
         Rule(.root) {
-          Choice {
+          ChoiceOf {
             Ref("g0__expression")
             Ref("g1__expression")
           }
@@ -229,7 +229,7 @@ private enum LanguageSnapshotSuite {
       language: Star {
         Grammar(startingSymbol: "token") {
           Rule("token") {
-            Choice {
+            ChoiceOf {
               "a"
               "b"
             }
@@ -296,7 +296,7 @@ private enum LanguageSnapshotSuite {
         Rule("assignment") {
           Ref("identifier")
           "="
-          Choice {
+          ChoiceOf {
             Ref("literal")
             Ref("tuple")
             "computed"
@@ -316,7 +316,7 @@ private enum LanguageSnapshotSuite {
         }
 
         Rule("literal") {
-          Choice {
+          ChoiceOf {
             Ref("number")
             Ref("g1__qualified")
             "quoted"
@@ -330,7 +330,7 @@ private enum LanguageSnapshotSuite {
         }
 
         Rule("digit") {
-          Choice {
+          ChoiceOf {
             "0"
             "1"
             "2"

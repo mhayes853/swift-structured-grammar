@@ -1,5 +1,5 @@
 /// An expression component that matches one of several alternatives.
-public struct Choice: Hashable, Sendable, Expression.Component {
+public struct ChoiceOf: Hashable, Sendable, Expression.Component {
   public let expression: Expression
 
   /// Creates a choice expression from a result-builder closure.

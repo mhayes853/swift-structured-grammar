@@ -12,7 +12,7 @@ struct `Epsilon tests` {
   @Test
   func `Epsilon Is Preserved In Choice`() {
     let grammar = Grammar(Rule("start") {
-      Choice {
+      ChoiceOf {
         Epsilon()
         "a"
       }

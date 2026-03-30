@@ -10,7 +10,7 @@
 ///   Rule("expression") {
 ///     Ref("term")
 ///     ZeroOrMore {
-///       Choice {
+///       ChoiceOf {
 ///         "+"
 ///         "-"
 ///       }
@@ -554,7 +554,7 @@ extension Grammar {
   ///
   /// ```swift
   /// var grammar = Grammar(Rule("boolean") {
-  ///   Choice {
+  ///   ChoiceOf {
   ///     "true"
   ///     "false"
   ///   }

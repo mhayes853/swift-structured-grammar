@@ -84,7 +84,7 @@ struct `Language tests` {
         Rule("expression") { "value" }
         Rule("statement") { "other" }
         Rule("lastart") {
-          Choice {
+          ChoiceOf {
             Ref("expression")
             Ref("statement")
           }
@@ -166,7 +166,7 @@ struct `Language tests` {
         Rule("expression") { "value" }
         Rule("statement") { "other" }
         Rule("lastart") {
-          Choice {
+          ChoiceOf {
             Ref("expression")
             Ref("statement")
           }
@@ -190,7 +190,7 @@ struct `Language tests` {
         Rule("expression") { "value" }
         Rule("statement") { "other" }
         Rule("lastart") {
-          Choice {
+          ChoiceOf {
             Ref("expression")
             Ref("statement")
           }
@@ -430,7 +430,7 @@ struct `Language tests` {
     let base = Language {
       Grammar(
         Rule("expression") {
-          Choice {
+          ChoiceOf {
             "+"
             "*"
           }
@@ -451,7 +451,7 @@ struct `Language tests` {
       Grammar(startingSymbol: .root) {
         Rule(.root) { Ref("expression") }
         Rule("expression") {
-          Choice {
+          ChoiceOf {
             "+"
             "*"
           }
@@ -463,7 +463,7 @@ struct `Language tests` {
       Grammar(startingSymbol: .root) {
         Rule(.root) { Ref("expression") }
         Rule("expression") {
-          Choice {
+          ChoiceOf {
             "-"
             "*"
           }
@@ -477,7 +477,7 @@ struct `Language tests` {
     var language = Language {
       Grammar(
         Rule("expression") {
-          Choice {
+          ChoiceOf {
             "+"
             "*"
           }
@@ -498,7 +498,7 @@ struct `Language tests` {
       Grammar(startingSymbol: .root) {
         Rule(.root) { Ref("expression") }
         Rule("expression") {
-          Choice {
+          ChoiceOf {
             "-"
             "*"
           }

@@ -9,7 +9,7 @@ struct `GBNFFormatter tests` {
     let grammar = Grammar(startingSymbol: "sign") {
       Rule("sign") {
         OptionalExpression {
-          Choice {
+          ChoiceOf {
             "+"
             "-"
           }
@@ -17,7 +17,7 @@ struct `GBNFFormatter tests` {
       }
 
       Rule("term") {
-        Choice {
+        ChoiceOf {
           Ref("number")
           GroupExpression {
             "("
@@ -34,7 +34,7 @@ struct `GBNFFormatter tests` {
         ZeroOrMore {
           ConcatenateExpressions {
             GroupExpression {
-              Choice {
+              ChoiceOf {
                 "+"
                 "-"
               }
@@ -85,7 +85,7 @@ struct `GBNFFormatter tests` {
   func `Formatting Choice Preserves Semantic Epsilon Alternatives`() {
     let grammar = Grammar(
       Rule("start") {
-        Choice {
+        ChoiceOf {
           Epsilon()
           "a"
           "b"
@@ -140,7 +140,7 @@ struct `GBNFFormatter tests` {
     let grammar = Grammar(
       Rule("start") {
         OneOrMore {
-          Choice {
+          ChoiceOf {
             "a"
             "b"
           }

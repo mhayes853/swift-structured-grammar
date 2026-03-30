@@ -25,7 +25,7 @@ struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Formats Semantic Epsilon Choice As An Optional Sequence`() throws {
     let grammar = Grammar(Rule("line") {
-      Choice {
+      ChoiceOf {
         Epsilon()
         Ref("space")
       }
@@ -37,7 +37,7 @@ struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Uses Configurable Definition Separator Terminator And Quoting`() throws {
     let grammar = Grammar(Rule("start") {
-      Choice {
+      ChoiceOf {
         Epsilon()
         "a"
       }
@@ -62,7 +62,7 @@ struct `ISOIECEBNFFormatter tests` {
   func `At Most Repeat Uses Empty And Bare Expression Shortcuts`() throws {
     let grammar = Grammar(Rule("start") {
       Repeat(...2) {
-        Choice {
+        ChoiceOf {
           "a"
           "b"
         }
@@ -92,7 +92,7 @@ struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Escapes Control Characters In Terminals`() throws {
     let grammar = Grammar(Rule("whitespace") {
-      Choice {
+      ChoiceOf {
         "\n"
         "\r"
         "\t"
@@ -129,7 +129,7 @@ struct `ISOIECEBNFFormatter tests` {
   @Test
   func `Formats Quote And Slash Characters Without Special Sequences`() throws {
     let grammar = Grammar(Rule("start") {
-      Choice {
+      ChoiceOf {
         "/"
         #"""#
         "'"

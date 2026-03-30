@@ -39,7 +39,7 @@ struct `Star tests` {
     let language = Star {
       Grammar(startingSymbol: "token") {
         Rule("token") {
-          Choice {
+          ChoiceOf {
             "a"
             "b"
           }
@@ -62,7 +62,7 @@ struct `Star tests` {
     let language = Star {
       Grammar(startingSymbol: "token") {
         Rule("token") {
-          Choice {
+          ChoiceOf {
             "a"
             "b"
           }

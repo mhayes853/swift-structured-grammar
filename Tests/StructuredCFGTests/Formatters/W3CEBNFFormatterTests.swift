@@ -9,7 +9,7 @@ struct `W3CEBNFFormatter tests` {
     let grammar = Grammar(startingSymbol: "sign") {
       Rule("sign") {
         OptionalExpression {
-          Choice {
+          ChoiceOf {
             "+"
             "-"
           }
@@ -17,7 +17,7 @@ struct `W3CEBNFFormatter tests` {
       }
 
       Rule("term") {
-        Choice {
+        ChoiceOf {
           Ref("number")
           GroupExpression {
             "("
@@ -34,7 +34,7 @@ struct `W3CEBNFFormatter tests` {
         ZeroOrMore {
           ConcatenateExpressions {
             GroupExpression {
-              Choice {
+              ChoiceOf {
                 "+"
                 "-"
               }
@@ -84,7 +84,7 @@ struct `W3CEBNFFormatter tests` {
   @Test
   func `Formatting Choice With Semantic Epsilon Throws`() {
     let grammar = Grammar(Rule("start") {
-      Choice {
+      ChoiceOf {
         Epsilon()
         "a"
         "b"
@@ -139,7 +139,7 @@ struct `W3CEBNFFormatter tests` {
   func `Formatting One Or More Uses Native W3C Syntax`() {
     let grammar = Grammar(Rule("start") {
       OneOrMore {
-        Choice {
+        ChoiceOf {
           "a"
           "b"
         }

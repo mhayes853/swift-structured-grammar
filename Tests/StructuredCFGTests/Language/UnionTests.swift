@@ -26,7 +26,7 @@ struct `Union tests` {
         Rule("statement") { "second" }
         Rule("factor") { Ref("term") }
         Rule("lastart") {
-          Choice {
+          ChoiceOf {
             Ref("expression")
             Ref("statement")
           }

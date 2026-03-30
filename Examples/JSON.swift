@@ -10,7 +10,7 @@ public struct JSON: Language.Component {
       Grammar(startingSymbol: .root) {
         Rule("sign") {
           OptionalExpression {
-            Choice {
+            ChoiceOf {
               "+"
               "-"
             }
@@ -45,7 +45,7 @@ public struct JSON: Language.Component {
         }
 
         Rule("escape") {
-          Choice {
+          ChoiceOf {
             CharacterGroup("\"\\/bfnrt")
             ConcatenateExpressions {
               "u"
@@ -55,7 +55,7 @@ public struct JSON: Language.Component {
         }
 
         Rule("string_characters") {
-          Choice {
+          ChoiceOf {
             ConcatenateExpressions {
               "\""
             }
@@ -79,7 +79,7 @@ public struct JSON: Language.Component {
         }
 
         Rule("number") {
-          Choice {
+          ChoiceOf {
             ConcatenateExpressions {
               "0"
               Ref("fraction")
@@ -108,7 +108,7 @@ public struct JSON: Language.Component {
         }
 
         Rule("value") {
-          Choice {
+          ChoiceOf {
             Ref("object")
             Ref("array")
             Ref("string")
@@ -182,7 +182,7 @@ public struct JSON: Language.Component {
         }
 
         Rule(.root) {
-          Choice {
+          ChoiceOf {
             Ref("object")
             Ref("array")
           }

@@ -132,7 +132,7 @@ struct `RepeatExpressionTests` {
   func `Repeat With Complex Expression In GBNF`() {
     let grammar = Grammar(Rule("start") {
       Repeat(2) {
-        Choice {
+        ChoiceOf {
           "a"
           "b"
         }

@@ -33,7 +33,7 @@ let grammar = Grammar(startingSymbol: "expression") {
   Rule("expression") {
     Ref("term")
     ZeroOrMore {
-      Choice {
+      ChoiceOf {
         "+"
         "-"
       }
@@ -44,7 +44,7 @@ let grammar = Grammar(startingSymbol: "expression") {
   Rule("term") {
     Ref("factor")
     ZeroOrMore {
-      Choice {
+      ChoiceOf {
         "*"
         "/"
       }
@@ -53,7 +53,7 @@ let grammar = Grammar(startingSymbol: "expression") {
   }
 
   Rule("factor") {
-    Choice {
+    ChoiceOf {
       Ref("number")
       GroupExpression {
         "("
@@ -131,7 +131,7 @@ grammar.append(
   Rule("expression") {
     Ref("term")
     ZeroOrMore {
-      Choice {
+      ChoiceOf {
         "+"
         "-"
       }
@@ -210,7 +210,7 @@ import StructuredCFG
 
 struct Factor: Expression.Component {
   var expression: Expression {
-    Choice {
+    ChoiceOf {
       Ref("number")
       GroupExpression {
         "("
@@ -229,7 +229,7 @@ let grammar = Grammar(startingSymbol: "expression") {
   Rule("term") {
     Factor()
     ZeroOrMore {
-      Choice {
+      ChoiceOf {
         "*"
         "/"
       }

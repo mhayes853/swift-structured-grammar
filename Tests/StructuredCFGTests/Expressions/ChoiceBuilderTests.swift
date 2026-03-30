@@ -6,7 +6,7 @@ import StructuredCFG
 struct `ChoiceBuilder tests` {
   @Test
   func `Choice Builder Builds Alternatives`() {
-    let expression = Choice {
+    let expression = ChoiceOf {
       "value"
       Ref("identifier")
     }.expression
@@ -16,14 +16,14 @@ struct `ChoiceBuilder tests` {
 
   @Test
   func `Choice Builder Accepts Single Alternative`() {
-    let expression = Choice { "value" }.expression
+    let expression = ChoiceOf { "value" }.expression
     expectNoDifference(expression, Expression.choice([.terminal("value")]))
   }
 
   @Test
   func `Choice Builder Supports Optional Alternatives`() {
     let includeReference = false
-    let expression = Choice {
+    let expression = ChoiceOf {
       "value"
       if includeReference {
         Ref("identifier")
@@ -36,7 +36,7 @@ struct `ChoiceBuilder tests` {
   @Test
   func `Choice Builder Supports Conditional Branches`() {
     let useReference = true
-    let expression = Choice {
+    let expression = ChoiceOf {
       if useReference {
         Ref("identifier")
       } else {

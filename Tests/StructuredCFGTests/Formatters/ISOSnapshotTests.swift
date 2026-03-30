@@ -66,7 +66,7 @@ private enum ISOSnapshotSuite {
             Special("ASCII character 32")
           }
           Rule("line") {
-            Choice {
+            ChoiceOf {
               Epsilon()
               Ref("space")
             }

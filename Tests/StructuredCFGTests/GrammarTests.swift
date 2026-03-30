@@ -412,7 +412,7 @@ struct `Grammar tests` {
   @Test
   func `Homomorph Map Leaves Unmatched Terminals Unchanged`() {
     let production = Rule("expression") {
-      Choice {
+      ChoiceOf {
         "+"
         "*"
       }
@@ -427,7 +427,7 @@ struct `Grammar tests` {
       }
     }
     let expected = Grammar(Rule("expression") {
-      Choice {
+      ChoiceOf {
         "-"
         "*"
       }
@@ -444,7 +444,7 @@ struct `Grammar tests` {
       }
       ZeroOrMore {
         GroupExpression {
-          Choice {
+          ChoiceOf {
             "+"
             "*"
           }
@@ -466,7 +466,7 @@ struct `Grammar tests` {
       }
       ZeroOrMore {
         GroupExpression {
-          Choice {
+          ChoiceOf {
             "-"
             "*"
           }
@@ -549,7 +549,7 @@ struct `Grammar tests` {
   func `Reversed Reverses Choice Alternatives Contents`() {
     let grammar = Grammar(startingSymbol: "expression") {
       Rule("expression") {
-        Choice {
+        ChoiceOf {
           ConcatenateExpressions {
             "a"
             "b"
@@ -568,7 +568,7 @@ struct `Grammar tests` {
       reversed,
       Grammar(startingSymbol: "expression") {
         Rule("expression") {
-          Choice {
+          ChoiceOf {
             ConcatenateExpressions {
               "b"
               "a"

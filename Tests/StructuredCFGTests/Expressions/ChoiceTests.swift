@@ -7,7 +7,7 @@ struct `Choice tests` {
   @Test
   func `Formats As Alternation`() {
     let production = Rule("start") {
-      Choice {
+      ChoiceOf {
         "a"
         "b"
       }
