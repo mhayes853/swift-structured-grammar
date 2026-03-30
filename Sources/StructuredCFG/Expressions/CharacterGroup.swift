@@ -523,8 +523,10 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   public enum Member: Hashable, Sendable {
     /// A single character member.
     case character(Terminal.Character)
+
     /// A closed character range member.
     case range(Terminal.Character, Terminal.Character)
+
     /// An escaped metacharacter or control character member.
     case escaped(EscapeSequence)
   }

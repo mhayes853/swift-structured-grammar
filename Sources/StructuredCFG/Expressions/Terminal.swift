@@ -34,6 +34,13 @@ public struct Terminal: Hashable, Sendable, ExpressibleByStringLiteral, Expressi
     self.init(String(value))
   }
 
+  /// Creates a terminal from a single character.
+  ///
+  /// - Parameter value: The character to store.
+  public init(_ value: [Swift.Character]) {
+    self.init(characters: value.map { .character($0) })
+  }
+
   /// Creates a terminal from a single hex scalar.
   ///
   /// - Parameter value: The scalar to store.
