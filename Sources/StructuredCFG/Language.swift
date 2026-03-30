@@ -567,11 +567,24 @@ extension Language {
             if let existingRule = base.rules.first(where: {
               $0.symbol == production.symbol
             }) {
-              let resolvedSymbol = self.symbolResolver.resolveSymbolConflict(
+              var resolvedSymbol = self.symbolResolver.resolveSymbolConflict(
                 for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
                 against: ResolvableGrammarSymbol(symbol: existingRule.symbol, grammar: base),
                 context: context
               )
+              while existingSymbols.contains(resolvedSymbol) {
+                let cascadingExistingRule = base.rules.first { $0.symbol == resolvedSymbol }
+                guard let cascadingExistingRule else { break }
+                let cascadingResolvedSymbol = self.symbolResolver.resolveSymbolConflict(
+                  for: ResolvableGrammarSymbol(symbol: resolvedSymbol, grammar: incoming),
+                  against: ResolvableGrammarSymbol(
+                    symbol: cascadingExistingRule.symbol,
+                    grammar: base
+                  ),
+                  context: context
+                )
+                resolvedSymbol = cascadingResolvedSymbol
+              }
               result.append(Rule(resolvedSymbol, production.expression))
             }
           } else {

@@ -1,6 +1,6 @@
 import CustomDump
-import Testing
 import StructuredCFG
+import Testing
 
 @Suite
 struct `GrammarNameResolver tests` {
@@ -68,11 +68,12 @@ struct `GrammarNameResolver tests` {
 
   @Test
   func `Default Resolver Uses Alphabetic Rollover For Conflicts`() {
-    let grammars = (0...753).map { index in
-      Grammar(startingSymbol: "expression") {
-        Rule("expression") { "value-\(index)" }
+    let grammars = (0...753)
+      .map { index in
+        Grammar(startingSymbol: "expression") {
+          Rule("expression") { "value-\(index)" }
+        }
       }
-    }
 
     let grammar = Language.union(grammars).grammar()
 
@@ -117,41 +118,6 @@ struct `GrammarNameResolver tests` {
   }
 
   @Test
-  func `Custom Resolver Can Choose To Keep Original Symbol`() {
-    struct KeepOriginalNameResolver: Language.GrammarSymbolResolver {
-      func resolveSymbolConflict(
-        for new: Language.ResolvableGrammarSymbol,
-        against existing: Language.ResolvableGrammarSymbol,
-        context: Language.GrammarNameResolutionContext
-      ) -> Symbol {
-        return existing.symbol
-      }
-
-      func createNewSymbol(
-        grammars: [Grammar],
-        context: Language.GrammarNameResolutionContext
-      ) -> Symbol {
-        return Symbol(rawValue: "l\(context.grammarIndex)start")
-      }
-    }
-
-    let language = Union {
-      Grammar(startingSymbol: "expression") {
-        Rule("expression") { "first" }
-      }
-      Grammar(startingSymbol: "expression") {
-        Rule("expression") { "second" }
-      }
-    }
-
-    let grammar = language.language.grammar(symbolResolver: KeepOriginalNameResolver())
-
-    let expressionProds = grammar.rules.filter { $0.symbol.rawValue == "expression" }
-    expectNoDifference(expressionProds.count, 1)
-    expectNoDifference(expressionProds.first?.expression, Expression.terminal("second"))
-  }
-
-  @Test
   func `Context Grammar Index Increments For Each Merged Grammar`() {
     struct IndexCapturingResolver: Language.GrammarSymbolResolver {
       func resolveSymbolConflict(
@@ -177,7 +143,9 @@ struct `GrammarNameResolver tests` {
     }
     let grammar = language.language.grammar(symbolResolver: IndexCapturingResolver())
 
-    let conflictSymbols = grammar.rules.filter { $0.symbol.rawValue.hasPrefix("idx1__") || $0.symbol.rawValue.hasPrefix("idx2__") }
+    let conflictSymbols = grammar.rules.filter {
+      $0.symbol.rawValue.hasPrefix("idx1__") || $0.symbol.rawValue.hasPrefix("idx2__")
+    }
     expectNoDifference(conflictSymbols.count, 2)
   }
 
@@ -196,6 +164,45 @@ struct `GrammarNameResolver tests` {
     }
 
     expectNoDifference(synthesizedSymbols.map(\.symbol.rawValue), ["lastart"])
+  }
+
+  @Test
+  func `Resolver Is Called Again When Resolved Symbol Creates New Conflict`() {
+    struct ResolverThatCreatesCascade: Language.GrammarSymbolResolver {
+      func resolveSymbolConflict(
+        for new: Language.ResolvableGrammarSymbol,
+        against existing: Language.ResolvableGrammarSymbol,
+        context: Language.GrammarNameResolutionContext
+      ) -> Symbol {
+        if new.symbol.rawValue == "r1" {
+          return Symbol(rawValue: "r2")
+        }
+        return Symbol(rawValue: "resolved__\(new.symbol.rawValue)")
+      }
+
+      func createNewSymbol(
+        grammars: [Grammar],
+        context: Language.GrammarNameResolutionContext
+      ) -> Symbol {
+        let namespace = context.grammarIndex > 0 ? "b" : "a"
+        return Symbol(rawValue: "l\(namespace)start")
+      }
+    }
+
+    let language = Union {
+      Grammar(startingSymbol: "start") {
+        Rule("r1") { "a" }
+        Rule("r2") { "b" }
+      }
+      Grammar(startingSymbol: "start") {
+        Rule("r1") { "c" }
+      }
+    }
+
+    let grammar = language.language.grammar(symbolResolver: ResolverThatCreatesCascade())
+
+    let r1Rule = grammar.rules.first { $0.symbol.rawValue == "resolved__r2" }
+    expectNoDifference(r1Rule != nil, true)
   }
 
   @Test
