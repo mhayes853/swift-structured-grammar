@@ -188,7 +188,7 @@ language.concatenate(
   })
 )
 
-let repeated = language.kleeneStarred()
+let repeated = language.starred()
 let reversed = repeated.reversed()
 
 let resolved = reversed.grammar()
