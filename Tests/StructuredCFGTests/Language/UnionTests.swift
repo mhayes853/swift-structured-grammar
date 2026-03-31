@@ -98,4 +98,58 @@ struct `Union tests` {
     expectNoDifference(rightMatches, true)
     expectNoDifference(invalidMatches, false)
   }
+
+  @Test
+  func `Union Rewrites Internal References When Conflicting Symbols Are Renamed`() {
+    let language = Union {
+      Grammar(startingSymbol: "start") {
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "left" }
+      }
+      Grammar(startingSymbol: "start") {
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "right" }
+      }
+    }
+
+    expectNoDifference(
+      language.language.grammar(),
+      Grammar(startingSymbol: .root) {
+        Rule(.root) { Ref("lastart") }
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "left" }
+        Rule("gbstart") { Ref("gbexpression") }
+        Rule("gbexpression") { "right" }
+        Rule("lastart") {
+          ChoiceOf {
+            Ref("start")
+            Ref("gbstart")
+          }
+        }
+      }
+    )
+  }
+
+  @Test
+  func `Union XGrammar Matches Either Branch When Starting Symbols Conflict`() async throws {
+    let language = Union {
+      Grammar(startingSymbol: "start") {
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "left" }
+      }
+      Grammar(startingSymbol: "start") {
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "right" }
+      }
+    }
+    .language
+
+    let leftMatches = try await XGrammarTestSupport.matches("left", language: language)
+    let rightMatches = try await XGrammarTestSupport.matches("right", language: language)
+    let invalidMatches = try await XGrammarTestSupport.matches("other", language: language)
+
+    expectNoDifference(leftMatches, true)
+    expectNoDifference(rightMatches, true)
+    expectNoDifference(invalidMatches, false)
+  }
 }

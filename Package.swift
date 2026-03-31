@@ -20,17 +20,24 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.7.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
     .package(url: "https://github.com/mattt/swift-xgrammar", from: "0.1.0")
   ],
   targets: [
-    .target(name: "StructuredCFG"),
+    .target(
+      name: "StructuredCFG",
+      dependencies: [
+        .product(name: "IssueReporting", package: "xctest-dynamic-overlay")
+      ]
+    ),
     .testTarget(
       name: "StructuredCFGTests",
       dependencies: [
         "StructuredCFG",
         .product(name: "XGrammar", package: "swift-xgrammar"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
+        .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
       ],
       exclude: ["__Snapshots__"]

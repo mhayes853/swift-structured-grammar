@@ -1,3 +1,5 @@
+import IssueReporting
+
 // MARK: - Language
 
 /// A composable language graph that can be resolved into a concrete grammar.
@@ -398,9 +400,31 @@ extension Language {
   }
 }
 
+private func reportSymbolResolverCycling(
+  operation: Language.GrammarOperation,
+  grammarIndex: Int,
+  originalSymbol: String,
+  candidateSymbol: String,
+  returnedSymbol: String
+) {
+  reportIssue(
+    """
+    A grammar symbol resolver may be cycling while resolving a symbol conflict. \
+    StructuredCFG will synthesize a fallback symbol to finish resolution.
+    operation: \(operation)
+    grammarIndex: \(grammarIndex)
+    originalSymbol: \(originalSymbol)
+    candidateSymbol: \(candidateSymbol)
+    returnedSymbol: \(returnedSymbol)
+    """
+  )
+}
+
 // MARK: - Resolver
 
 extension Language {
+  private static let suspiciousConflictResolutionIterationThreshold = 100
+
   private struct ResolvedLanguage {
     let grammar: Grammar
     let entrySymbol: Symbol?
@@ -467,8 +491,8 @@ extension Language {
       ruleBuilder: (Symbol, [Symbol]) -> Rule
     ) -> ResolvedLanguage {
       let resolved = languages.map { self.resolve($0, operation: operation) }
-      let entrySymbols = resolved.compactMap(\.entrySymbol)
-      guard !entrySymbols.isEmpty else {
+      var resolvedEntrySymbols = [Symbol]()
+      guard !resolved.isEmpty else {
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
       }
       var iterator = resolved.makeIterator()
@@ -476,20 +500,31 @@ extension Language {
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
       }
       var grammar = first.grammar
+      if let entrySymbol = first.entrySymbol {
+        resolvedEntrySymbols.append(entrySymbol)
+      }
       self.grammars = [grammar]
       var index = 1
       while let language = iterator.next() {
-        grammar = self.mergeWithConflictResolution(
+        let mergeResult = self.mergeWithConflictResolution(
           grammar,
           language.grammar,
+          incomingEntrySymbol: language.entrySymbol,
           index: index,
           operation: operation
         )
+        grammar = mergeResult.grammar
+        if let entrySymbol = mergeResult.entrySymbol {
+          resolvedEntrySymbols.append(entrySymbol)
+        }
         self.grammars.append(language.grammar)
         index += 1
       }
+      guard !resolvedEntrySymbols.isEmpty else {
+        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
+      }
       let entrySymbol = self.createNewSymbol()
-      grammar.append(ruleBuilder(entrySymbol, entrySymbols))
+      grammar.append(ruleBuilder(entrySymbol, resolvedEntrySymbols))
       return ResolvedLanguage(grammar: grammar, entrySymbol: entrySymbol, synthesizedEntry: true)
     }
 
@@ -540,60 +575,192 @@ extension Language {
       return symbol
     }
 
+    private struct MergeResult {
+      let grammar: Grammar
+      let entrySymbol: Symbol?
+    }
+
+    private struct SymbolResolutionState {
+      var result: Grammar
+      var claimedSymbols: Set<Symbol>
+      var resolvedSymbols: [Symbol: Symbol]
+      var allGrammars: [Grammar]
+      var index: Int
+      var operation: GrammarOperation
+      var baseRulesBySymbol: [Symbol: Rule]
+      var conflictResolutionIterationCount: Int
+      var didReportSuspiciousCycle: Bool
+      var incomingEntrySymbol: Symbol?
+      var candidateSymbol: Symbol
+      var resolvedSymbol: Symbol
+
+      var resolutionContext: GrammarNameResolutionContext {
+        GrammarNameResolutionContext(
+          grammarIndex: self.index,
+          currentOperation: self.operation,
+          existingSymbols: self.claimedSymbols,
+          grammars: self.allGrammars
+        )
+      }
+
+      var isSuspiciousCycle: Bool {
+        self.conflictResolutionIterationCount
+          >= Language.suspiciousConflictResolutionIterationThreshold
+          && !self.didReportSuspiciousCycle
+      }
+
+      var mergeResult: MergeResult {
+        MergeResult(
+          grammar: self.result,
+          entrySymbol: self.incomingEntrySymbol.map { self.resolvedSymbols[$0] ?? $0 }
+        )
+      }
+
+      mutating func resetForNextSymbol(
+        symbol: Symbol,
+        incoming: Grammar,
+        resolver: any GrammarSymbolResolver
+      ) {
+        self.candidateSymbol = symbol
+        self.didReportSuspiciousCycle = false
+        self.conflictResolutionIterationCount = 1
+        let existingGrammar = self.baseRulesBySymbol[symbol] == nil ? incoming : self.result
+        self.resolvedSymbol = resolver.resolveSymbolConflict(
+          for: ResolvableGrammarSymbol(symbol: symbol, grammar: incoming),
+          against: ResolvableGrammarSymbol(symbol: symbol, grammar: existingGrammar),
+          context: self.resolutionContext
+        )
+      }
+
+      mutating func resolveNextCascadingSymbol(
+        incoming: Grammar,
+        resolver: any GrammarSymbolResolver
+      ) {
+        let cascadingGrammar = self.baseRulesBySymbol[self.resolvedSymbol] == nil ? incoming : self.result
+        self.candidateSymbol = self.resolvedSymbol
+        self.resolvedSymbol = resolver.resolveSymbolConflict(
+          for: ResolvableGrammarSymbol(symbol: self.candidateSymbol, grammar: incoming),
+          against: ResolvableGrammarSymbol(symbol: self.resolvedSymbol, grammar: cascadingGrammar),
+          context: self.resolutionContext
+        )
+        self.conflictResolutionIterationCount += 1
+      }
+
+      mutating func commitResolvedSymbol(_ symbol: Symbol) {
+        self.resolvedSymbols[symbol] = self.resolvedSymbol
+        self.claimedSymbols.insert(self.resolvedSymbol)
+      }
+    }
+
     private mutating func mergeWithConflictResolution(
       _ base: Grammar,
       _ incoming: Grammar,
+      incomingEntrySymbol: Symbol?,
       index: Int,
       operation: GrammarOperation
-    ) -> Grammar {
-      var result = base
-      let existingSymbols = Set(base.rules.map(\.symbol))
-      var allGrammars = self.grammars
-      allGrammars.append(incoming)
-      let context = GrammarNameResolutionContext(
-        grammarIndex: index,
-        currentOperation: operation,
-        existingSymbols: existingSymbols,
-        grammars: allGrammars
+    ) -> MergeResult {
+      var state = SymbolResolutionState(
+        result: base,
+        claimedSymbols: Set(base.rules.map(\.symbol)),
+        resolvedSymbols: [:],
+        allGrammars: self.grammars,
+        index: index,
+        operation: operation,
+        baseRulesBySymbol: Dictionary(uniqueKeysWithValues: base.rules.map { ($0.symbol, $0) }),
+        conflictResolutionIterationCount: 0,
+        didReportSuspiciousCycle: false,
+        incomingEntrySymbol: incomingEntrySymbol,
+        candidateSymbol: .root,
+        resolvedSymbol: .root
       )
+      state.allGrammars.append(incoming)
+
+      for statement in incoming.statements {
+        guard case .rule(let production) = statement else {
+          continue
+        }
+
+        guard state.claimedSymbols.contains(production.symbol) else {
+          state.claimedSymbols.insert(production.symbol)
+          continue
+        }
+
+        state.resetForNextSymbol(
+          symbol: production.symbol,
+          incoming: incoming,
+          resolver: self.symbolResolver
+        )
+
+        while state.claimedSymbols.contains(state.resolvedSymbol) {
+          if state.isSuspiciousCycle {
+            reportSymbolResolverCycling(
+              operation: state.operation,
+              grammarIndex: state.index,
+              originalSymbol: production.symbol.rawValue,
+              candidateSymbol: state.candidateSymbol.rawValue,
+              returnedSymbol: state.resolvedSymbol.rawValue
+            )
+            state.didReportSuspiciousCycle = true
+            continue
+          }
+
+          state.resolveNextCascadingSymbol(
+            incoming: incoming,
+            resolver: self.symbolResolver
+          )
+        }
+
+        state.commitResolvedSymbol(production.symbol)
+      }
 
       for statement in incoming.statements {
         switch statement {
         case .comment, .custom:
-          result.append(statement)
+          state.result.append(statement)
 
         case .rule(let production):
-          if existingSymbols.contains(production.symbol) {
-            if let existingRule = base.rules.first(where: {
-              $0.symbol == production.symbol
-            }) {
-              var resolvedSymbol = self.symbolResolver.resolveSymbolConflict(
-                for: ResolvableGrammarSymbol(symbol: production.symbol, grammar: incoming),
-                against: ResolvableGrammarSymbol(symbol: existingRule.symbol, grammar: base),
-                context: context
-              )
-              while existingSymbols.contains(resolvedSymbol) {
-                let cascadingExistingRule = base.rules.first { $0.symbol == resolvedSymbol }
-                guard let cascadingExistingRule else { break }
-                let cascadingResolvedSymbol = self.symbolResolver.resolveSymbolConflict(
-                  for: ResolvableGrammarSymbol(symbol: resolvedSymbol, grammar: incoming),
-                  against: ResolvableGrammarSymbol(
-                    symbol: cascadingExistingRule.symbol,
-                    grammar: base
-                  ),
-                  context: context
-                )
-                resolvedSymbol = cascadingResolvedSymbol
-              }
-              result.append(Rule(resolvedSymbol, production.expression))
-            }
-          } else {
-            result.append(production)
-          }
+          let resolvedSymbol = state.resolvedSymbols[production.symbol] ?? production.symbol
+          let expression = self.rewritingRefs(in: production.expression, using: state.resolvedSymbols)
+          state.result.append(Rule(resolvedSymbol, expression))
         }
       }
 
-      return result
+      return state.mergeResult
+    }
+
+    private func rewritingRefs(in expression: Expression, using resolvedSymbols: [Symbol: Symbol])
+      -> Expression
+    {
+      switch expression {
+      case .epsilon:
+        return .epsilon
+      case .concat(let expressions):
+        return .concat(expressions.map { self.rewritingRefs(in: $0, using: resolvedSymbols) })
+      case .choice(let expressions):
+        return .choice(expressions.map { self.rewritingRefs(in: $0, using: resolvedSymbols) })
+      case .optional(let expression):
+        return .optional(self.rewritingRefs(in: expression, using: resolvedSymbols))
+      case .repeat(let repeatExpr):
+        return .repeat(
+          Repeat(
+            min: repeatExpr.min,
+            max: repeatExpr.max,
+            self.rewritingRefs(in: repeatExpr.innerExpression, using: resolvedSymbols)
+          )
+        )
+      case .group(let expression):
+        return .group(self.rewritingRefs(in: expression, using: resolvedSymbols))
+      case .characterGroup(let characterGroup):
+        return .characterGroup(characterGroup)
+      case .ref(let ref):
+        return .ref(Ref(resolvedSymbols[ref.symbol] ?? ref.symbol))
+      case .special(let special):
+        return .special(special)
+      case .terminal(let terminal):
+        return .terminal(terminal)
+      case .custom(let value):
+        return .custom(value)
+      }
     }
   }
 }

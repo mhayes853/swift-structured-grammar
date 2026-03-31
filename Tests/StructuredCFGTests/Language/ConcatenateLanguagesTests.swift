@@ -95,4 +95,33 @@ struct `ConcatenateLanguages tests` {
     expectNoDifference(partialMatch, false)
     expectNoDifference(wrongOrderMatch, false)
   }
+
+  @Test
+  func `ConcatenateLanguages Rewrites Internal References When Conflicting Symbols Are Renamed`() {
+    let language = ConcatenateLanguages {
+      Grammar(startingSymbol: "start") {
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "left" }
+      }
+      Grammar(startingSymbol: "start") {
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "right" }
+      }
+    }
+
+    expectNoDifference(
+      language.language.grammar(),
+      Grammar(startingSymbol: .root) {
+        Rule(.root) { Ref("lastart") }
+        Rule("start") { Ref("expression") }
+        Rule("expression") { "left" }
+        Rule("gbstart") { Ref("gbexpression") }
+        Rule("gbexpression") { "right" }
+        Rule("lastart") {
+          Ref("start")
+          Ref("gbstart")
+        }
+      }
+    )
+  }
 }
