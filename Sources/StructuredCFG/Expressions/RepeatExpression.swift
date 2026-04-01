@@ -41,7 +41,7 @@ public struct Repeat: Hashable, Sendable, Expression.Component {
   ///   - expression: The ``Expression.Component`` to repeat.
   public init(min: Int?, max: Int?, _ expression: some Expression.Component) {
     precondition(min != nil || max != nil, "Repeat must have at least one bound")
-    if let min = min, let max = max {
+    if let min, let max {
       precondition(min <= max, "Repeat min must be less than or equal to max")
     }
     self.min = min

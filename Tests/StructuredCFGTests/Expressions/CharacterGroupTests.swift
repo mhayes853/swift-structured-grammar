@@ -143,17 +143,18 @@ struct `CharacterGroup tests` {
   }
 
   @Test
-  func `CharacterGroup Rejects XML NameStart Class`() {
-    #expect(throws: CharacterGroup.ParseError.self) {
-      try CharacterGroup(String("\\i"))
-    }
-  }
+  func `CharacterGroup Parses XML Name Classes As Escapes`() {
+    let group = CharacterGroup("\\i\\I\\c\\C")
 
-  @Test
-  func `CharacterGroup Rejects XML NameChar Class`() {
-    #expect(throws: CharacterGroup.ParseError.self) {
-      try CharacterGroup(String("\\c"))
-    }
+    expectNoDifference(
+      group.members ?? [],
+      [
+        .escaped(CharacterGroup.EscapeSequence("i")),
+        .escaped(CharacterGroup.EscapeSequence("I")),
+        .escaped(CharacterGroup.EscapeSequence("c")),
+        .escaped(CharacterGroup.EscapeSequence("C"))
+      ]
+    )
   }
 
   @Test

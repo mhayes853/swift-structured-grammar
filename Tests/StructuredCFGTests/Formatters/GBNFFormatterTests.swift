@@ -283,6 +283,15 @@ struct `GBNFFormatter tests` {
   }
 
   @Test
+  func `XML Character Class Escapes Format As Ordinary Characters In GBNF`() throws {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup("\\i\\C")
+    })
+
+    expectNoDifference(try grammar.formatted(with: .gbnf), #"start ::= [iC]"#)
+  }
+
+  @Test
   func `All Character Group Uses Full GBNF Range`() throws {
     let grammar = Grammar(Rule("start") {
       CharacterGroup.all

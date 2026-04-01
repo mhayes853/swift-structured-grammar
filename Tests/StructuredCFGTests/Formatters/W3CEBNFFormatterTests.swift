@@ -194,6 +194,18 @@ struct `W3CEBNFFormatter tests` {
   }
 
   @Test
+  func `XML Character Class Escapes Round Trip In W3C Formatter`() throws {
+    let grammar = Grammar(Rule("start") {
+      CharacterGroup("\\i\\C")
+    })
+
+    expectNoDifference(
+      try grammar.formatted(with: .w3cEbnf),
+      #"start ::= [\i\C]"#
+    )
+  }
+
+  @Test
   func `Terminals Are Quoted With Single Quotes`() {
     var formatter = Grammar.W3CEBNFFormatter()
     formatter.quoting = .single

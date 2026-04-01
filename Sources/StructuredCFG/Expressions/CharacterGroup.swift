@@ -256,8 +256,6 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
         throw ParseError.negatedPredefinedClassesMustBeStandalone
       }
       members.append(contentsOf: Self.whitespaceMembers)
-    case "i", "I", "c", "C":
-      throw ParseError.xmlNameClassesAreNotSupported
     case "n":
       members.append(.escaped(EscapeSequence("\n")))
     case "r":

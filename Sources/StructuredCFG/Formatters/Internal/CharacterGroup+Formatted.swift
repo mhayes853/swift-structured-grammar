@@ -10,6 +10,7 @@ extension CharacterGroup {
     var useShorthands: Bool = true
     var expandRanges: Bool = true
     var allCharactersContent: String?
+    var preserveXMLClassEscapes = false
   }
 
   func formatted(options: FormatOptions = FormatOptions()) throws -> String {
@@ -47,7 +48,7 @@ extension CharacterGroup {
       }
 
       let member = members[memberIndex]
-      result += try self.format(member: member, hexFormat: options.hexFormat)
+      result += try self.format(member: member, options: options)
       memberIndex += 1
     }
 
@@ -119,16 +120,16 @@ extension CharacterGroup {
     .escaped(EscapeSequence("\r"))
   ]
 
-  private func format(member: Member, hexFormat: HexFormat) throws -> String {
+  private func format(member: Member, options: FormatOptions) throws -> String {
     switch member {
     case .character(let character):
-      return try self.format(character: character, hexFormat: hexFormat)
+      return try self.format(character: character, hexFormat: options.hexFormat)
     case .range(let start, let end):
-      return try self.format(character: start, hexFormat: hexFormat)
+      return try self.format(character: start, hexFormat: options.hexFormat)
         + "-"
-        + self.format(character: end, hexFormat: hexFormat)
+        + self.format(character: end, hexFormat: options.hexFormat)
     case .escaped(let escape):
-      return self.format(escape: escape)
+      return self.format(escape: escape, preserveXMLClassEscapes: options.preserveXMLClassEscapes)
     }
   }
 
@@ -174,7 +175,7 @@ extension CharacterGroup {
     return padding + hex
   }
 
-  private func format(escape: EscapeSequence) -> String {
+  private func format(escape: EscapeSequence, preserveXMLClassEscapes: Bool) -> String {
     if escape.isBackslash {
       return "\\\\"
     }
@@ -225,6 +226,9 @@ extension CharacterGroup {
     }
     if escape.isTab {
       return "\\t"
+    }
+    if preserveXMLClassEscapes, ["i", "I", "c", "C"].contains(escape.character) {
+      return "\\" + String(escape.character)
     }
     return String(escape.character)
   }
