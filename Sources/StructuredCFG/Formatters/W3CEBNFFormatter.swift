@@ -147,8 +147,7 @@ extension Grammar {
         return try characterGroup.formatted(
           options: CharacterGroup.FormatOptions(
             hexFormat: .w3c,
-            allCharactersContent: "#x9#xA#xD#x20-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF",
-            preserveXMLClassEscapes: true
+            allCharactersContent: "#x9#xA#xD#x20-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF"
           )
         )
       case .ref(let ref):

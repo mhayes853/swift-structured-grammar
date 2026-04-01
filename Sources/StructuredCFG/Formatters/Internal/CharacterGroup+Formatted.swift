@@ -10,7 +10,6 @@ extension CharacterGroup {
     var useShorthands: Bool = true
     var expandRanges: Bool = true
     var allCharactersContent: String?
-    var preserveXMLClassEscapes = false
   }
 
   func formatted(options: FormatOptions = FormatOptions()) throws -> String {
@@ -129,7 +128,7 @@ extension CharacterGroup {
         + "-"
         + self.format(character: end, hexFormat: options.hexFormat)
     case .escaped(let escape):
-      return self.format(escape: escape, preserveXMLClassEscapes: options.preserveXMLClassEscapes)
+      return self.format(escape: escape)
     }
   }
 
@@ -175,61 +174,17 @@ extension CharacterGroup {
     return padding + hex
   }
 
-  private func format(escape: EscapeSequence, preserveXMLClassEscapes: Bool) -> String {
-    if escape.isBackslash {
-      return "\\\\"
-    }
-    if escape.isPipe {
-      return "\\|"
-    }
-    if escape.isPeriod {
-      return "\\."
-    }
-    if escape.isHyphen {
-      return "\\-"
-    }
-    if escape.isCaret {
-      return "\\^"
-    }
-    if escape.isQuestion {
-      return "\\?"
-    }
-    if escape.isAsterisk {
-      return "\\*"
-    }
-    if escape.isPlus {
-      return "\\+"
-    }
-    if escape.isLeftBrace {
-      return "\\{"
-    }
-    if escape.isRightBrace {
-      return "\\}"
-    }
-    if escape.isLeftParen {
-      return "\\("
-    }
-    if escape.isRightParen {
-      return "\\)"
-    }
-    if escape.isLeftBracket {
-      return "\\["
-    }
-    if escape.isRightBracket {
-      return "\\]"
-    }
+  private func format(escape: EscapeSequence) -> String {
+    let character: String
     if escape.isNewline {
-      return "\\n"
+      character = "n"
+    } else if escape.isCarriageReturn {
+      character = "r"
+    } else if escape.isTab {
+      character = "t"
+    } else {
+      character = String(escape.character)
     }
-    if escape.isCarriageReturn {
-      return "\\r"
-    }
-    if escape.isTab {
-      return "\\t"
-    }
-    if preserveXMLClassEscapes, ["i", "I", "c", "C"].contains(escape.character) {
-      return "\\" + String(escape.character)
-    }
-    return String(escape.character)
+    return "\\" + character
   }
 }

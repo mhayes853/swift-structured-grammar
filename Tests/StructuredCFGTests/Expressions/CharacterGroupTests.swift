@@ -190,6 +190,19 @@ struct `CharacterGroup tests` {
   }
 
   @Test
+  func `CharacterGroup Preserves Arbitrary Escaped Character When Formatting`() throws {
+    let group = CharacterGroup("\\a")
+
+    let grammar = Grammar(startingSymbol: "test") {
+      Rule("test") {
+        group
+      }
+    }
+
+    expectNoDifference(try grammar.formatted(with: .w3cEbnf), #"test ::= [\a]"#)
+  }
+
+  @Test
   func `CharacterGroup Parses Escaped Closing Bracket In Unbracketed Group`() {
     let group = CharacterGroup(",\\]")
 
