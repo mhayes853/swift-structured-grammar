@@ -383,6 +383,7 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
       if case .character("-") = endCharacter {
         return ([.character(.character(characters[index]))], index + 1)
       }
+      try Self.validateRange(start: .character(startCharacter), end: endCharacter)
       return ([.range(.character(startCharacter), endCharacter)], rangeEnd)
     }
     return ([.character(.character(characters[index]))], index + 1)
@@ -476,15 +477,13 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
   }
 
   private static func validateRange(start: Terminal.Character, end: Terminal.Character) throws {
-    guard case .character = start else {
-      guard let startValue = Self.scalarValue(for: start), let endValue = Self.scalarValue(for: end)
-      else {
-        return
-      }
-      guard startValue <= endValue else {
-        throw ParseError.invalidHexRangeStartGreaterThanEnd
-      }
+    guard let startValue = Self.scalarValue(for: start), let endValue = Self.scalarValue(for: end)
+    else {
       return
+    }
+
+    guard startValue <= endValue else {
+      throw ParseError.invalidRangeStartGreaterThanEnd
     }
   }
 
@@ -720,9 +719,9 @@ extension CharacterGroup {
       /// A hex digit was invalid.
       public static let invalidHexCharacter = Self(rawValue: "invalid_hex_character")
 
-      /// A hex range started after it ended.
-      public static let invalidHexRangeStartGreaterThanEnd = Self(
-        rawValue: "invalid_hex_range_start_greater_than_end"
+      /// A range started after it ended.
+      public static let invalidRangeStartGreaterThanEnd = Self(
+        rawValue: "invalid_range_start_greater_than_end"
       )
 
       /// A parsed hex value could not be converted to a scalar.
@@ -799,10 +798,10 @@ extension CharacterGroup {
       message: "Invalid hex character"
     )
 
-    /// A hex range started after it ended.
-    public static let invalidHexRangeStartGreaterThanEnd = Self(
-      code: .invalidHexRangeStartGreaterThanEnd,
-      message: "Invalid hex range: start > end"
+    /// A range started after it ended.
+    public static let invalidRangeStartGreaterThanEnd = Self(
+      code: .invalidRangeStartGreaterThanEnd,
+      message: "Invalid range: start > end"
     )
 
     /// Creates an error for a malformed hex scalar value.

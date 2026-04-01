@@ -315,8 +315,15 @@ struct `CharacterGroup tests` {
   }
 
   @Test
+  func `CharacterGroup Rejects Invalid Character Range Start Greater Than End`() {
+    #expect(throws: CharacterGroup.ParseError.invalidRangeStartGreaterThanEnd) {
+      try CharacterGroup(String("z-a"))
+    }
+  }
+
+  @Test
   func `CharacterGroup Rejects Invalid Hex Range Start Greater Than End`() {
-    #expect(throws: CharacterGroup.ParseError.self) {
+    #expect(throws: CharacterGroup.ParseError.invalidRangeStartGreaterThanEnd) {
       try CharacterGroup(String("#x5A-#x41"))
     }
   }
