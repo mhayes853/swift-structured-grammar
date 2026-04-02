@@ -160,17 +160,42 @@ struct `RepeatExpressionTests` {
   }
 
   @Test
-  func `Repeat Of Zero Is Empty In W3C`() {
+  func `Repeat Of Zero Throws In W3C`() {
     let grammar = Grammar(Rule("start") {
       Repeat(0) {
         "a"
       }
     })
 
-    expectNoDifference(
-      try! grammar.formatted(with: .w3cEbnf),
-      ""
-    )
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
+  }
+
+  @Test
+  func `Repeat Of Up To Zero Throws In W3C`() {
+    let grammar = Grammar(Rule("start") {
+      Repeat(...0) {
+        "a"
+      }
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
+  }
+
+  @Test
+  func `Repeat Of Zero Through Zero Throws In W3C`() {
+    let grammar = Grammar(Rule("start") {
+      Repeat(0...0) {
+        "a"
+      }
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
   }
 
   @Test

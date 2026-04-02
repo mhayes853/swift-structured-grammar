@@ -16,6 +16,11 @@ public struct UnsupportedExpressionError: Error, Hashable, Sendable {
   public static let customExpression = UnsupportedExpressionError(
     "Custom expressions are not supported"
   )
+
+  /// An error indicating that an expression collapses to epsilon in an unsupported context.
+  public static let epsilonFormattedExpression = UnsupportedExpressionError(
+    "Expressions that format to epsilon are not supported"
+  )
 }
 
 // MARK: - UnsupportedStatementError

@@ -54,7 +54,7 @@ extension Grammar {
     private func format(rule: Rule) throws -> String {
       let expression = rule.expression.simplified
       if expression == .epsilon {
-        throw UnsupportedExpressionError("Epsilon expressions are not supported")
+        throw UnsupportedExpressionError.epsilonFormattedExpression
       }
       if case .special = expression {
         throw UnsupportedExpressionError("Special sequences are not supported")
@@ -64,7 +64,7 @@ extension Grammar {
       }
       let formatted = try self.format(expression: expression)
       if formatted.isEmpty {
-        return ""
+        throw UnsupportedExpressionError.epsilonFormattedExpression
       }
       return "\(rule.symbol.rawValue) ::= \(formatted)"
     }
@@ -72,7 +72,7 @@ extension Grammar {
     private func format(expression: Expression) throws -> String {
       switch expression {
       case .epsilon:
-        throw UnsupportedExpressionError("Epsilon expressions are not supported")
+        throw UnsupportedExpressionError.epsilonFormattedExpression
       case .concat(let expressions):
         return
           try expressions
@@ -109,7 +109,7 @@ extension Grammar {
           }
         case (nil, let n?):
           if n == 0 {
-            return ""
+            throw UnsupportedExpressionError.epsilonFormattedExpression
           } else {
             let choices = (1...n)
               .map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
@@ -119,7 +119,7 @@ extension Grammar {
           }
         case (let m?, let n?) where m == n:
           if m == 0 {
-            return ""
+            throw UnsupportedExpressionError.epsilonFormattedExpression
           }
           let expanded = Expression.concat(Array(repeating: innerExpression, count: m))
           return try self.format(expression: expanded.simplified)
@@ -139,7 +139,7 @@ extension Grammar {
           let expanded: Expression = .concat([required, optionalAdditional])
           return try self.format(expression: expanded.simplified)
         default:
-          return ""
+          throw UnsupportedExpressionError("Repeat ranges must have at least one bound")
         }
       case .group(let expression):
         return "(\(try self.format(expression: expression)))"
@@ -157,7 +157,7 @@ extension Grammar {
       case .terminal(let terminal):
         return try self.format(terminal: terminal)
       case .custom:
-        return ""
+        throw UnsupportedExpressionError.customExpression
       }
     }
 
