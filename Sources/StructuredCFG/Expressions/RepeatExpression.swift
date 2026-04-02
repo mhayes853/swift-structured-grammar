@@ -44,6 +44,9 @@ public struct Repeat: Hashable, Sendable, Expression.Component {
     if let min, let max {
       precondition(min <= max, "Repeat min must be less than or equal to max")
     }
+    if let max {
+      precondition(max >= 0, "Repeat max must be non-negative")
+    }
     self.min = min
     self.max = max
     self.innerExpression = expression.expression

@@ -184,4 +184,74 @@ struct `RepeatExpressionTests` {
       #"start ::= "a"{0,2}"#
     )
   }
+
+  @Test
+  func `Repeat With Partial Range Up To Zero Crashes`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(..<0) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Partial Range Up To Negative One Crashes`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(..<(-1)) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Partial Range Through Negative One Crashes`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(...(-1)) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Closed Range Min Greater Than Max Crashes`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(0...(-1)) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Exactly Negative Count Crashes`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(exactly: -1) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Partial Range Up To Zero Crashes With Builder`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(..<0) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Partial Range Up To Negative One Crashes With Builder`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(..<(-1)) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Partial Range Through Negative One Crashes With Builder`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(...(-1)) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Closed Range Min Greater Than Max Crashes With Builder`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(0...(-1)) { "a" }
+    }
+  }
+
+  @Test
+  func `Repeat With Exactly Negative Count Crashes With Builder`() async {
+    await #expect(processExitsWith: .failure) {
+      Repeat(exactly: -1) { "a" }
+    }
+  }
 }
