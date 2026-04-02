@@ -340,9 +340,9 @@ extension Grammar {
       for member in members {
         switch member {
         case .character(let character):
-          terminals.append(self.format(terminal: self.terminal(from: character)))
+          terminals.append(self.format(terminal: character.terminal))
         case .range(let start, let end):
-          guard let startInt = self.asciiValue(for: start), let endInt = self.asciiValue(for: end) else {
+          guard let startInt = start.asciiValue, let endInt = end.asciiValue else {
             throw UnsupportedExpressionError("Non-ASCII character ranges are not supported")
           }
           for code in startInt...endInt {
@@ -363,25 +363,6 @@ extension Grammar {
         .split(separator: "\n", omittingEmptySubsequences: false)
         .map { "(* \($0) *)" }
         .joined(separator: "\n")
-    }
-
-    private func terminal(from character: Terminal.Character) -> Terminal {
-      switch character {
-      case .character(let character):
-        return Terminal(character)
-      case .hex(let scalar), .unicode(let scalar):
-        return Terminal(Character(scalar))
-      }
-    }
-
-    private func asciiValue(for character: Terminal.Character) -> UInt32? {
-      switch character {
-      case .character(let character):
-        return character.asciiValue.map(UInt32.init)
-      case .hex(let scalar), .unicode(let scalar):
-        guard scalar.isASCII else { return nil }
-        return scalar.value
-      }
     }
 
     private func escapedString(for escape: CharacterGroup.EscapeSequence) -> String {

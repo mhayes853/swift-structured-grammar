@@ -7,19 +7,13 @@ struct `Representative Language Behavior tests` {
   @Test(arguments: Self.cases.map(\.name))
   func `Representative Languages Accept Expected Inputs`(behaviorCaseName: String) async throws {
     let behaviorCase = Self.behaviorCase(named: behaviorCaseName)
-    for input in behaviorCase.accepts {
-      let matches = try await XGrammarTestSupport.matches(input, language: behaviorCase.language)
-      expectNoDifference(matches, true)
-    }
+    try await Self.assertInputs(behaviorCase.accepts, for: behaviorCase.language, expected: true)
   }
 
   @Test(arguments: Self.cases.map(\.name))
   func `Representative Languages Reject Unexpected Inputs`(behaviorCaseName: String) async throws {
     let behaviorCase = Self.behaviorCase(named: behaviorCaseName)
-    for input in behaviorCase.rejects {
-      let matches = try await XGrammarTestSupport.matches(input, language: behaviorCase.language)
-      expectNoDifference(matches, false)
-    }
+    try await Self.assertInputs(behaviorCase.rejects, for: behaviorCase.language, expected: false)
   }
 
   struct BehaviorCase: Hashable, Sendable {
@@ -68,5 +62,16 @@ struct `Representative Language Behavior tests` {
 
   private static func behaviorCase(named name: String) -> BehaviorCase {
     Self.cases.first(where: { $0.name == name })!
+  }
+
+  private static func assertInputs(
+    _ inputs: [String],
+    for language: Language,
+    expected: Bool
+  ) async throws {
+    for input in inputs {
+      let matches = try await XGrammarTestSupport.matches(input, language: language)
+      expectNoDifference(matches, expected)
+    }
   }
 }

@@ -189,7 +189,7 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
       }
     }
 
-    var members: [Member] = []
+    var members = [Member]()
     let characters = Array(content)
     var i = 0
 
@@ -290,15 +290,12 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     guard let scalar = Self.parseHex(hexString) else {
       throw ParseError.invalidHexValue(hexString)
     }
-    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+    return try Self.parseMemberOrRange(
       characters: characters,
+      start: .hex(scalar),
       index: hexEnd,
       allowedEscapes: ["x", "u", "U"]
-    ) {
-      try Self.validateRange(start: .hex(scalar), end: endCharacter)
-      return ([.range(.hex(scalar), endCharacter)], rangeEnd)
-    }
-    return ([.character(.hex(scalar))], hexEnd)
+    )
   }
 
   private static func parseUnicodeEscape(characters: [Character], index: Int) throws -> (
@@ -323,16 +320,12 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
       throw ParseError.invalidHexValue(hexString)
     }
 
-    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+    return try Self.parseMemberOrRange(
       characters: characters,
+      start: .unicode(startScalar),
       index: hexEnd,
       allowedEscapes: ["x", "u", "U"]
-    ) {
-      try Self.validateRange(start: .unicode(startScalar), end: endCharacter)
-      return ([.range(.unicode(startScalar), endCharacter)], rangeEnd)
-    }
-
-    return ([.character(.unicode(startScalar))], hexEnd)
+    )
   }
 
   private static func parseHexMember(characters: [Character], index: Int) throws -> (
@@ -351,18 +344,13 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     guard let scalar = Self.parseHex(hexString) else {
       throw ParseError.invalidHexValue(hexString)
     }
-
-    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+    return try Self.parseMemberOrRange(
       characters: characters,
+      start: .hex(scalar),
       index: hexEnd,
       allowedHexMember: true,
       allowedEscapes: ["x", "u", "U"]
-    ) {
-      try Self.validateRange(start: .hex(scalar), end: endCharacter)
-      return ([.range(.hex(scalar), endCharacter)], rangeEnd)
-    }
-
-    return ([.character(.hex(scalar))], hexEnd)
+    )
   }
 
   private static func parseCharacterRange(characters: [Character], index: Int) throws -> (
@@ -372,19 +360,38 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     if startCharacter == "-" {
       return ([.character(.character(characters[index]))], index + 1)
     }
-    if let (endCharacter, rangeEnd) = try Self.parseRangeEndpoint(
+    return try Self.parseMemberOrRange(
       characters: characters,
+      start: .character(startCharacter),
       index: index + 1,
       allowedHexMember: true,
-      allowedEscapes: ["x", "u", "U"]
-    ) {
-      if case .character("-") = endCharacter {
-        return ([.character(.character(characters[index]))], index + 1)
+      allowedEscapes: ["x", "u", "U"],
+      treatsHyphenEndpointAsLiteral: true
+    )
+  }
+
+  private static func parseMemberOrRange(
+    characters: [Character],
+    start: Terminal.Character,
+    index: Int,
+    allowedHexMember: Bool = false,
+    allowedEscapes: Set<Character>,
+    treatsHyphenEndpointAsLiteral: Bool = false
+  ) throws -> (members: [Member], index: Int) {
+    let rangeEndpoint = try Self.parseRangeEndpoint(
+      characters: characters,
+      index: index,
+      allowedHexMember: allowedHexMember,
+      allowedEscapes: allowedEscapes
+    )
+    if let (endCharacter, rangeEnd) = rangeEndpoint {
+      if treatsHyphenEndpointAsLiteral, case .character("-") = endCharacter {
+        return ([.character(start)], index)
       }
-      try Self.validateRange(start: .character(startCharacter), end: endCharacter)
-      return ([.range(.character(startCharacter), endCharacter)], rangeEnd)
+      try Self.validateRange(start: start, end: endCharacter)
+      return ([.range(start, endCharacter)], rangeEnd)
     }
-    return ([.character(.character(characters[index]))], index + 1)
+    return ([.character(start)], index)
   }
 
   private static func parseHex(_ string: String) -> Unicode.Scalar? {

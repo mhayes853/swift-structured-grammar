@@ -285,14 +285,7 @@ public struct Grammar: Hashable, Sendable, Language.Component, Grammar.Component
         false
       }
     }
-    if removedSymbols.contains(self.startingSymbol) {
-      let placeholder = Rule(self.startingSymbol) { Epsilon() }
-      self.rulesBySymbol[self.startingSymbol] = placeholder
-      if !self.orderedSymbols.contains(self.startingSymbol) {
-        self.orderedSymbols.insert(self.startingSymbol, at: 0)
-      }
-      self.replaceOrInsertStartingRuleStatement(with: placeholder)
-    }
+    self.restoreStartingRuleIfNeeded(when: removedSymbols.contains(self.startingSymbol))
   }
 
   /// Removes every statement that matches a predicate.
@@ -311,12 +304,7 @@ public struct Grammar: Hashable, Sendable, Language.Component, Grammar.Component
     self.orderedStatements.removeAll(where: shouldBeRemoved)
     self.orderedSymbols.removeAll { removedRuleSymbols.contains($0) }
     self.rulesBySymbol = self.rulesBySymbol.filter { !removedRuleSymbols.contains($0.key) }
-    if self.rulesBySymbol[self.startingSymbol] == nil {
-      let placeholder = Rule(self.startingSymbol) { Epsilon() }
-      self.rulesBySymbol[self.startingSymbol] = placeholder
-      self.orderedSymbols.insert(self.startingSymbol, at: 0)
-      self.replaceOrInsertStartingRuleStatement(with: placeholder)
-    }
+    self.restoreStartingRuleIfNeeded(when: self.rulesBySymbol[self.startingSymbol] == nil)
   }
 
   /// Replaces the rule for a symbol with a new expression component.
@@ -493,6 +481,16 @@ public struct Grammar: Hashable, Sendable, Language.Component, Grammar.Component
     let placeholder =
       self.rulesBySymbol[self.startingSymbol] ?? Rule(self.startingSymbol) { Epsilon() }
     self.orderedStatements.insert(.rule(placeholder), at: insertIndex)
+  }
+
+  private mutating func restoreStartingRuleIfNeeded(when shouldRestore: Bool) {
+    guard shouldRestore else { return }
+    let placeholder = Rule(self.startingSymbol) { Epsilon() }
+    self.rulesBySymbol[self.startingSymbol] = placeholder
+    if !self.orderedSymbols.contains(self.startingSymbol) {
+      self.orderedSymbols.insert(self.startingSymbol, at: 0)
+    }
+    self.replaceOrInsertStartingRuleStatement(with: placeholder)
   }
 
   private mutating func replaceOrInsertStartingRuleStatement(with rule: Rule) {

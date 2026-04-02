@@ -434,7 +434,7 @@ extension Language {
   private struct Resolver {
     var symbolResolver: any GrammarSymbolResolver
     var nextLanguageNamespace = 0
-    var grammars: [Grammar] = []
+    var grammars = [Grammar]()
 
     init(symbolResolver: some GrammarSymbolResolver) {
       self.symbolResolver = symbolResolver
@@ -492,11 +492,7 @@ extension Language {
     ) -> ResolvedLanguage {
       let resolved = languages.map { self.resolve($0, operation: operation) }
       var resolvedEntrySymbols = [Symbol]()
-      guard !resolved.isEmpty else {
-        return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
-      }
-      var iterator = resolved.makeIterator()
-      guard let first = iterator.next() else {
+      guard let first = resolved.first else {
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
       }
       var grammar = first.grammar
@@ -504,13 +500,12 @@ extension Language {
         resolvedEntrySymbols.append(entrySymbol)
       }
       self.grammars = [grammar]
-      var index = 1
-      while let language = iterator.next() {
+      for (index, language) in resolved.dropFirst().enumerated() {
         let mergeResult = self.mergeWithConflictResolution(
           grammar,
           language.grammar,
           incomingEntrySymbol: language.entrySymbol,
-          index: index,
+          index: index + 1,
           operation: operation
         )
         grammar = mergeResult.grammar
@@ -518,7 +513,6 @@ extension Language {
           resolvedEntrySymbols.append(entrySymbol)
         }
         self.grammars.append(language.grammar)
-        index += 1
       }
       guard !resolvedEntrySymbols.isEmpty else {
         return ResolvedLanguage(grammar: Grammar(), entrySymbol: nil, synthesizedEntry: false)
