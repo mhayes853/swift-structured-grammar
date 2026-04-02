@@ -700,7 +700,6 @@ extension Language {
               returnedSymbol: state.resolvedSymbol.rawValue
             )
             state.didReportSuspiciousCycle = true
-            continue
           }
 
           state.resolveNextCascadingSymbol(
