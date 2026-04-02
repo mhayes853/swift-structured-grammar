@@ -558,4 +558,15 @@ struct `Language tests` {
       ]
     )
   }
+
+  @Test
+  func `Universal Grammar Matches Any String Including Empty`() async throws {
+    let emptyMatch = try await XGrammarTestSupport.matches("", language: .universal)
+    let singleCharMatch = try await XGrammarTestSupport.matches("a", language: .universal)
+    let multiCharMatch = try await XGrammarTestSupport.matches("hello", language: .universal)
+
+    expectNoDifference(emptyMatch, true)
+    expectNoDifference(singleCharMatch, true)
+    expectNoDifference(multiCharMatch, true)
+  }
 }

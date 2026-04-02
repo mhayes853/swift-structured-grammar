@@ -512,6 +512,13 @@ public struct Grammar: Hashable, Sendable, Language.Component, Grammar.Component
   }
 }
 
+extension Grammar {
+  /// A grammar that accepts any string, including the empty string.
+  public static var universal: Self {
+    Self(Rule(.root) { ZeroOrMore { CharacterGroup.all } })
+  }
+}
+
 extension Grammar.Statement: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {

@@ -255,6 +255,11 @@ extension Language {
   public static func reverse(_ language: some Language.Component) -> Self {
     Self(operation: .reverse(language.language))
   }
+
+  /// A language that accepts any string, including the empty string.
+  public static var universal: Self {
+    Self { Grammar.universal }
+  }
 }
 
 // MARK: - Mutation
