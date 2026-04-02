@@ -329,4 +329,36 @@ struct `GBNFFormatter tests` {
       try grammar.formatted(with: .gbnf)
     }
   }
+
+  @Test
+  func `Formatting Nested Special Sequence Throws`() {
+    let grammar = Grammar(Rule("start") {
+      ConcatenateExpressions {
+        "a"
+        Special("ASCII character 32")
+      }
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .gbnf)
+    }
+  }
+
+  @Test
+  func `Formatting Nested Custom Expression Throws`() {
+    struct CustomExpr: Hashable, Sendable {
+      let value: String
+    }
+
+    let grammar = Grammar(Rule("start") {
+      ConcatenateExpressions {
+        "a"
+        Expression.custom(CustomExpr(value: "test"))
+      }
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .gbnf)
+    }
+  }
 }

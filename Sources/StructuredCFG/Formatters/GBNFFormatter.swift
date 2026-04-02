@@ -16,14 +16,7 @@ extension Grammar {
     }
 
     private func format(rule: Rule) throws -> String {
-      let expression = rule.expression.simplified
-      if case .special = expression {
-        throw UnsupportedExpressionError("Special sequences are not supported")
-      }
-      if case .custom = expression {
-        throw UnsupportedExpressionError.customExpression
-      }
-      return "\(rule.symbol.rawValue) ::= \(try self.format(expression: expression))"
+      "\(rule.symbol.rawValue) ::= \(try self.format(expression: rule.expression.simplified))"
     }
 
     private func format(expression: Expression) throws -> String {
@@ -72,11 +65,11 @@ extension Grammar {
       case .ref(let ref):
         return ref.symbol.rawValue
       case .special:
-        return ""
+        throw UnsupportedExpressionError("Special sequences are not supported")
       case .terminal(let terminal):
         return try self.format(terminal: terminal)
       case .custom:
-        return ""
+        throw UnsupportedExpressionError.customExpression
       }
     }
 

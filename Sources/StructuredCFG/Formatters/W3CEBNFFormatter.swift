@@ -52,21 +52,7 @@ extension Grammar {
     }
 
     private func format(rule: Rule) throws -> String {
-      let expression = rule.expression.simplified
-      if expression == .epsilon {
-        throw UnsupportedExpressionError.epsilonFormattedExpression
-      }
-      if case .special = expression {
-        throw UnsupportedExpressionError("Special sequences are not supported")
-      }
-      if case .custom = expression {
-        throw UnsupportedExpressionError.customExpression
-      }
-      let formatted = try self.format(expression: expression)
-      if formatted.isEmpty {
-        throw UnsupportedExpressionError.epsilonFormattedExpression
-      }
-      return "\(rule.symbol.rawValue) ::= \(formatted)"
+      "\(rule.symbol.rawValue) ::= \(try self.format(expression: rule.expression.simplified))"
     }
 
     private func format(expression: Expression) throws -> String {

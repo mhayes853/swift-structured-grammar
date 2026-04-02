@@ -368,4 +368,22 @@ struct `W3CEBNFFormatter tests` {
       try grammar.formatted(with: .w3cEbnf)
     }
   }
+
+  @Test
+  func `Formatting Nested Custom Expression Throws`() {
+    struct CustomExpr: Hashable, Sendable {
+      let value: String
+    }
+
+    let grammar = Grammar(Rule("start") {
+      ConcatenateExpressions {
+        "a"
+        Expression.custom(CustomExpr(value: "test"))
+      }
+    })
+
+    #expect(throws: UnsupportedExpressionError.self) {
+      try grammar.formatted(with: .w3cEbnf)
+    }
+  }
 }
