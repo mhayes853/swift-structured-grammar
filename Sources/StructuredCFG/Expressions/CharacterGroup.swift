@@ -779,12 +779,6 @@ extension CharacterGroup {
       message: "Negated predefined classes are only supported as standalone groups"
     )
 
-    /// XML name class syntax was encountered.
-    public static let xmlNameClassesAreNotSupported = Self(
-      code: .xmlNameClassesAreNotSupported,
-      message: "XML name classes are not supported"
-    )
-
     /// A hex escape ended before all digits were read.
     public static let incompleteHexEscape = Self(
       code: .incompleteHexEscape,
