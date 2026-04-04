@@ -103,22 +103,6 @@ extension CharacterGroup {
     return nil
   }
 
-  private static let digitMembers: [Member] = [.range(.character("0"), .character("9"))]
-
-  private static let wordMembers: [Member] = [
-    .range(.character("a"), .character("z")),
-    .range(.character("A"), .character("Z")),
-    .range(.character("0"), .character("9")),
-    .character(.character("_"))
-  ]
-
-  private static let whitespaceMembers: [Member] = [
-    .character(.character(" ")),
-    .escaped(EscapeSequence("\t")),
-    .escaped(EscapeSequence("\n")),
-    .escaped(EscapeSequence("\r"))
-  ]
-
   private func format(member: Member, options: FormatOptions) throws -> String {
     switch member {
     case .character(let character):
@@ -150,28 +134,11 @@ extension CharacterGroup {
       case .none:
         return String(Swift.Character(scalar))
       case .gbnf:
-        return Self.gbnfUnicodeEscape(for: scalar)
+        return UnicodeHelpers.gbnfUnicodeEscape(for: scalar)
       case .w3c:
         return "#x" + String(scalar.value, radix: 16)
       }
     }
-  }
-
-  private static func gbnfUnicodeEscape(for scalar: Unicode.Scalar) -> String {
-    if scalar.value <= 0xFFFF {
-      return "\\u" + Self.paddedHexString(scalar.value, length: 4)
-    }
-    return "\\U" + Self.paddedHexString(scalar.value, length: 8)
-  }
-
-  private static func paddedHexString(_ value: UInt32) -> String {
-    Self.paddedHexString(value, length: 8)
-  }
-
-  private static func paddedHexString(_ value: UInt32, length: Int) -> String {
-    let hex = String(value, radix: 16).uppercased()
-    let padding = String(repeating: "0", count: length - hex.count)
-    return padding + hex
   }
 
   private func format(escape: EscapeSequence) -> String {

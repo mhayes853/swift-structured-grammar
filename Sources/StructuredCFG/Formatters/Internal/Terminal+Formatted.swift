@@ -45,7 +45,7 @@ extension Terminal {
         case .none:
           result += String(scalar)
         case .gbnf:
-          result += Self.gbnfUnicodeEscape(for: scalar)
+          result += UnicodeHelpers.gbnfUnicodeEscape(for: scalar)
         case .w3c:
           result += String(scalar)
         }
@@ -54,12 +54,5 @@ extension Terminal {
 
     let quoteString = String(options.quote)
     return quoteString + escaped + quoteString
-  }
-
-  private static func gbnfUnicodeEscape(for scalar: Unicode.Scalar) -> String {
-    let length = scalar.value <= 0xFFFF ? 4 : 8
-    let prefix = scalar.value <= 0xFFFF ? "\\u" : "\\U"
-    let hex = String(scalar.value, radix: 16).uppercased()
-    return prefix + String(repeating: "0", count: length - hex.count) + hex
   }
 }

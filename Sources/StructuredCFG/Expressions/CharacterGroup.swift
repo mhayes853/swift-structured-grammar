@@ -634,16 +634,16 @@ public struct CharacterGroup: Hashable, Sendable, Expression.Component {
     }
   }
 
-  private static let digitMembers: [Member] = [.range(.character("0"), .character("9"))]
+  static let digitMembers: [Member] = [.range(.character("0"), .character("9"))]
 
-  private static let wordMembers: [Member] = [
+  static let wordMembers: [Member] = [
     .range(.character("a"), .character("z")),
     .range(.character("A"), .character("Z")),
     .range(.character("0"), .character("9")),
     .character(.character("_"))
   ]
 
-  private static let whitespaceMembers: [Member] = [
+  static let whitespaceMembers: [Member] = [
     .character(.character(" ")),
     .escaped(EscapeSequence("\t")),
     .escaped(EscapeSequence("\n")),
