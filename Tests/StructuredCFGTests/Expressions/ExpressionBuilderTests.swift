@@ -5,19 +5,19 @@ import StructuredCFG
 @Suite
 struct `ExpressionBuilder tests` {
   @Test
-  func `ConcatanateExpressions Builder Uses Empty Expression For Empty Body`() {
+  func `ConcatenateExpressions Builder Uses Empty Expression For Empty Body`() {
     let expression = ConcatenateExpressions {}.expression
     expectNoDifference(expression, .epsilon)
   }
 
   @Test
-  func `ConcatanateExpressions Builder Returns Single Child Directly`() {
+  func `ConcatenateExpressions Builder Returns Single Child Directly`() {
     let expression = ConcatenateExpressions { "value" }.expression
     expectNoDifference(expression, .terminal("value"))
   }
 
   @Test
-  func `ConcatanateExpressions Builder Concatenates Multiple Children`() {
+  func `ConcatenateExpressions Builder Concatenates Multiple Children`() {
     let expression = ConcatenateExpressions {
       "value"
       Ref("identifier")
@@ -26,7 +26,7 @@ struct `ExpressionBuilder tests` {
   }
 
   @Test
-  func `ConcatanateExpressions Builder Supports Optional Child`() {
+  func `ConcatenateExpressions Builder Supports Optional Child`() {
     let includeValue = false
     let expression = ConcatenateExpressions {
       if includeValue {
@@ -38,7 +38,7 @@ struct `ExpressionBuilder tests` {
   }
 
   @Test
-  func `ConcatanateExpressions Builder Supports Conditional Branches`() {
+  func `ConcatenateExpressions Builder Supports Conditional Branches`() {
     let includeReference = true
     let expression = ConcatenateExpressions {
       if includeReference {

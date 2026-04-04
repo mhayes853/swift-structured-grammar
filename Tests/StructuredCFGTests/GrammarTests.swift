@@ -478,7 +478,7 @@ struct `Grammar tests` {
   }
 
   @Test
-  func `Homomorph Map Handles Empty ConcatanateExpressions Ref And Terminal Cases`() {
+  func `Homomorph Map Handles Empty ConcatenateExpressions Ref And Terminal Cases`() {
     let grammar = Grammar(startingSymbol: "epsilon") {
       Rule("epsilon") {
         Epsilon()

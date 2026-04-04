@@ -3,7 +3,7 @@ import StructuredCFG
 import Testing
 
 @Suite
-struct `RulesBuilder tests` {
+struct `GrammarBuilder tests` {
   @Test
   func `Builds Empty Grammar`() {
     let grammar = Grammar()

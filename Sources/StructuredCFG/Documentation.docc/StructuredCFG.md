@@ -247,13 +247,13 @@ let grammar = Grammar(startingSymbol: "expression") {
 
 ## Custom Formats
 
-The library ships with several built-in formatters, but you can also add your own by conforming to ``RuleFormatter``.
+The library ships with several built-in formatters, but you can also add your own by conforming to ``Grammar/StatementFormatter``.
 
 ```swift
 import StructuredCFG
 
-struct MyFormatter: Grammar.RuleFormatter {
-  func format(rule: Rule) throws -> String {
+struct MyFormatter: Grammar.StatementFormatter {
+  func format(statement: Grammar.Statement) throws -> String {
     // ...
   }
 }

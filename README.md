@@ -19,7 +19,7 @@ While this is powerful, the above syntax is unfortunately not universal, and you
 
 It als goes without saying that higher-level CFG operations such as unioning and concatenation cannot easily be applied to raw EBNF syntax at runtime. Furthermore, raw EBNF syntax makes it difficult to compose together parts of grammars into a single grammar in a manner that's always guaranteed to be syntatically correct.
 
-This package was designed to address these issues by allowing grammar construction to occur in Pure Swift with no dependencies.
+This package was designed to address these issues by allowing grammar construction to occur in pure Swift with a lightweight runtime surface.
 
 ### Quick Start
 Use `Grammar` when you want to author a concrete grammar directly.
@@ -232,11 +232,11 @@ let grammar = Grammar(startingSymbol: "expression") {
 ```
 
 ### Custom Formats
-By default, the library supports a number of built-in syntaxes, but you can also add your own by conforming to the `Grammar.RuleFormatter` protocol.
+By default, the library supports a number of built-in syntaxes, but you can also add your own by conforming to the `Grammar.StatementFormatter` protocol.
 
 ```swift
-struct MyFormatter: Grammar.RuleFormatter {
-  func format(rule: Rule) throws -> String {
+struct MyFormatter: Grammar.StatementFormatter {
+  func format(statement: Grammar.Statement) throws -> String {
     // ...
   } 
 }
@@ -278,7 +278,7 @@ let xgrammar = try XGrammar.Grammar(language: language)
 
 ## Installation
 You can add Swift Structured Grammar to an Xcode project by adding it to your project as a package.
-> https://github.com/mhayes853/swift-structured-gramamr
+> https://github.com/mhayes853/swift-structured-grammar
 
 If you want to use Swift Structured Grammar in a [SwiftPM](https://swift.org/package-manager/) project, add it to your `Package.swift`.
 

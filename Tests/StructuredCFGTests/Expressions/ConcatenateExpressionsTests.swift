@@ -3,7 +3,7 @@ import Testing
 import StructuredCFG
 
 @Suite
-struct `ConcatanateExpressions tests` {
+struct `ConcatenateExpressions tests` {
   @Test
   func `Formats As Concatenation`() {
     let production = Rule("start") {
