@@ -756,6 +756,14 @@ extension Language {
         return .special(special)
       case .terminal(let terminal):
         return .terminal(terminal)
+      case .inlineComment(let inlineComment):
+        return .inlineComment(
+          InlineComment(
+            inlineComment.text,
+            position: inlineComment.position,
+            self.rewritingRefs(in: inlineComment.baseExpression, using: resolvedSymbols)
+          )
+        )
       case .custom(let value):
         return .custom(value)
       }

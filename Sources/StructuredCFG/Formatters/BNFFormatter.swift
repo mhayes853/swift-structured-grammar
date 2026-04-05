@@ -54,6 +54,7 @@ extension Grammar {
     private enum Element: Hashable, Sendable {
       case symbol(Symbol)
       case terminal(Terminal)
+      case comment(String)
     }
 
     private struct ExpansionContext {
@@ -97,6 +98,8 @@ extension Grammar {
         return [[.symbol(ref.symbol)]]
       case .terminal(let terminal):
         return [[.terminal(terminal)]]
+      case .inlineComment(let inlineComment):
+        return try self.expand(inlineComment: inlineComment, context: &context)
       case .special:
         throw UnsupportedExpressionError("Special sequences are not supported")
       case .custom:
@@ -150,6 +153,24 @@ extension Grammar {
 
       let alternatives = (1...max).flatMap { self.repeated(inner, count: $0) }
       return [[]] + alternatives
+    }
+
+    private func expand(
+      inlineComment: InlineComment,
+      context: inout ExpansionContext
+    ) throws -> [[Element]] {
+      guard self.commentStyle != .line else {
+        throw UnsupportedExpressionError("Inline comments do not support line comment formatting")
+      }
+
+      let inner = try self.expand(expression: inlineComment.baseExpression, context: &context)
+      let comment = Element.comment(inlineComment.formatted(style: self.commentStyle.sharedStyle))
+      switch inlineComment.position {
+      case .leading:
+        return inner.map { [comment] + $0 }
+      case .trailing:
+        return inner.map { $0 + [comment] }
+      }
     }
 
     private func expand(
@@ -239,6 +260,8 @@ extension Grammar {
         "<\(symbol.rawValue)>"
       case .terminal(let terminal):
         self.format(terminal: terminal)
+      case .comment(let comment):
+        comment
       }
     }
 

@@ -52,6 +52,14 @@ extension Expression {
       return .special(special)
     case .terminal(let terminal):
       return .terminal(terminal)
+    case .inlineComment(let inlineComment):
+      return .inlineComment(
+        InlineComment(
+          inlineComment.text,
+          position: inlineComment.position,
+          inlineComment.baseExpression.simplified
+        )
+      )
     case .custom(let value):
       return .custom(value)
     }

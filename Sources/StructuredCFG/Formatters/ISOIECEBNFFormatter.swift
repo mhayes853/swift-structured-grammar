@@ -189,6 +189,8 @@ extension Grammar {
         return "? \(special.value) ?"
       case .terminal(let terminal):
         return self.format(terminal: terminal)
+      case .inlineComment(let inlineComment):
+        return try self.format(inlineComment: inlineComment)
       case .custom:
         return ""
       }
@@ -199,6 +201,17 @@ extension Grammar {
         try self.format(expression: expression)
       } else {
         "(\(try self.format(expression: expression)))"
+      }
+    }
+
+    private func format(inlineComment: InlineComment) throws -> String {
+      let formattedExpression = try self.format(expression: inlineComment.baseExpression)
+      let formattedComment = self.format(comment: Comment(inlineComment.text))
+      switch inlineComment.position {
+      case .leading:
+        return formattedComment + " " + formattedExpression
+      case .trailing:
+        return formattedExpression + " " + formattedComment
       }
     }
 

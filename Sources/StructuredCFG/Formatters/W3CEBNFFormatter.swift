@@ -142,6 +142,8 @@ extension Grammar {
         throw UnsupportedExpressionError("Special sequences are not supported")
       case .terminal(let terminal):
         return try self.format(terminal: terminal)
+      case .inlineComment(let inlineComment):
+        return try self.format(inlineComment: inlineComment)
       case .custom:
         throw UnsupportedExpressionError.customExpression
       }
@@ -152,6 +154,21 @@ extension Grammar {
         try self.format(expression: expression)
       } else {
         "(\(try self.format(expression: expression)))"
+      }
+    }
+
+    private func format(inlineComment: InlineComment) throws -> String {
+      guard self.commentStyle != .line else {
+        throw UnsupportedExpressionError("Inline comments do not support line comment formatting")
+      }
+      let formattedExpression = try self.format(expression: inlineComment.baseExpression)
+      let formattedComment = inlineComment.formatted(style: self.commentStyle.sharedStyle)
+      guard !formattedComment.isEmpty else { return formattedExpression }
+      switch inlineComment.position {
+      case .leading:
+        return formattedComment + " " + formattedExpression
+      case .trailing:
+        return formattedExpression + " " + formattedComment
       }
     }
 

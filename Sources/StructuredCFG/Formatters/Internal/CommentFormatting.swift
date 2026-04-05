@@ -30,6 +30,12 @@ extension Comment {
   }
 }
 
+extension InlineComment {
+  func formatted(style: Comment.FormattingStyle) -> String {
+    Comment(self.text).formatted(style: style)
+  }
+}
+
 // MARK: - Helpers
 
 extension Grammar.W3CEBNFFormatter.CommentStyle {

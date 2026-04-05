@@ -54,6 +54,9 @@ extension Expression {
     case .special:
       throw UnsupportedExpressionError("Special sequences are not supported")
 
+    case .inlineComment:
+      throw UnsupportedExpressionError("Inline comments are not supported")
+
     case .custom:
       throw UnsupportedExpressionError.customExpression
     }

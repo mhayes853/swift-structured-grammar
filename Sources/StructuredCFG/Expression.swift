@@ -38,6 +38,9 @@ public indirect enum Expression: Sendable {
   /// Matches a literal terminal value.
   case terminal(Terminal)
 
+  /// Matches an expression with a formatter-emitted inline comment.
+  case inlineComment(InlineComment)
+
   /// Stores a custom formatter-defined payload.
   case custom(any Hashable & Sendable)
 
@@ -74,6 +77,7 @@ extension Expression: Equatable {
     case (.ref(let l1), .ref(let r1)): l1 == r1
     case (.special(let l1), .special(let r1)): l1 == r1
     case (.terminal(let l1), .terminal(let r1)): l1 == r1
+    case (.inlineComment(let l1), .inlineComment(let r1)): l1 == r1
     case (.custom(let l1), .custom(let r1)): equals(l1, r1)
     default: false
     }
@@ -114,8 +118,11 @@ extension Expression: Hashable {
     case .terminal(let terminal):
       hasher.combine(9)
       hasher.combine(terminal)
-    case .custom(let value):
+    case .inlineComment(let inlineComment):
       hasher.combine(10)
+      hasher.combine(inlineComment)
+    case .custom(let value):
+      hasher.combine(11)
       value.hash(into: &hasher)
     }
   }

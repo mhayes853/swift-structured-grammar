@@ -650,6 +650,14 @@ extension Grammar {
       return .special(special)
     case .terminal(let terminal):
       return transform(terminal).map(Expression.terminal) ?? .terminal(terminal)
+    case .inlineComment(let inlineComment):
+      return .inlineComment(
+        InlineComment(
+          inlineComment.text,
+          position: inlineComment.position,
+          self.homomorphed(expression: inlineComment.baseExpression, transform: transform)
+        )
+      )
     case .custom(let value):
       return .custom(value)
     }
@@ -712,6 +720,8 @@ extension Grammar {
       []
     case .terminal:
       []
+    case .inlineComment(let inlineComment):
+      self.referencedSymbols(in: inlineComment.baseExpression)
     case .custom:
       []
     }
@@ -744,6 +754,14 @@ extension Grammar {
       return .special(special)
     case .terminal(let terminal):
       return .terminal(terminal)
+    case .inlineComment(let inlineComment):
+      return .inlineComment(
+        InlineComment(
+          inlineComment.text,
+          position: inlineComment.position,
+          self.reversed(expression: inlineComment.baseExpression)
+        )
+      )
     case .custom(let value):
       return .custom(value)
     }
