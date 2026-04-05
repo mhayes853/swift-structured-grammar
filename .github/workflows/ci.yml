@@ -33,6 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install validation dependencies
+        run: npm install
+        working-directory: validation
       - name: "Test Swift Package on Linux"
         run: swift test --disable-experimental-prebuilts
 
@@ -46,6 +49,7 @@ jobs:
         with:
           swift-version: 6.2.3
           swift-build-flags: --disable-experimental-prebuilts
+          run-tests: false # NB: Emulator seems to take too long to boot
 
   windows:
     name: Windows
