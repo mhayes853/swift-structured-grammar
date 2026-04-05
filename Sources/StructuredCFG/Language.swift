@@ -1,4 +1,4 @@
-import IssueReporting
+private import IssueReporting
 
 // MARK: - Language
 
@@ -635,7 +635,8 @@ extension Language {
         incoming: Grammar,
         resolver: any GrammarSymbolResolver
       ) {
-        let cascadingGrammar = self.baseRulesBySymbol[self.resolvedSymbol] == nil ? incoming : self.result
+        let cascadingGrammar =
+          self.baseRulesBySymbol[self.resolvedSymbol] == nil ? incoming : self.result
         self.candidateSymbol = self.resolvedSymbol
         self.resolvedSymbol = resolver.resolveSymbolConflict(
           for: ResolvableGrammarSymbol(symbol: self.candidateSymbol, grammar: incoming),
@@ -718,7 +719,10 @@ extension Language {
 
         case .rule(let production):
           let resolvedSymbol = state.resolvedSymbols[production.symbol] ?? production.symbol
-          let expression = self.rewritingRefs(in: production.expression, using: state.resolvedSymbols)
+          let expression = self.rewritingRefs(
+            in: production.expression,
+            using: state.resolvedSymbols
+          )
           state.result.append(Rule(resolvedSymbol, expression))
         }
       }
