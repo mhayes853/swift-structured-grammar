@@ -35,7 +35,11 @@ let package = Package(
       name: "StructuredCFGTests",
       dependencies: [
         "StructuredCFG",
-        .product(name: "XGrammar", package: "swift-xgrammar"),
+        .product(
+          name: "XGrammar",
+          package: "swift-xgrammar",
+          condition: .when(platforms: [.iOS, .macOS, .tvOS, .visionOS, .watchOS, .linux])
+        ),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
