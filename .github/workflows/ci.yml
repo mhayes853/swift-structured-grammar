@@ -52,7 +52,7 @@ jobs:
       - name: "Setup Swift on Windows"
         uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-6.2-release
+          branch: swift-6.2.3-release
           tag: 6.2.3-RELEASE
       - name: "Test Swift Package on Windows"
         run: swift test --disable-experimental-prebuilts
