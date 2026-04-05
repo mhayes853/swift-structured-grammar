@@ -2,6 +2,7 @@ import CustomDump
 import StructuredCFG
 import Testing
 
+#if canImport(XGrammar)
 @Suite
 struct `JSONLanguage tests` {
   @Test(arguments: Self.validPayloads)
@@ -161,3 +162,4 @@ struct `JSONLanguage tests` {
     try await XGrammarTestSupport.matches(payload, language: language.language)
   }
 }
+#endif

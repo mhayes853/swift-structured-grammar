@@ -75,6 +75,7 @@ struct `ConcatenateLanguages tests` {
     )
   }
 
+  #if canImport(XGrammar)
   @Test
   func `ConcatenateLanguages XGrammar Matches Full Sequence Only`() async throws {
     let language = ConcatenateLanguages {
@@ -95,6 +96,7 @@ struct `ConcatenateLanguages tests` {
     expectNoDifference(partialMatch, false)
     expectNoDifference(wrongOrderMatch, false)
   }
+  #endif
 
   @Test
   func `ConcatenateLanguages Rewrites Internal References When Conflicting Symbols Are Renamed`() {

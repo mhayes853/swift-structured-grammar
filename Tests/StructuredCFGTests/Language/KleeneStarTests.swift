@@ -57,6 +57,7 @@ struct `Star tests` {
     )
   }
 
+  #if canImport(XGrammar)
   @Test
   func `Star XGrammar Matches Empty And Repeated Inputs`() async throws {
     let language = Star {
@@ -79,4 +80,5 @@ struct `Star tests` {
     expectNoDifference(repeatedMatch, true)
     expectNoDifference(invalidMatch, false)
   }
+  #endif
 }

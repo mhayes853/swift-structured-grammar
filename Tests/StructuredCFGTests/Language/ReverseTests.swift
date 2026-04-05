@@ -170,6 +170,7 @@ struct `Reverse tests` {
     )
   }
 
+  #if canImport(XGrammar)
   @Test
   func `Reverse XGrammar Matches Reversed Sequence Only`() async throws {
     let language = Reverse {
@@ -198,4 +199,5 @@ struct `Reverse tests` {
     expectNoDifference(originalMatch, false)
     expectNoDifference(partialMatch, false)
   }
+  #endif
 }

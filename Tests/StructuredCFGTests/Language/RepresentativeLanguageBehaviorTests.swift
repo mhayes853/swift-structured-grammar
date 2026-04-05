@@ -2,6 +2,7 @@ import CustomDump
 import StructuredCFG
 import Testing
 
+#if canImport(XGrammar)
 @Suite
 struct `Representative Language Behavior tests` {
   @Test(arguments: Self.cases.map(\.name))
@@ -75,3 +76,4 @@ struct `Representative Language Behavior tests` {
     }
   }
 }
+#endif

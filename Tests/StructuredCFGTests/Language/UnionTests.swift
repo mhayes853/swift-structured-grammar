@@ -78,6 +78,7 @@ struct `Union tests` {
     )
   }
 
+  #if canImport(XGrammar)
   @Test
   func `Union XGrammar Matches Either Branch`() async throws {
     let language = Union {
@@ -98,6 +99,7 @@ struct `Union tests` {
     expectNoDifference(rightMatches, true)
     expectNoDifference(invalidMatches, false)
   }
+  #endif
 
   @Test
   func `Union Rewrites Internal References When Conflicting Symbols Are Renamed`() {
@@ -130,6 +132,7 @@ struct `Union tests` {
     )
   }
 
+  #if canImport(XGrammar)
   @Test
   func `Union XGrammar Matches Either Branch When Starting Symbols Conflict`() async throws {
     let language = Union {
@@ -152,4 +155,5 @@ struct `Union tests` {
     expectNoDifference(rightMatches, true)
     expectNoDifference(invalidMatches, false)
   }
+  #endif
 }
