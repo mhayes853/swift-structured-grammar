@@ -2,6 +2,7 @@ import CustomDump
 import Foundation
 import Testing
 
+#if os(macOS) || os(Linux) || os(Windows)
 @Suite
 struct GrammarValidationTests {
   @Test
@@ -29,3 +30,4 @@ struct GrammarValidationTests {
     expectNoDifference(process.terminationStatus, 0, "npm run validate failed:\n\(output)")
   }
 }
+#endif
