@@ -113,35 +113,35 @@ extension Grammar {
         return "[\(try self.format(expression: expression))]"
       case .repeat(let repeatExpr):
         if repeatExpr.isZeroOrMore {
-          return "{\(try self.format(expression: repeatExpr.innerExpression))}"
+          return "{\(try self.format(expression: repeatExpr.baseExpression))}"
         }
         if repeatExpr.isOneOrMore {
-          let formatted = try self.format(expression: repeatExpr.innerExpression)
-          let firstElement = repeatExpr.innerExpression.isPrimary ? formatted : "(\(formatted))"
+          let formatted = try self.format(expression: repeatExpr.baseExpression)
+          let firstElement = repeatExpr.baseExpression.isPrimary ? formatted : "(\(formatted))"
           return "\(firstElement), {\(formatted)}"
         }
-        let innerExpression = repeatExpr.innerExpression
+        let baseExpression = repeatExpr.baseExpression
         switch (repeatExpr.min, repeatExpr.max) {
         case (let m?, let n?) where m == n:
           if m == 0 {
             return self.formattedEpsilon()
           }
-          let formatted = try self.formatPrimary(expression: innerExpression)
+          let formatted = try self.formatPrimary(expression: baseExpression)
           return "\(m) * \(formatted)"
         case (let n?, nil):
           if n == 0 {
-            return "{\(try self.format(expression: innerExpression))}"
+            return "{\(try self.format(expression: baseExpression))}"
           }
-          let required = Expression.concat(Array(repeating: innerExpression, count: n))
+          let required = Expression.concat(Array(repeating: baseExpression, count: n))
           let expanded: Expression = .concat([
-            required, Repeat(min: 0, max: nil, innerExpression).expression
+            required, Repeat(min: 0, max: nil, baseExpression).expression
           ])
           return try self.format(expression: expanded.simplified)
         case (nil, let n?):
           if n == 0 {
             return ""
           } else {
-            let innerFormatted = try self.formatPrimary(expression: innerExpression)
+            let innerFormatted = try self.formatPrimary(expression: baseExpression)
             let choices: [String] = (1...n)
               .map { count in
                 switch count {
@@ -155,7 +155,7 @@ extension Grammar {
             return "[\(unionFormatted)]"
           }
         case (let m?, let n?):
-          let required = Expression.concat(Array(repeating: innerExpression, count: m))
+          let required = Expression.concat(Array(repeating: baseExpression, count: m))
           let additionalMax = n - m
           let requiredFormatted = try self.format(expression: required.simplified)
           if additionalMax == 0 {
@@ -163,7 +163,7 @@ extension Grammar {
           }
           let additionalFormatted = try (1...additionalMax)
             .map { count in
-              let formatted = try self.formatPrimary(expression: innerExpression)
+              let formatted = try self.formatPrimary(expression: baseExpression)
               if count == 1 {
                 return formatted
               } else {

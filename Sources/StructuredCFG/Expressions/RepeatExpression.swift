@@ -17,7 +17,7 @@ public struct Repeat: Hashable, Sendable, Expression.Component {
   public let max: Int?
 
   /// The expression being repeated.
-  public let innerExpression: Expression
+  public let baseExpression: Expression
 
   public var expression: Expression {
     .repeat(self)
@@ -49,7 +49,7 @@ public struct Repeat: Hashable, Sendable, Expression.Component {
     }
     self.min = min
     self.max = max
-    self.innerExpression = expression.expression
+    self.baseExpression = expression.expression
   }
 
   /// Creates a repetition that must match an exact number of times.

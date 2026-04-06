@@ -1,14 +1,14 @@
 /// An expression component that matches one or more repetitions of an expression.
 public struct OneOrMore: Hashable, Sendable, Expression.Component {
   /// The expression being repeated.
-  public let innerExpression: Expression
+  public let baseExpression: Expression
 
   /// Creates a one-or-more repetition from an expression component.
   ///
   /// - Parameter expression: The expression to repeat.
   @inlinable
   public init(_ expression: some Expression.Component) {
-    self.innerExpression = expression.expression
+    self.baseExpression = expression.expression
   }
 
   /// Creates a one-or-more repetition from a result-builder closure.
@@ -22,6 +22,6 @@ public struct OneOrMore: Hashable, Sendable, Expression.Component {
   /// The repeated expression as an ``Expression``.
   @inlinable
   public var expression: Expression {
-    Repeat(min: 1, max: nil, self.innerExpression).expression
+    Repeat(min: 1, max: nil, self.baseExpression).expression
   }
 }

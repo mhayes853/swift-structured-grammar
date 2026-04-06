@@ -637,7 +637,7 @@ extension Grammar {
       let newRepeat = Repeat(
         min: repeatExpr.min,
         max: repeatExpr.max,
-        self.homomorphed(expression: repeatExpr.innerExpression, transform: transform)
+        self.homomorphed(expression: repeatExpr.baseExpression, transform: transform)
       )
       return .`repeat`(newRepeat)
     case .group(let expression):
@@ -711,7 +711,7 @@ extension Grammar {
     case .optional(let expr), .group(let expr):
       self.referencedSymbols(in: expr)
     case .`repeat`(let repeatExpr):
-      self.referencedSymbols(in: repeatExpr.innerExpression)
+      self.referencedSymbols(in: repeatExpr.baseExpression)
     case .characterGroup:
       []
     case .ref(let ref):
@@ -741,7 +741,7 @@ extension Grammar {
       let newRepeat = Repeat(
         min: repeatExpr.min,
         max: repeatExpr.max,
-        self.reversed(expression: repeatExpr.innerExpression)
+        self.reversed(expression: repeatExpr.baseExpression)
       )
       return .`repeat`(newRepeat)
     case .group(let expr):

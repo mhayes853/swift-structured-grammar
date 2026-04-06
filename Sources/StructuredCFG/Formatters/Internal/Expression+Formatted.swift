@@ -45,7 +45,7 @@ extension Expression {
       return formatted.joined(separator: options.choiceSeparator)
 
     case .repeat(let repeatExpr):
-      let innerFormatted = try repeatExpr.innerExpression.format(options: options)
+      let innerFormatted = try repeatExpr.baseExpression.format(options: options)
       if let result = options.repeatWrapper((innerFormatted, repeatExpr)) {
         return result
       }

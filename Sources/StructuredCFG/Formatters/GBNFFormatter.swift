@@ -40,12 +40,12 @@ extension Grammar {
         return try self.formatPrimary(expression: expression) + "?"
       case .`repeat`(let repeatExpr):
         if repeatExpr.isZeroOrMore {
-          return try self.formatPrimary(expression: repeatExpr.innerExpression) + "*"
+          return try self.formatPrimary(expression: repeatExpr.baseExpression) + "*"
         }
         if repeatExpr.isOneOrMore {
-          return try self.formatPrimary(expression: repeatExpr.innerExpression) + "+"
+          return try self.formatPrimary(expression: repeatExpr.baseExpression) + "+"
         }
-        let inner = try self.formatPrimary(expression: repeatExpr.innerExpression)
+        let inner = try self.formatPrimary(expression: repeatExpr.baseExpression)
         switch (repeatExpr.min, repeatExpr.max) {
         case (let m?, let n?) where m == n:
           return inner + "{\(m)}"

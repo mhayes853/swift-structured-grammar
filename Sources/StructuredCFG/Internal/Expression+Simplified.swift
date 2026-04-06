@@ -32,7 +32,7 @@ extension Expression {
       }
       return Expression.optional(simplified)
     case .`repeat`(let repeatExpr):
-      let simplified = repeatExpr.innerExpression.simplified
+      let simplified = repeatExpr.baseExpression.simplified
       if simplified == .epsilon {
         return .epsilon
       }

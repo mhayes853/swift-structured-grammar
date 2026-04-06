@@ -747,7 +747,7 @@ extension Language {
           Repeat(
             min: repeatExpr.min,
             max: repeatExpr.max,
-            self.rewritingRefs(in: repeatExpr.innerExpression, using: resolvedSymbols)
+            self.rewritingRefs(in: repeatExpr.baseExpression, using: resolvedSymbols)
           )
         )
       case .group(let expression):

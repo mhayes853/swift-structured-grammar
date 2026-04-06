@@ -8,7 +8,7 @@ struct `ZeroOrMore tests` {
   func `Stores Inner Expression`() {
     let expression = ZeroOrMore { "a" }
 
-    expectNoDifference(expression.innerExpression, Terminal("a").expression)
+    expectNoDifference(expression.baseExpression, Terminal("a").expression)
   }
 
   @Test

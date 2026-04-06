@@ -111,7 +111,7 @@ extension Grammar {
       repeatExpression: Repeat,
       context: inout ExpansionContext
     ) throws -> [[Element]] {
-      let inner = try self.expand(expression: repeatExpression.innerExpression, context: &context)
+      let inner = try self.expand(expression: repeatExpression.baseExpression, context: &context)
 
       switch (repeatExpression.min, repeatExpression.max) {
       case (nil, nil):
@@ -129,7 +129,7 @@ extension Grammar {
         }
 
         let zeroOrMore = try self.expand(
-          repeatExpression: Repeat(min: 0, max: nil, repeatExpression.innerExpression),
+          repeatExpression: Repeat(min: 0, max: nil, repeatExpression.baseExpression),
           context: &context
         )
         return self.concatenate(self.repeated(inner, count: min), zeroOrMore)

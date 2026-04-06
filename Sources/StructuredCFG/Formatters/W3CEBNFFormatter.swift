@@ -76,20 +76,20 @@ extension Grammar {
         return try self.formatPrimary(expression: expression) + "?"
       case .`repeat`(let repeatExpr):
         if repeatExpr.isZeroOrMore {
-          return try self.formatPrimary(expression: repeatExpr.innerExpression) + "*"
+          return try self.formatPrimary(expression: repeatExpr.baseExpression) + "*"
         }
         if repeatExpr.isOneOrMore {
-          return try self.formatPrimary(expression: repeatExpr.innerExpression) + "+"
+          return try self.formatPrimary(expression: repeatExpr.baseExpression) + "+"
         }
-        let innerExpression = repeatExpr.innerExpression
+        let baseExpression = repeatExpr.baseExpression
         switch (repeatExpr.min, repeatExpr.max) {
         case (let n?, nil):
           if n == 0 {
-            return try self.formatPrimary(expression: innerExpression) + "*"
+            return try self.formatPrimary(expression: baseExpression) + "*"
           } else {
-            let required = Expression.concat(Array(repeating: innerExpression, count: n))
+            let required = Expression.concat(Array(repeating: baseExpression, count: n))
             let expanded: Expression = .concat([
-              required, Repeat(min: 0, max: nil, innerExpression).expression
+              required, Repeat(min: 0, max: nil, baseExpression).expression
             ])
             return try self.format(expression: expanded.simplified)
           }
@@ -98,7 +98,7 @@ extension Grammar {
             throw UnsupportedExpressionError.epsilonFormattedExpression
           } else {
             let choices = (1...n)
-              .map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
+              .map { Expression.concat(Array(repeating: baseExpression, count: $0)) }
             let union = Expression.choice(choices)
             let expanded = Expression.optional(union)
             return try self.format(expression: expanded)
@@ -107,13 +107,13 @@ extension Grammar {
           if m == 0 {
             throw UnsupportedExpressionError.epsilonFormattedExpression
           }
-          let expanded = Expression.concat(Array(repeating: innerExpression, count: m))
+          let expanded = Expression.concat(Array(repeating: baseExpression, count: m))
           return try self.format(expression: expanded.simplified)
         case (let m?, let n?):
-          let required = Expression.concat(Array(repeating: innerExpression, count: m))
+          let required = Expression.concat(Array(repeating: baseExpression, count: m))
           let additionalMax = n - m
           let additionalChoices = (1...additionalMax)
-            .map { Expression.concat(Array(repeating: innerExpression, count: $0)) }
+            .map { Expression.concat(Array(repeating: baseExpression, count: $0)) }
           let optionalAdditional: Expression
           if additionalChoices.isEmpty {
             optionalAdditional = .epsilon
