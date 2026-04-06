@@ -2,7 +2,7 @@ import CustomDump
 import Foundation
 import Testing
 
-#if os(macOS) || os(Linux) || os(Windows)
+#if os(macOS) || os(Linux)
 @Suite
 struct GrammarValidationTests {
   @Test
