@@ -1,3 +1,4 @@
+#if !os(Windows)
 import CustomDump
 import Foundation
 @preconcurrency import SnapshotTesting
@@ -83,3 +84,4 @@ private enum BNFSnapshotSuite {
     self.cases.first(where: { $0.name == name })!
   }
 }
+#endif

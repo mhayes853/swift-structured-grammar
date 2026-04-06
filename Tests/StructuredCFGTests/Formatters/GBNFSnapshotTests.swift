@@ -1,3 +1,4 @@
+#if !os(Windows)
 import CustomDump
 import Foundation
 @preconcurrency import SnapshotTesting
@@ -74,3 +75,4 @@ private func assertGBNFSnapshot(
 
   expectNoDifference(failure, nil)
 }
+#endif

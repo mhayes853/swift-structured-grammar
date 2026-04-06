@@ -1,3 +1,4 @@
+#if !os(Windows)
 import CustomDump
 import Foundation
 @preconcurrency import SnapshotTesting
@@ -80,3 +81,4 @@ private enum ISOSnapshotSuite {
     self.cases.first(where: { $0.name == name })!
   }
 }
+#endif
