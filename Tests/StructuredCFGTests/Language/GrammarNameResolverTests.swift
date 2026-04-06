@@ -78,8 +78,8 @@ struct `GrammarNameResolver tests` {
 
     let grammar = Language.union(grammars).grammar()
 
-    #expect(grammar.containsRule(for: "gaaexpression"))
-    #expect(grammar.containsRule(for: "gabzexpression"))
+    expectNoDifference(grammar.containsRule(for: "gaaexpression"), true)
+    expectNoDifference(grammar.containsRule(for: "gabzexpression"), true)
   }
 
   @Test

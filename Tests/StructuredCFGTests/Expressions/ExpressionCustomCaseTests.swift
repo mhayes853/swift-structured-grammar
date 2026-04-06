@@ -57,6 +57,6 @@ struct `Expression custom case tests` {
     expr2.hash(into: &hasher2)
     let hash2 = hasher2.finalize()
 
-    #expect(hash1 == hash2)
+    expectNoDifference(hash1, hash2)
   }
 }
