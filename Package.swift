@@ -28,7 +28,14 @@ let package = Package(
     .target(
       name: "StructuredCFG",
       dependencies: [
-        .product(name: "IssueReporting", package: "xctest-dynamic-overlay")
+        .product(
+          name: "IssueReporting",
+          package: "xctest-dynamic-overlay",
+          condition: .when(platforms: [
+            .iOS, .macOS, .watchOS, .visionOS, .tvOS, .macCatalyst, .linux, .android, .windows,
+            .openbsd
+          ])
+        )
       ]
     ),
     .testTarget(

@@ -1,4 +1,6 @@
-private import IssueReporting
+#if canImport(IssueReporting)
+  private import IssueReporting
+#endif
 
 // MARK: - Language
 
@@ -405,6 +407,7 @@ extension Language {
   }
 }
 
+@_transparent
 private func reportSymbolResolverCycling(
   operation: Language.GrammarOperation,
   grammarIndex: Int,
@@ -412,17 +415,19 @@ private func reportSymbolResolverCycling(
   candidateSymbol: String,
   returnedSymbol: String
 ) {
-  reportIssue(
-    """
-    A grammar symbol resolver may be cycling while resolving a symbol conflict. \
-    StructuredCFG will synthesize a fallback symbol to finish resolution.
-    operation: \(operation)
-    grammarIndex: \(grammarIndex)
-    originalSymbol: \(originalSymbol)
-    candidateSymbol: \(candidateSymbol)
-    returnedSymbol: \(returnedSymbol)
-    """
-  )
+  #if canImport(IssueReporting)
+    reportIssue(
+      """
+      A grammar symbol resolver may be cycling while resolving a symbol conflict. \
+      StructuredCFG will synthesize a fallback symbol to finish resolution.
+      operation: \(operation)
+      grammarIndex: \(grammarIndex)
+      originalSymbol: \(originalSymbol)
+      candidateSymbol: \(candidateSymbol)
+      returnedSymbol: \(returnedSymbol)
+      """
+    )
+  #endif
 }
 
 // MARK: - Resolver
